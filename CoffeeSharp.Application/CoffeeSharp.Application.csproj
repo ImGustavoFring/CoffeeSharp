@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CoffeeSharp.Domain\CoffeeSharp.Domain.csproj" />
+    <ProjectReference Include="..\CoffeeSharp.Infrastructure\CoffeeSharp.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CoffeeSharp.Application\CoffeeSharp.Application.csproj" />
+    <ProjectReference Include="..\CoffeeSharp.Domain\CoffeeSharp.Domain.csproj" />
+    <ProjectReference Include="..\CoffeeSharp.Infrastructure\CoffeeSharp.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

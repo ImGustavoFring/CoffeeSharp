@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  webapi:
+    build:
+      context: .
+      dockerfile: CoffeeSharp.WebApi/Dockerfile
+    ports:
+      - "5000:80"
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=CoffeeSharpDb;Username=postgres;Password=yourpassword
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: CoffeeSharpDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoffeeSharp.WebApi", "CoffeeSharp.WebApi\CoffeeSharp.WebApi.csproj", "{F8C40948-58A7-4413-9702-DFE4B5AB2397}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoffeeSharp.Domain", "CoffeeSharp.Domain\CoffeeSharp.Domain.csproj", "{FB9AFEEC-25EB-456B-B22F-77AA87D7057F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoffeeSharp.Application", "CoffeeSharp.Application\CoffeeSharp.Application.csproj", "{7C494C6B-AAA5-45E2-931C-AB61E372C617}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoffeeSharp.Infrastructure", "CoffeeSharp.Infrastructure\CoffeeSharp.Infrastructure.csproj", "{578355EC-6E46-44E1-BD5C-6F9D1A4A347E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoffeeSharp.WebApi", "CoffeeSharp.WebApi\CoffeeSharp.WebApi.csproj", "{37134017-2E20-4E56-AA0C-22EF788D8514}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F8C40948-58A7-4413-9702-DFE4B5AB2397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8C40948-58A7-4413-9702-DFE4B5AB2397}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8C40948-58A7-4413-9702-DFE4B5AB2397}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8C40948-58A7-4413-9702-DFE4B5AB2397}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB9AFEEC-25EB-456B-B22F-77AA87D7057F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB9AFEEC-25EB-456B-B22F-77AA87D7057F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB9AFEEC-25EB-456B-B22F-77AA87D7057F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{578355EC-6E46-44E1-BD5C-6F9D1A4A347E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{578355EC-6E46-44E1-BD5C-6F9D1A4A347E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{578355EC-6E46-44E1-BD5C-6F9D1A4A347E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37134017-2E20-4E56-AA0C-22EF788D8514}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37134017-2E20-4E56-AA0C-22EF788D8514}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37134017-2E20-4E56-AA0C-22EF788D8514}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37134017-2E20-4E56-AA0C-22EF788D8514}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
