@@ -8,46 +8,54 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<OrderItem> entity)
         {
-            entity.HasKey(e => e.Id).HasName("orderitems_pkey");
+            entity.HasKey(e => e.Id).HasName("order_items_pkey");
+
             entity.ToTable("orderitems");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.Count)
                 .HasColumnName("count");
+
             entity.Property(e => e.DoneAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("doneat");
+                .HasColumnName("done_at");
+
             entity.Property(e => e.EmployeeId)
-                .HasColumnName("employeeid");
+                .HasColumnName("employee_id");
+
             entity.Property(e => e.OrderId)
-                .HasColumnName("orderid");
+                .HasColumnName("order_id");
+
             entity.Property(e => e.Price)
                 .HasColumnName("price");
+
             entity.Property(e => e.ProductId)
-                .HasColumnName("productid");
+                .HasColumnName("product_id");
+
             entity.Property(e => e.StartedAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("startedat");
+                .HasColumnName("started_at");
 
             entity.HasOne(d => d.Employee)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("orderitems_employeeid_fkey");
+                .HasConstraintName("order_items_employee_id_fkey"); // need to think
 
             entity.HasOne(d => d.Order)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.OrderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("orderitems_orderid_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("order_items_order_id_fkey");
 
             entity.HasOne(d => d.Product)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("orderitems_productid_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("order_items_product_id_fkey");
         }
     }
 }

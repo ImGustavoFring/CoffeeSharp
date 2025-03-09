@@ -9,30 +9,34 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
         public void Configure(EntityTypeBuilder<Employee> entity)
         {
             entity.HasKey(e => e.Id).HasName("employees_pkey");
+
             entity.ToTable("employees");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.BranchId)
-                .HasColumnName("branchid");
+                .HasColumnName("branch_id");
+
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");
+
             entity.Property(e => e.RoleId)
-                .HasColumnName("roleid");
+                .HasColumnName("role_id");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.Employees)
                 .HasForeignKey(d => d.BranchId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("employees_branchid_fkey");
+                .HasConstraintName("employees_branch_id_fkey");
 
             entity.HasOne(d => d.Role)
                 .WithMany(p => p.Employees)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("employees_roleid_fkey");
+                .HasConstraintName("employees_role_id_fkey");
         }
     }
 }

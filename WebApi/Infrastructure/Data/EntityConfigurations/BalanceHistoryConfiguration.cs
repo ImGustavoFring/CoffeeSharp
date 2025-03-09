@@ -8,36 +8,42 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<BalanceHistory> entity)
         {
-            entity.HasKey(e => e.Id).HasName("balancehistories_pkey");
-            entity.ToTable("balancehistories");
+            entity.HasKey(e => e.Id).HasName("balance_histories_pkey");
+
+            entity.ToTable("balance_histories");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("createdat");
+                .HasColumnName("created_at");
+
             entity.Property(e => e.FinishedAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("finishedat");
+                .HasColumnName("finished_at");
+
             entity.Property(e => e.BalanceHistoryStatusId)
-                .HasColumnName("statusid");
+                .HasColumnName("status_id");
+
             entity.Property(e => e.Sum)
                 .HasColumnName("sum");
+
             entity.Property(e => e.ClientId)
-                .HasColumnName("userid");
+                .HasColumnName("client_id");
 
             entity.HasOne(d => d.BalanceHistoryStatus)
                 .WithMany(p => p.BalanceHistories)
                 .HasForeignKey(d => d.BalanceHistoryStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("balancehistories_statusid_fkey");
+                .HasConstraintName("balance_histories_status_id_fkey");
 
             entity.HasOne(d => d.Client)
                 .WithMany(p => p.BalanceHistories)
                 .HasForeignKey(d => d.ClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("balancehistories_userid_fkey");
+                .HasConstraintName("balance_histories_client_id_fkey");
         }
     }
 }

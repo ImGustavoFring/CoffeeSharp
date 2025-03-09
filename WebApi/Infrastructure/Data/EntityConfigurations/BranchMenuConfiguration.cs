@@ -8,30 +8,34 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<BranchMenu> entity)
         {
-            entity.HasKey(e => e.Id).HasName("branchmenus_pkey");
-            entity.ToTable("branchmenus");
+            entity.HasKey(e => e.Id).HasName("branch_menus_pkey");
+
+            entity.ToTable("branch_menus");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.Availability)
                 .HasColumnName("availability");
+
             entity.Property(e => e.BranchId)
-                .HasColumnName("branchid");
+                .HasColumnName("branch_id");
+
             entity.Property(e => e.ProductId)
-                .HasColumnName("productid");
+                .HasColumnName("product_id");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.BranchMenus)
                 .HasForeignKey(d => d.BranchId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("branchmenus_branchid_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("branch_menus_branch_id_fkey");
 
             entity.HasOne(d => d.Product)
                 .WithMany(p => p.BranchMenus)
                 .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("branchmenus_productid_fkey");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("branch_menus_product_id_fkey");
         }
     }
 }

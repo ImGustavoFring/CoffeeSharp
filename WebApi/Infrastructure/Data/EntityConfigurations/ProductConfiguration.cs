@@ -9,18 +9,23 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
         public void Configure(EntityTypeBuilder<Product> entity)
         {
             entity.HasKey(e => e.Id).HasName("products_pkey");
+
             entity.ToTable("products");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.CategoryId)
-                .HasColumnName("categoryid");
+                .HasColumnName("category_id");
+
             entity.Property(e => e.Description)
                 .HasColumnName("description");
+
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");
+
             entity.Property(e => e.Price)
                 .HasColumnName("price");
 
@@ -28,7 +33,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("products_categoryid_fkey");
+                .HasConstraintName("products_category_id_fkey");
         }
     }
 }

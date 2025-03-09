@@ -8,12 +8,14 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<BalanceHistoryStatus> entity)
         {
-            entity.HasKey(e => e.Id).HasName("balancehistorystatuses_pkey");
-            entity.ToTable("balancehistorystatuses");
+            entity.HasKey(e => e.Id).HasName("balance_history_statuses_pkey");
+
+            entity.ToTable("balance_history_statuses");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");

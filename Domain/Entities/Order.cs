@@ -7,7 +7,7 @@ public class Order
 {
     public int Id { get; set; }
 
-    public string? UserNote { get; set; }
+    public string? ClientNote { get; set; }
 
     public int ClientId { get; set; }
 

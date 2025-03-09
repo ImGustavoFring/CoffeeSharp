@@ -8,12 +8,14 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<EmployeeRole> entity)
         {
-            entity.HasKey(e => e.Id).HasName("employeeroles_pkey");
-            entity.ToTable("employeeroles");
+            entity.HasKey(e => e.Id).HasName("employee_roles_pkey");
+
+            entity.ToTable("employee_roles");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");

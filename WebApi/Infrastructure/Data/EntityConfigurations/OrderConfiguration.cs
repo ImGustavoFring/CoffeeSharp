@@ -9,38 +9,45 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
         public void Configure(EntityTypeBuilder<Order> entity)
         {
             entity.HasKey(e => e.Id).HasName("orders_pkey");
+
             entity.ToTable("orders");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("id");
+
             entity.Property(e => e.BranchId)
-                .HasColumnName("branchid");
+                .HasColumnName("branch_id");
+
             entity.Property(e => e.ClientId)
-                .HasColumnName("clientid");
+                .HasColumnName("client_id");
+
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("createdat");
+                .HasColumnName("created_at");
+
             entity.Property(e => e.DoneAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("doneat");
+                .HasColumnName("done_at");
+
             entity.Property(e => e.FinishedAt)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("finishedat");
-            entity.Property(e => e.UserNote)
-                .HasColumnName("usernote");
+                .HasColumnName("finished_at");
+
+            entity.Property(e => e.ClientNote)
+                .HasColumnName("client_note");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.Orders)
                 .HasForeignKey(d => d.BranchId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("orders_branchid_fkey");
+                .HasConstraintName("orders_branch_id_fkey");
 
             entity.HasOne(d => d.Client)
                 .WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ClientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("orders_clientid_fkey");
+                .HasConstraintName("orders_client_id_fkey");
         }
     }
 }
