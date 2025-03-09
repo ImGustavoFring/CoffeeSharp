@@ -5,21 +5,21 @@ namespace WebApi.Logic.Services
 {
     public class BalanceHistoryStatusService : IBalanceHistoryStatusService
     {
-        private readonly IService<BalanceHistoryStatus> _BalanceHistoryStatusService;
+        private readonly IRepository<BalanceHistoryStatus> _balanceHistoryStatusRepository;
 
-        public BalanceHistoryStatusService(IService<BalanceHistoryStatus> repository)
+        public BalanceHistoryStatusService(IRepository<BalanceHistoryStatus> balanceHistoryStatusRepository)
         {
-            _BalanceHistoryStatusService = repository;
+            _balanceHistoryStatusRepository = balanceHistoryStatusRepository;
         }
 
         public async Task<IEnumerable<BalanceHistoryStatus>> GetAllStatusesAsync()
         {
-            return await _BalanceHistoryStatusService.GetAllAsync();
+            return await _balanceHistoryStatusRepository.GetAllAsync();
         }
 
         public async Task<BalanceHistoryStatus> AddStatusAsync(BalanceHistoryStatus status)
         {
-            return await _BalanceHistoryStatusService.AddAsync(status);
+            return await _balanceHistoryStatusRepository.AddAsync(status);
         }
     }
 }

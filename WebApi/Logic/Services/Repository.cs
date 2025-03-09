@@ -4,12 +4,12 @@ using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Logic.Services
 {
-    public class Service<T> : IService<T> where T : class
+    public class Repository<T> : IRepository<T> where T : class
     {
         private readonly CoffeeSharpDbContext _context;
         private readonly DbSet<T> _dbSet;
 
-        public Service(CoffeeSharpDbContext context)
+        public Repository(CoffeeSharpDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

@@ -19,7 +19,7 @@ namespace WebApi
 
             builder.Services.AddControllers();
 
-            builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             builder.Services.AddScoped<IClientService, ClientService>();
             builder.Services.AddScoped<IBalanceHistoryService, BalanceHistoryService>();

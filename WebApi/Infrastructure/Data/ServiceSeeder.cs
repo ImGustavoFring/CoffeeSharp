@@ -7,11 +7,12 @@ namespace WebApi.Infrastructure.Data
     public static class ServiceSeeder
     {
         public static async Task SeedAsync(IServiceProvider services, ILogger logger)
-        {            
+        {
             var clientService = services.GetRequiredService<IClientService>();
             var statusService = services.GetRequiredService<IBalanceHistoryStatusService>();
             var balanceHistoryService = services.GetRequiredService<IBalanceHistoryService>();
-            
+
+            // Seed BalanceHistoryStatuses
             var statuses = await statusService.GetAllStatusesAsync();
             if (!statuses.Any())
             {
@@ -24,8 +25,16 @@ namespace WebApi.Infrastructure.Data
                 await statusService.AddStatusAsync(completedStatus);
 
                 logger.LogInformation("BalanceHistoryStatuses seeded successfully.");
+
+                // Вывод добавленных статусов
+                statuses = await statusService.GetAllStatusesAsync();
+                foreach (var status in statuses)
+                {
+                    logger.LogInformation($"Status: Id = {status.Id}, Name = {status.Name}");
+                }
             }
 
+            // Seed Clients
             var clients = await clientService.GetAllClientsAsync();
             if (!clients.Any())
             {
@@ -38,8 +47,16 @@ namespace WebApi.Infrastructure.Data
                 await clientService.AddClientAsync(client2);
 
                 logger.LogInformation("Clients seeded successfully.");
+
+                // Вывод добавленных клиентов
+                clients = await clientService.GetAllClientsAsync();
+                foreach (var client in clients)
+                {
+                    logger.LogInformation($"Client: Id = {client.Id}, Name = {client.Name}, Balance = {client.Balance}");
+                }
             }
 
+            // Seed BalanceHistories
             var firstClient = (await clientService.GetAllClientsAsync()).FirstOrDefault();
             if (firstClient != null)
             {
@@ -64,6 +81,13 @@ namespace WebApi.Infrastructure.Data
 
                         await balanceHistoryService.AddHistoryAsync(balanceHistory);
                         logger.LogInformation("BalanceHistories seeded successfully.");
+
+                        // Вывод добавленных историй баланса
+                        histories = await balanceHistoryService.GetAllHistoriesAsync();
+                        foreach (var history in histories)
+                        {
+                            logger.LogInformation($"BalanceHistory: Id = {history.Id}, ClientId = {history.ClientId}, Sum = {history.Sum}, CreatedAt = {history.CreatedAt}, FinishedAt = {history.FinishedAt}, StatusId = {history.BalanceHistoryStatusId}");
+                        }
                     }
                 }
             }
