@@ -23,15 +23,15 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("client_id");
 
             entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
 
             entity.Property(e => e.DoneAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("done_at");
 
             entity.Property(e => e.FinishedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("finished_at");
 
             entity.Property(e => e.ClientNote)
