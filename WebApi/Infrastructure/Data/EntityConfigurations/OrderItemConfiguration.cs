@@ -20,7 +20,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("count");
 
             entity.Property(e => e.DoneAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("done_at");
 
             entity.Property(e => e.EmployeeId)
@@ -36,7 +36,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("product_id");
 
             entity.Property(e => e.StartedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("started_at");
 
             entity.HasOne(d => d.Employee)

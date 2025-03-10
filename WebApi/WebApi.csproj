@@ -30,6 +30,5 @@
 
 	<ItemGroup>
 		<Folder Include="Controllers\" />
-		<Folder Include="Logic\Services\Interfaces\" />
 	</ItemGroup>
 </Project>
