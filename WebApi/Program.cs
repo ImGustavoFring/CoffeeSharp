@@ -24,6 +24,16 @@ namespace WebApi
             builder.Services.AddScoped<IClientService, ClientService>();
             builder.Services.AddScoped<IBalanceHistoryService, BalanceHistoryService>();
             builder.Services.AddScoped<IBalanceHistoryStatusService, BalanceHistoryStatusService>();
+            builder.Services.AddScoped<IBranchService, BranchService>();
+            builder.Services.AddScoped<IBranchMenuService, BranchMenuService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddScoped<IEmployeeRoleService, EmployeeRoleService>();
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IRatingService, RatingService>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>

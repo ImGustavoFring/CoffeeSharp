@@ -5,36 +5,36 @@ namespace WebApi.Logic.Services
 {
     public class BalanceHistoryService : IBalanceHistoryService
     {
-        private readonly IRepository<BalanceHistory> _balanceHistoryRepository;
+        private readonly IRepository<BalanceHistory> _repository;
 
-        public BalanceHistoryService(IRepository<BalanceHistory> balanceHistoryRepository)
+        public BalanceHistoryService(IRepository<BalanceHistory> repository)
         {
-            _balanceHistoryRepository = balanceHistoryRepository;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<BalanceHistory>> GetAllHistoriesAsync()
         {
-            return await _balanceHistoryRepository.GetAllAsync();
+            return await _repository.GetAllAsync();
         }
 
         public async Task<BalanceHistory?> GetHistoryByIdAsync(int id)
         {
-            return await _balanceHistoryRepository.GetByIdAsync(id);
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task<BalanceHistory> AddHistoryAsync(BalanceHistory history)
         {
-            return await _balanceHistoryRepository.AddAsync(history);
+            return await _repository.AddAsync(history);
         }
 
         public async Task<BalanceHistory> UpdateHistoryAsync(BalanceHistory history)
         {
-            return await _balanceHistoryRepository.UpdateAsync(history);
+            return await _repository.UpdateAsync(history);
         }
 
         public async Task DeleteHistoryAsync(int id)
         {
-            await _balanceHistoryRepository.DeleteAsync(id);
+            await _repository.DeleteAsync(id);
         }
     }
 }
