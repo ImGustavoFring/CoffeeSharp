@@ -6,13 +6,17 @@ namespace CoffeeSharp.Domain.Entities;
 
 public class Employee
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Name { get; set; } = null!;
 
-    public int RoleId { get; set; }
+    public string UserName { get; set; } = null!;
 
-    public int BranchId { get; set; }
+    public string PasswordHash { get; set; } = null!;
+
+    public long RoleId { get; set; }
+
+    public long BranchId { get; set; }
 
     public virtual Branch Branch { get; set; } = null!;
 

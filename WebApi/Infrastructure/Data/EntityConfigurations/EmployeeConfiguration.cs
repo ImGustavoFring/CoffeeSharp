@@ -23,19 +23,26 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasMaxLength(255)
                 .HasColumnName("name");
 
+            entity.Property(e => e.UserName)
+                .HasMaxLength(255)
+                .HasColumnName("user_name");
+
+            entity.Property(e => e.PasswordHash)
+                .HasColumnName("password_hash");
+
             entity.Property(e => e.RoleId)
                 .HasColumnName("role_id");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.Employees)
                 .HasForeignKey(d => d.BranchId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("employees_branch_id_fkey");
 
             entity.HasOne(d => d.Role)
                 .WithMany(p => p.Employees)
                 .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("employees_role_id_fkey");
         }
     }

@@ -32,7 +32,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(d => d.Category)
                 .WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("products_category_id_fkey");
         }
     }

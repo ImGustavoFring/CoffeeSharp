@@ -22,8 +22,8 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.Property(e => e.BranchId)
                 .HasColumnName("branch_id");
 
-            entity.Property(e => e.ProductId)
-                .HasColumnName("product_id");
+            entity.Property(e => e.MenuPresetItemId)
+                .HasColumnName("menu_preset_item_Id");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.BranchMenus)
@@ -31,11 +31,11 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("branch_menus_branch_id_fkey");
 
-            entity.HasOne(d => d.Product)
+            entity.HasOne(d => d.MenuPresetItem)
                 .WithMany(p => p.BranchMenus)
-                .HasForeignKey(d => d.ProductId)
+                .HasForeignKey(d => d.MenuPresetItemId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("branch_menus_product_id_fkey");
+                .HasConstraintName("branch_menus_menu_preset_item_id_fkey");
         }
     }
 }

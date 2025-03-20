@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Domain.Entities;
 
 namespace CoffeeSharp.Domain.Entities;
 
 
 public class Product
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -14,9 +15,9 @@ public class Product
 
     public decimal Price { get; set; }
 
-    public int CategoryId { get; set; }
+    public long CategoryId { get; set; }
 
-    public virtual ICollection<BranchMenu> BranchMenus { get; set; } = new List<BranchMenu>();
+    public virtual ICollection<MenuPresetItem> MenuPresetItems { get; set; } = new List<MenuPresetItem>();
 
     public virtual Category Category { get; set; } = null!;
 

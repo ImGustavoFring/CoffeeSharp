@@ -9,9 +9,9 @@ namespace WebApi.Infrastructure.Data
         public static async Task SeedAsync(IServiceProvider services, ILogger logger)
         {
             using var scope = services.CreateScope();
+
             var provider = scope.ServiceProvider;
 
-            // Получаем все сервисы
             var clientService = provider.GetRequiredService<IClientService>();
             var statusService = provider.GetRequiredService<IBalanceHistoryStatusService>();
             var balanceHistoryService = provider.GetRequiredService<IBalanceHistoryService>();
@@ -33,11 +33,11 @@ namespace WebApi.Infrastructure.Data
             await SeedCategories(categoryService, logger);
             await SeedProducts(productService, categoryService, logger);
             await SeedEmployees(employeeService, branchService, roleService, logger);
-            await SeedBranchMenus(branchMenuService, branchService, productService, logger);
+            //await SeedBranchMenus(branchMenuService, branchService, productService, logger);
             await SeedRatings(ratingService, logger);
             await SeedOrders(orderService, clientService, branchService, logger);
             await SeedOrderItems(orderItemService, orderService, productService, employeeService, logger);
-            await SeedFeedbacks(feedbackService, orderService, clientService, ratingService, logger);
+            //await SeedFeedbacks(feedbackService, orderService, clientService, ratingService, logger);
             await SeedBalanceHistory(balanceHistoryService, clientService, statusService, logger);
         }
 
@@ -68,7 +68,8 @@ namespace WebApi.Infrastructure.Data
             }
         }
 
-        private static async Task SeedBalanceHistoryStatuses(IBalanceHistoryStatusService service, ILogger logger)
+        private static async Task SeedBalanceHistoryStatuses(IBalanceHistoryStatusService service,
+            ILogger logger)
         {
             if ((await service.GetAllStatusesAsync()).Any()) return;
 
@@ -238,38 +239,38 @@ namespace WebApi.Infrastructure.Data
             }
         }
 
-        private static async Task SeedBranchMenus(
-            IBranchMenuService branchMenuService,
-            IBranchService branchService,
-            IProductService productService,
-            ILogger logger)
-        {
-            if ((await branchMenuService.GetAllBranchMenusAsync()).Any()) return;
+        //private static async Task SeedBranchMenus(
+        //    IBranchMenuService branchMenuService,
+        //    IBranchService branchService,
+        //    IProductService productService,
+        //    ILogger logger)
+        //{
+        //    if ((await branchMenuService.GetAllBranchMenusAsync()).Any()) return;
 
-            logger.LogInformation("Seeding Branch Menus...");
+        //    logger.LogInformation("Seeding Branch Menus...");
 
-            var branches = await branchService.GetAllBranchesAsync();
-            var products = await productService.GetAllProductsAsync();
+        //    var branches = await branchService.GetAllBranchesAsync();
+        //    var products = await productService.GetAllProductsAsync();
 
-            var menus = new List<BranchMenu>
-            {
-                new() {
-                    BranchId = branches.First().Id,
-                    ProductId = products.First().Id,
-                    Availability = true
-                },
-                new() {
-                    BranchId = branches.First().Id,
-                    ProductId = products.Skip(1).First().Id,
-                    Availability = true
-                }
-            };
+        //    var menus = new List<BranchMenu>
+        //    {
+        //        new() {
+        //            BranchId = branches.First().Id,
+        //            ProductId = products.First().Id,
+        //            Availability = true
+        //        },
+        //        new() {
+        //            BranchId = branches.First().Id,
+        //            ProductId = products.Skip(1).First().Id,
+        //            Availability = true
+        //        }
+        //    };
 
-            foreach (var menu in menus)
-            {
-                await branchMenuService.AddBranchMenuAsync(menu);
-            }
-        }
+        //    foreach (var menu in menus)
+        //    {
+        //        await branchMenuService.AddBranchMenuAsync(menu);
+        //    }
+        //}
 
         private static async Task SeedRatings(IRatingService service, ILogger logger)
         {
@@ -351,35 +352,35 @@ namespace WebApi.Infrastructure.Data
             }
         }
 
-        private static async Task SeedFeedbacks(
-            IFeedbackService feedbackService,
-            IOrderService orderService,
-            IClientService clientService,
-            IRatingService ratingService,
-            ILogger logger)
-        {
-            if ((await feedbackService.GetAllFeedbacksAsync()).Any()) return;
+        //private static async Task SeedFeedbacks(
+        //    IFeedbackService feedbackService,
+        //    IOrderService orderService,
+        //    IClientService clientService,
+        //    IRatingService ratingService,
+        //    ILogger logger)
+        //{
+        //    if ((await feedbackService.GetAllFeedbacksAsync()).Any()) return;
 
-            logger.LogInformation("Seeding Feedbacks...");
+        //    logger.LogInformation("Seeding Feedbacks...");
 
-            var orders = await orderService.GetAllOrdersAsync();
-            var clients = await clientService.GetAllClientsAsync();
-            var ratings = await ratingService.GetAllRatingsAsync();
+        //    var orders = await orderService.GetAllOrdersAsync();
+        //    var clients = await clientService.GetAllClientsAsync();
+        //    var ratings = await ratingService.GetAllRatingsAsync();
 
-            var feedbacks = new List<Feedback>
-            {
-                new() {
-                    Content = "Great service!",
-                    OrderId = orders.First().Id,
-                    ClientId = clients.First().Id,
-                    RatingId = ratings.First().Id
-                }
-            };
+        //    var feedbacks = new List<Feedback>
+        //    {
+        //        new() {
+        //            Content = "Great service!",
+        //            OrderId = orders.First().Id,
+        //            ClientId = clients.First().Id,
+        //            RatingId = ratings.First().Id
+        //        }
+        //    };
 
-            foreach (var feedback in feedbacks)
-            {
-                await feedbackService.AddFeedbackAsync(feedback);
-            }
-        }
+        //    foreach (var feedback in feedbacks)
+        //    {
+        //        await feedbackService.AddFeedbackAsync(feedback);
+        //    }
+        //}
     }
 }

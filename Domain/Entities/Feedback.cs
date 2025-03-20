@@ -4,17 +4,13 @@ namespace CoffeeSharp.Domain.Entities;
 
 public class Feedback
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Content { get; set; } = null!;
 
-    public int RatingId { get; set; }
+    public long RatingId { get; set; }
 
-    public int ClientId { get; set; }
-
-    public int OrderId { get; set; }
-
-    public virtual Client Client { get; set; } = null!;
+    public long OrderId { get; set; }
 
     public virtual Order Order { get; set; } = null!;
 

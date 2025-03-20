@@ -16,6 +16,10 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
+            entity.Property(e => e.TelegramId)
+                .ValueGeneratedNever()
+                .HasColumnName("telegram_id");
+
             entity.Property(e => e.Balance)
                 .HasColumnName("balance");
 

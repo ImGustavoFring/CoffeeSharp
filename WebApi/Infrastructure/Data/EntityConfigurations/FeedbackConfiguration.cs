@@ -16,9 +16,6 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.ClientId)
-                .HasColumnName("client_id");
-
             entity.Property(e => e.Content)
                 .HasColumnName("content");
 
@@ -28,16 +25,10 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.Property(e => e.RatingId)
                 .HasColumnName("rating_id");
 
-            entity.HasOne(d => d.Client)
-                .WithMany(p => p.Feedbacks)
-                .HasForeignKey(d => d.ClientId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("feedbacks_client_id_fkey");
-
             entity.HasOne(d => d.Rating)
                 .WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.RatingId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("feedbacks_rating_id_fkey");
 
             entity.HasOne(d => d.Order)

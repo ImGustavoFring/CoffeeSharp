@@ -6,11 +6,11 @@ namespace CoffeeSharp.Domain.Entities;
 
 public class Rating
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Name { get; set; } = null!;
 
-    public int Value { get; set; }
+    public long Value { get; set; }
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }

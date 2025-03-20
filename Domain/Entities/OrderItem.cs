@@ -6,21 +6,21 @@ namespace CoffeeSharp.Domain.Entities;
 
 public class OrderItem
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
-    public int OrderId { get; set; }
+    public long OrderId { get; set; }
 
-    public int ProductId { get; set; }
+    public long ProductId { get; set; }
 
-    public int EmployeeId { get; set; }
+    public long EmployeeId { get; set; }
 
     public decimal Price { get; set; }
 
-    public int Count { get; set; }
+    public long Count { get; set; }
 
-    public DateTime StartedAt { get; set; }
+    public DateTime? StartedAt { get; set; } = null;
 
-    public DateTime? DoneAt { get; set; }
+    public DateTime? DoneAt { get; set; } = null;
 
     public virtual Employee Employee { get; set; } = null!;
 
