@@ -34,6 +34,9 @@ namespace WebApi
             builder.Services.AddScoped<IOrderItemService, OrderItemService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IRatingService, RatingService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IMenuPresetService, MenuPresetService>();
+            builder.Services.AddScoped<IMenuPresetItemService, MenuPresetItemService>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
