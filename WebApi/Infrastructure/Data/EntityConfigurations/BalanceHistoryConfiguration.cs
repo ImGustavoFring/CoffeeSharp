@@ -36,13 +36,13 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(d => d.BalanceHistoryStatus)
                 .WithMany(p => p.BalanceHistories)
                 .HasForeignKey(d => d.BalanceHistoryStatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("balance_histories_status_id_fkey");
 
             entity.HasOne(d => d.Client)
                 .WithMany(p => p.BalanceHistories)
                 .HasForeignKey(d => d.ClientId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("balance_histories_client_id_fkey");
         }
     }

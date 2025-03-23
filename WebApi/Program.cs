@@ -53,7 +53,7 @@ namespace WebApi
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-                await ServiceSeeder.SeedAsync(serviceProvider, logger);
+                //await ServiceSeeder.SeedAsync(serviceProvider, logger); // forcing error so far
             }
 
             app.UseSwagger();

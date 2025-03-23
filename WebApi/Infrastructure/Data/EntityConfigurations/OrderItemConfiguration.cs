@@ -10,7 +10,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
         {
             entity.HasKey(e => e.Id).HasName("order_items_pkey");
 
-            entity.ToTable("orderitems");
+            entity.ToTable("order_items");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
@@ -42,8 +42,8 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(d => d.Employee)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.EmployeeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("order_items_employee_id_fkey"); // need to think
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("order_items_employee_id_fkey");
 
             entity.HasOne(d => d.Order)
                 .WithMany(p => p.OrderItems)
@@ -54,7 +54,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(d => d.Product)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("order_items_product_id_fkey");
         }
     }

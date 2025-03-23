@@ -15,19 +15,16 @@ namespace WebApi.Logic.Services
             _dbSet = _context.Set<T>();
         }
 
-        // Получение всех записей
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
 
-        // Получение записи по id
         public async Task<T?> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }
 
-        // Добавление новой записи
         public async Task<T> AddAsync(T entity)
         {
             _dbSet.Add(entity);
@@ -35,7 +32,6 @@ namespace WebApi.Logic.Services
             return entity;
         }
 
-        // Обновление существующей записи
         public async Task<T> UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
@@ -43,7 +39,6 @@ namespace WebApi.Logic.Services
             return entity;
         }
 
-        // Удаление записи по id
         public async Task DeleteAsync(int id)
         {
             var entity = await GetByIdAsync(id);

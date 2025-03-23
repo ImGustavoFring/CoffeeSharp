@@ -34,19 +34,23 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("finished_at");
 
+            entity.Property(e => e.ExpectedIn)
+                .HasColumnType("timestamp with time zone")
+                .HasColumnName("expected_in");
+
             entity.Property(e => e.ClientNote)
                 .HasColumnName("client_note");
 
             entity.HasOne(d => d.Branch)
                 .WithMany(p => p.Orders)
                 .HasForeignKey(d => d.BranchId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("orders_branch_id_fkey");
 
             entity.HasOne(d => d.Client)
                 .WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ClientId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("orders_client_id_fkey");
         }
     }

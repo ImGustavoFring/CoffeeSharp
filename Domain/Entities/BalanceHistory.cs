@@ -5,17 +5,17 @@ namespace CoffeeSharp.Domain.Entities;
 
 public class BalanceHistory
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
-    public int ClientId { get; set; }
+    public long ClientId { get; set; }
 
     public decimal Sum { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public DateTime? FinishedAt { get; set; }
+    public DateTime? FinishedAt { get; set; } = null;
 
-    public int BalanceHistoryStatusId { get; set; }
+    public long BalanceHistoryStatusId { get; set; }
 
     public virtual BalanceHistoryStatus BalanceHistoryStatus { get; set; } = null!;
 
