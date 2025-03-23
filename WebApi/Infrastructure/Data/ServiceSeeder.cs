@@ -1,386 +1,347 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using CoffeeSharp.WebApi.Infrastructure.Data;
+using Domain.Entities;
 using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Infrastructure.Data
 {
-    public static class ServiceSeeder
+    public class ServiceSeeder
     {
-        public static async Task SeedAsync(IServiceProvider services, ILogger logger)
-        {
-            using var scope = services.CreateScope();
+        private readonly ICategoryService _categoryService;
+        private readonly IEmployeeRoleService _employeeRoleService;
+        private readonly IRatingService _ratingService;
+        private readonly IBalanceHistoryStatusService _balanceHistoryStatusService;
+        private readonly IAdminService _adminService;
+        private readonly IBranchService _branchService;
+        private readonly IClientService _clientService;
+        private readonly IMenuPresetService _menuPresetService;
+        private readonly IProductService _productService;
+        private readonly IMenuPresetItemService _menuPresetItemService;
+        private readonly IEmployeeService _employeeService;
+        private readonly IBranchMenuService _branchMenuService;
+        private readonly IOrderService _orderService;
+        private readonly IOrderItemService _orderItemService;
+        private readonly IBalanceHistoryService _balanceHistoryService;
+        private readonly IFeedbackService _feedbackService;
+        private readonly ILogger<ServiceSeeder> _logger;
 
-            var provider = scope.ServiceProvider;
-
-            var clientService = provider.GetRequiredService<IClientService>();
-            var statusService = provider.GetRequiredService<IBalanceHistoryStatusService>();
-            var balanceHistoryService = provider.GetRequiredService<IBalanceHistoryService>();
-            var branchService = provider.GetRequiredService<IBranchService>();
-            var branchMenuService = provider.GetRequiredService<IBranchMenuService>();
-            var categoryService = provider.GetRequiredService<ICategoryService>();
-            var employeeService = provider.GetRequiredService<IEmployeeService>();
-            var roleService = provider.GetRequiredService<IEmployeeRoleService>();
-            var feedbackService = provider.GetRequiredService<IFeedbackService>();
-            var orderService = provider.GetRequiredService<IOrderService>();
-            var orderItemService = provider.GetRequiredService<IOrderItemService>();
-            var productService = provider.GetRequiredService<IProductService>();
-            var ratingService = provider.GetRequiredService<IRatingService>();
-
-            await SeedBalanceHistoryStatuses(statusService, logger);
-            await SeedClients(clientService, logger);
-            await SeedBranches(branchService, logger);
-            await SeedEmployeeRoles(roleService, logger);
-            await SeedCategories(categoryService, logger);
-            await SeedProducts(productService, categoryService, logger);
-            await SeedEmployees(employeeService, branchService, roleService, logger);
-            //await SeedBranchMenus(branchMenuService, branchService, productService, logger);
-            await SeedRatings(ratingService, logger);
-            await SeedOrders(orderService, clientService, branchService, logger);
-            await SeedOrderItems(orderItemService, orderService, productService, employeeService, logger);
-            //await SeedFeedbacks(feedbackService, orderService, clientService, ratingService, logger);
-            await SeedBalanceHistory(balanceHistoryService, clientService, statusService, logger);
-        }
-
-
-        private static async Task SeedBalanceHistory(
-            IBalanceHistoryService balanceHistoryService,
-            IClientService clientService,
-            IBalanceHistoryStatusService statusService,
-            ILogger logger)
-        {
-            if ((await balanceHistoryService.GetAllHistoriesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Balance Histories...");
-
-            var client = (await clientService.GetAllClientsAsync()).First();
-            var status = (await statusService.GetAllStatusesAsync()).First();
-
-            var histories = new List<BalanceHistory>
-            {
-                new() { ClientId = client.Id, Sum = 100m, CreatedAt = DateTime.UtcNow, BalanceHistoryStatusId = status.Id },
-                new() { ClientId = client.Id, Sum = 200m, CreatedAt = DateTime.UtcNow.AddMinutes(5), BalanceHistoryStatusId = status.Id }
-            };
-
-            foreach (var history in histories)
-            {
-                await balanceHistoryService.AddHistoryAsync(history);
-                logger.LogInformation($"Seeded BalanceHistory with Sum: {history.Sum}");
-            }
-        }
-
-        private static async Task SeedBalanceHistoryStatuses(IBalanceHistoryStatusService service,
-            ILogger logger)
-        {
-            if ((await service.GetAllStatusesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Balance History Statuses...");
-
-            var statuses = new List<BalanceHistoryStatus>
-            {
-                new() { Name = "Pending" },
-                new() { Name = "Completed" },
-                new() { Name = "Cancelled" }
-            };
-
-            foreach (var status in statuses)
-            {
-                await service.AddStatusAsync(status);
-            }
-        }
-
-        private static async Task SeedClients(IClientService service, ILogger logger)
-        {
-            if ((await service.GetAllClientsAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Clients...");
-
-            var clients = new List<Client>
-            {
-                new() { Name = "John Doe", Balance = 500m },
-                new() { Name = "Jane Smith", Balance = 1000m }
-            };
-
-            foreach (var client in clients)
-            {
-                await service.AddClientAsync(client);
-            }
-        }
-
-        private static async Task SeedBranches(IBranchService service, ILogger logger)
-        {
-            if ((await service.GetAllBranchesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Branches...");
-
-            var branches = new List<Branch>
-            {
-                new() { Name = "Central Coffee", Address = "Main Street 1" },
-                new() { Name = "Downtown Coffee", Address = "Business District 5" }
-            };
-
-            foreach (var branch in branches)
-            {
-                await service.AddBranchAsync(branch);
-            }
-        }
-
-        private static async Task SeedEmployeeRoles(IEmployeeRoleService service, ILogger logger)
-        {
-            if ((await service.GetAllRolesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Employee Roles...");
-
-            var roles = new List<EmployeeRole>
-            {
-                new() { Name = "Manager" },
-                new() { Name = "Barista" },
-                new() { Name = "Cashier" }
-            };
-
-            foreach (var role in roles)
-            {
-                await service.AddRoleAsync(role);
-            }
-        }
-
-        private static async Task SeedCategories(ICategoryService service, ILogger logger)
-        {
-            if ((await service.GetAllCategoriesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Categories...");
-
-            var categories = new List<Category>
-            {
-                new() { Name = "Coffee" },
-                new() { Name = "Tea" },
-                new() { Name = "Desserts" }
-            };
-
-            foreach (var category in categories)
-            {
-                await service.AddCategoryAsync(category);
-            }
-        }
-
-        private static async Task SeedProducts(
-            IProductService productService,
+        public ServiceSeeder(
             ICategoryService categoryService,
-            ILogger logger)
-        {
-            if ((await productService.GetAllProductsAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Products...");
-
-            var categories = await categoryService.GetAllCategoriesAsync();
-            var coffeeCategory = categories.First(c => c.Name == "Coffee");
-            var teaCategory = categories.First(c => c.Name == "Tea");
-            var dessertsCategory = categories.First(c => c.Name == "Desserts");
-
-            var products = new List<Product>
-            {
-                new() {
-                    Name = "Espresso",
-                    Price = 3.50m,
-                    CategoryId = coffeeCategory.Id
-                },
-                new() {
-                    Name = "Cappuccino",
-                    Price = 4.50m,
-                    CategoryId = coffeeCategory.Id
-                },
-                new() {
-                    Name = "Green Tea",
-                    Price = 2.50m,
-                    CategoryId = teaCategory.Id
-                },
-                new() {
-                    Name = "Cheesecake",
-                    Price = 5.00m,
-                    CategoryId = dessertsCategory.Id
-                }
-            };
-
-            foreach (var product in products)
-            {
-                await productService.AddProductAsync(product);
-            }
-        }
-
-        private static async Task SeedEmployees(
-            IEmployeeService employeeService,
+            IEmployeeRoleService employeeRoleService,
+            IRatingService ratingService,
+            IBalanceHistoryStatusService balanceHistoryStatusService,
+            IAdminService adminService,
             IBranchService branchService,
-            IEmployeeRoleService roleService,
-            ILogger logger)
-        {
-            if ((await employeeService.GetAllEmployeesAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Employees...");
-
-            var branches = await branchService.GetAllBranchesAsync();
-            var roles = await roleService.GetAllRolesAsync();
-
-            var employees = new List<Employee>
-            {
-                new() {
-                    Name = "Mike Johnson",
-                    BranchId = branches.First().Id,
-                    RoleId = roles.First(r => r.Name == "Manager").Id
-                },
-                new() {
-                    Name = "Sarah Wilson",
-                    BranchId = branches.First().Id,
-                    RoleId = roles.First(r => r.Name == "Barista").Id
-                }
-            };
-
-            foreach (var employee in employees)
-            {
-                await employeeService.AddEmployeeAsync(employee);
-            }
-        }
-
-        //private static async Task SeedBranchMenus(
-        //    IBranchMenuService branchMenuService,
-        //    IBranchService branchService,
-        //    IProductService productService,
-        //    ILogger logger)
-        //{
-        //    if ((await branchMenuService.GetAllBranchMenusAsync()).Any()) return;
-
-        //    logger.LogInformation("Seeding Branch Menus...");
-
-        //    var branches = await branchService.GetAllBranchesAsync();
-        //    var products = await productService.GetAllProductsAsync();
-
-        //    var menus = new List<BranchMenu>
-        //    {
-        //        new() {
-        //            BranchId = branches.First().Id,
-        //            ProductId = products.First().Id,
-        //            Availability = true
-        //        },
-        //        new() {
-        //            BranchId = branches.First().Id,
-        //            ProductId = products.Skip(1).First().Id,
-        //            Availability = true
-        //        }
-        //    };
-
-        //    foreach (var menu in menus)
-        //    {
-        //        await branchMenuService.AddBranchMenuAsync(menu);
-        //    }
-        //}
-
-        private static async Task SeedRatings(IRatingService service, ILogger logger)
-        {
-            if ((await service.GetAllRatingsAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Ratings...");
-
-            var ratings = new List<Rating>
-            {
-                new() { Name = "Excellent", Value = 5 },
-                new() { Name = "Good", Value = 4 },
-                new() { Name = "Average", Value = 3 }
-            };
-
-            foreach (var rating in ratings)
-            {
-                await service.AddRatingAsync(rating);
-            }
-        }
-
-        private static async Task SeedOrders(
-            IOrderService orderService,
             IClientService clientService,
-            IBranchService branchService,
-            ILogger logger)
-        {
-            if ((await orderService.GetAllOrdersAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Orders...");
-
-            var clients = await clientService.GetAllClientsAsync();
-            var branches = await branchService.GetAllBranchesAsync();
-
-            var orders = new List<Order>
-            {
-                new() {
-                    ClientId = clients.First().Id,
-                    BranchId = branches.First().Id,
-                    CreatedAt = DateTime.UtcNow
-                }
-            };
-
-            foreach (var order in orders)
-            {
-                await orderService.AddOrderAsync(order);
-            }
-        }
-
-        private static async Task SeedOrderItems(
-            IOrderItemService orderItemService,
-            IOrderService orderService,
+            IMenuPresetService menuPresetService,
             IProductService productService,
+            IMenuPresetItemService menuPresetItemService,
             IEmployeeService employeeService,
-            ILogger logger)
+            IBranchMenuService branchMenuService,
+            IOrderService orderService,
+            IOrderItemService orderItemService,
+            IBalanceHistoryService balanceHistoryService,
+            IFeedbackService feedbackService,
+            ILogger<ServiceSeeder> logger)
         {
-            if ((await orderItemService.GetAllOrderItemsAsync()).Any()) return;
-
-            logger.LogInformation("Seeding Order Items...");
-
-            var orders = await orderService.GetAllOrdersAsync();
-            var products = await productService.GetAllProductsAsync();
-            var employees = await employeeService.GetAllEmployeesAsync();
-
-            var orderItems = new List<OrderItem>
-            {
-                new() {
-                    OrderId = orders.First().Id,
-                    ProductId = products.First().Id,
-                    EmployeeId = employees.First().Id,
-                    Price = products.First().Price,
-                    Count = 2,
-                    StartedAt = DateTime.UtcNow
-                }
-            };
-
-            foreach (var item in orderItems)
-            {
-                await orderItemService.AddOrderItemAsync(item);
-            }
+            _categoryService = categoryService;
+            _employeeRoleService = employeeRoleService;
+            _ratingService = ratingService;
+            _balanceHistoryStatusService = balanceHistoryStatusService;
+            _adminService = adminService;
+            _branchService = branchService;
+            _clientService = clientService;
+            _menuPresetService = menuPresetService;
+            _productService = productService;
+            _menuPresetItemService = menuPresetItemService;
+            _employeeService = employeeService;
+            _branchMenuService = branchMenuService;
+            _orderService = orderService;
+            _orderItemService = orderItemService;
+            _balanceHistoryService = balanceHistoryService;
+            _feedbackService = feedbackService;
+            _logger = logger;
         }
 
-        //private static async Task SeedFeedbacks(
-        //    IFeedbackService feedbackService,
-        //    IOrderService orderService,
-        //    IClientService clientService,
-        //    IRatingService ratingService,
-        //    ILogger logger)
-        //{
-        //    if ((await feedbackService.GetAllFeedbacksAsync()).Any()) return;
+        public async Task SeedAsync()
+        {
+            _logger.LogInformation("Starting seeding process.");
 
-        //    logger.LogInformation("Seeding Feedbacks...");
+            var categoryCoffee = await _categoryService.AddCategoryAsync(new Category { Name = "Coffee" });
+            var categoryTea = await _categoryService.AddCategoryAsync(new Category { Name = "Tea" });
+            _logger.LogInformation("Categories created successfully.");
 
-        //    var orders = await orderService.GetAllOrdersAsync();
-        //    var clients = await clientService.GetAllClientsAsync();
-        //    var ratings = await ratingService.GetAllRatingsAsync();
+            var roleManager = await _employeeRoleService.AddRoleAsync(new EmployeeRole { Name = "Manager" });
+            var roleStaff = await _employeeRoleService.AddRoleAsync(new EmployeeRole { Name = "Staff" });
+            _logger.LogInformation("Employee roles created successfully.");
 
-        //    var feedbacks = new List<Feedback>
-        //    {
-        //        new() {
-        //            Content = "Great service!",
-        //            OrderId = orders.First().Id,
-        //            ClientId = clients.First().Id,
-        //            RatingId = ratings.First().Id
-        //        }
-        //    };
+            var ratingGood = await _ratingService.AddRatingAsync(new Rating { Name = "Good", Value = 5 });
+            var ratingAverage = await _ratingService.AddRatingAsync(new Rating { Name = "Average", Value = 3 });
+            _logger.LogInformation("Ratings created successfully.");
 
-        //    foreach (var feedback in feedbacks)
-        //    {
-        //        await feedbackService.AddFeedbackAsync(feedback);
-        //    }
-        //}
+            var statusPending = await _balanceHistoryStatusService.AddStatusAsync(new BalanceHistoryStatus { Name = "Pending" });
+            var statusCompleted = await _balanceHistoryStatusService.AddStatusAsync(new BalanceHistoryStatus { Name = "Completed" });
+            _logger.LogInformation("Balance history statuses created successfully.");
+
+            var admin = await _adminService.AddAdminAsync(new Admin
+            {
+                UserName = "admin",
+                PasswordHash = "hashed_password"
+            });
+            _logger.LogInformation("Admin created successfully.");
+
+            var branchMain = await _branchService.AddBranchAsync(new Branch
+            {
+                Name = "Main Branch",
+                Address = "123 Main St"
+            });
+            var branchSecondary = await _branchService.AddBranchAsync(new Branch
+            {
+                Name = "Secondary Branch",
+                Address = "456 Secondary St"
+            });
+            _logger.LogInformation("Branches created successfully.");
+
+            var clientJohn = await _clientService.AddClientAsync(new Client
+            {
+                TelegramId = "123456789",
+                Name = "John Doe",
+                Balance = 100m
+            });
+            var clientJane = await _clientService.AddClientAsync(new Client
+            {
+                TelegramId = "987654321",
+                Name = "Jane Smith",
+                Balance = 150m
+            });
+            _logger.LogInformation("Clients created successfully.");
+
+            var menuPresetMorning = await _menuPresetService.AddMenuPresetAsync(new MenuPreset
+            {
+                Name = "Morning Set",
+                Description = "Ideal for mornings"
+            });
+            var menuPresetEvening = await _menuPresetService.AddMenuPresetAsync(new MenuPreset
+            {
+                Name = "Evening Set",
+                Description = "Perfect for evenings"
+            });
+            _logger.LogInformation("Menu presets created successfully.");
+
+            var productEspresso = await _productService.AddProductAsync(new Product
+            {
+                Name = "Espresso",
+                Description = "Strong coffee shot",
+                Price = 2.5m,
+                CategoryId = categoryCoffee.Id
+            });
+            var productLatte = await _productService.AddProductAsync(new Product
+            {
+                Name = "Latte",
+                Description = "Coffee with milk",
+                Price = 3.5m,
+                CategoryId = categoryCoffee.Id
+            });
+            var productGreenTea = await _productService.AddProductAsync(new Product
+            {
+                Name = "Green Tea",
+                Description = "Refreshing green tea",
+                Price = 1.8m,
+                CategoryId = categoryTea.Id
+            });
+            _logger.LogInformation("Products created successfully.");
+
+            var menuPresetItemEspresso = await _menuPresetItemService.AddMenuPresetItemAsync(new MenuPresetItem
+            {
+                ProductId = productEspresso.Id,
+                MenuPresetId = menuPresetMorning.Id
+            });
+            var menuPresetItemLatte = await _menuPresetItemService.AddMenuPresetItemAsync(new MenuPresetItem
+            {
+                ProductId = productLatte.Id,
+                MenuPresetId = menuPresetEvening.Id
+            });
+            _logger.LogInformation("Menu preset items created successfully.");
+
+            var employeeAlice = await _employeeService.AddEmployeeAsync(new Employee
+            {
+                Name = "Alice",
+                UserName = "alice",
+                PasswordHash = "hashed_alice",
+                RoleId = roleManager.Id,
+                BranchId = branchMain.Id
+            });
+            var employeeBob = await _employeeService.AddEmployeeAsync(new Employee
+            {
+                Name = "Bob",
+                UserName = "bob",
+                PasswordHash = "hashed_bob",
+                RoleId = roleStaff.Id,
+                BranchId = branchSecondary.Id
+            });
+            _logger.LogInformation("Employees created successfully.");
+
+            await _branchMenuService.AddBranchMenuAsync(new BranchMenu
+            {
+                MenuPresetItemId = menuPresetItemEspresso.Id,
+                BranchId = branchMain.Id,
+                Availability = true
+            });
+            await _branchMenuService.AddBranchMenuAsync(new BranchMenu
+            {
+                MenuPresetItemId = menuPresetItemLatte.Id,
+                BranchId = branchSecondary.Id,
+                Availability = true
+            });
+            _logger.LogInformation("Branch menus created successfully.");
+
+            var order1 = await _orderService.AddOrderAsync(new Order
+            {
+                ClientId = clientJohn.Id,
+                BranchId = branchMain.Id,
+                CreatedAt = DateTime.UtcNow,
+                ExpectedIn = DateTime.UtcNow.AddMinutes(30),
+                ClientNote = "Please deliver quickly."
+            });
+            var order2 = await _orderService.AddOrderAsync(new Order
+            {
+                ClientId = clientJane.Id,
+                BranchId = branchSecondary.Id,
+                CreatedAt = DateTime.UtcNow,
+                ExpectedIn = DateTime.UtcNow.AddMinutes(45),
+                ClientNote = "Extra sugar, please."
+            });
+            _logger.LogInformation("Orders created successfully.");
+
+            await _orderItemService.AddOrderItemAsync(new OrderItem
+            {
+                OrderId = order1.Id,
+                ProductId = productEspresso.Id,
+                EmployeeId = employeeAlice.Id,
+                Price = productEspresso.Price,
+                Count = 2,
+                StartedAt = DateTime.UtcNow,
+                DoneAt = DateTime.UtcNow.AddMinutes(5)
+            });
+            await _orderItemService.AddOrderItemAsync(new OrderItem
+            {
+                OrderId = order2.Id,
+                ProductId = productGreenTea.Id,
+                Price = productGreenTea.Price,
+                Count = 1,
+                StartedAt = DateTime.UtcNow,
+                DoneAt = DateTime.UtcNow.AddMinutes(7)
+            });
+            _logger.LogInformation("Order items created successfully.");
+
+            await _balanceHistoryService.AddHistoryAsync(new BalanceHistory
+            {
+                ClientId = clientJohn.Id,
+                Sum = 50m,
+                CreatedAt = DateTime.UtcNow,
+                FinishedAt = DateTime.UtcNow.AddMinutes(15),
+                BalanceHistoryStatusId = statusCompleted.Id
+            });
+            await _balanceHistoryService.AddHistoryAsync(new BalanceHistory
+            {
+                ClientId = clientJane.Id,
+                Sum = -20m,
+                CreatedAt = DateTime.UtcNow,
+                FinishedAt = DateTime.UtcNow.AddMinutes(10),
+                BalanceHistoryStatusId = statusPending.Id
+            });
+            _logger.LogInformation("Balance histories created successfully.");
+
+            await _feedbackService.AddFeedbackAsync(new Feedback
+            {
+                Content = "Great service!",
+                RatingId = ratingGood.Id,
+                OrderId = order1.Id
+            });
+            await _feedbackService.AddFeedbackAsync(new Feedback
+            {
+                Content = "Average experience.",
+                RatingId = ratingAverage.Id,
+                OrderId = order2.Id
+            });
+            _logger.LogInformation("Feedbacks created successfully.");
+
+            _logger.LogInformation("Displaying contents of all tables:");
+
+            var allCategories = await _categoryService.GetAllCategoriesAsync();
+            foreach (var category in allCategories)
+                _logger.LogInformation("Category: {Id} - {Name}", category.Id, category.Name);
+
+            var allEmployeeRoles = await _employeeRoleService.GetAllRolesAsync();
+            foreach (var role in allEmployeeRoles)
+                _logger.LogInformation("EmployeeRole: {Id} - {Name}", role.Id, role.Name);
+
+            var allRatings = await _ratingService.GetAllRatingsAsync();
+            foreach (var rating in allRatings)
+                _logger.LogInformation("Rating: {Id} - {Name} ({Value})", rating.Id, rating.Name, rating.Value);
+
+            var allBalanceHistoryStatuses = await _balanceHistoryStatusService.GetAllStatusesAsync();
+            foreach (var status in allBalanceHistoryStatuses)
+                _logger.LogInformation("BalanceHistoryStatus: {Id} - {Name}", status.Id, status.Name);
+
+            var allAdmins = await _adminService.GetAllAdminsAsync();
+            foreach (var a in allAdmins)
+                _logger.LogInformation("Admin: {Id} - {UserName}", a.Id, a.UserName);
+
+            var allBranches = await _branchService.GetAllBranchesAsync();
+            foreach (var branch in allBranches)
+                _logger.LogInformation("Branch: {Id} - {Name} ({Address})", branch.Id, branch.Name, branch.Address);
+
+            var allClients = await _clientService.GetAllClientsAsync();
+            foreach (var client in allClients)
+                _logger.LogInformation("Client: {Id} - {Name} (TelegramId: {TelegramId}, Balance: {Balance})",
+                    client.Id, client.Name, client.TelegramId, client.Balance);
+
+            var allMenuPresets = await _menuPresetService.GetAllMenuPresetsAsync();
+            foreach (var preset in allMenuPresets)
+                _logger.LogInformation("MenuPreset: {Id} - {Name} ({Description})", preset.Id, preset.Name, preset.Description);
+
+            var allProducts = await _productService.GetAllProductsAsync();
+            foreach (var product in allProducts)
+                _logger.LogInformation("Product: {Id} - {Name} ({Description}, Price: {Price}, CategoryId: {CategoryId})",
+                    product.Id, product.Name, product.Description, product.Price, product.CategoryId);
+
+            var allMenuPresetItems = await _menuPresetItemService.GetAllMenuPresetItemsAsync();
+            foreach (var item in allMenuPresetItems)
+                _logger.LogInformation("MenuPresetItem: {Id} - ProductId: {ProductId}, MenuPresetId: {MenuPresetId}",
+                    item.Id, item.ProductId, item.MenuPresetId);
+
+            var allEmployees = await _employeeService.GetAllEmployeesAsync();
+            foreach (var emp in allEmployees)
+                _logger.LogInformation("Employee: {Id} - {Name} ({UserName}, RoleId: {RoleId}, BranchId: {BranchId})",
+                    emp.Id, emp.Name, emp.UserName, emp.RoleId, emp.BranchId);
+
+            var allBranchMenus = await _branchMenuService.GetAllBranchMenusAsync();
+            foreach (var bm in allBranchMenus)
+                _logger.LogInformation("BranchMenu: {Id} - MenuPresetItemId: {MenuPresetItemId}, BranchId: {BranchId}, Availability: {Availability}",
+                    bm.Id, bm.MenuPresetItemId, bm.BranchId, bm.Availability);
+
+            var allOrders = await _orderService.GetAllOrdersAsync();
+            foreach (var order in allOrders)
+                _logger.LogInformation("Order: {Id} - ClientId: {ClientId}, BranchId: {BranchId}, CreatedAt: {CreatedAt}",
+                    order.Id, order.ClientId, order.BranchId, order.CreatedAt);
+
+            var allOrderItems = await _orderItemService.GetAllOrderItemsAsync();
+            foreach (var orderItem in allOrderItems)
+                _logger.LogInformation("OrderItem: {Id} - OrderId: {OrderId}, ProductId: {ProductId}, EmployeeId: {EmployeeId}, Count: {Count}",
+                    orderItem.Id, orderItem.OrderId, orderItem.ProductId, orderItem.EmployeeId, orderItem.Count);
+
+            var allBalanceHistories = await _balanceHistoryService.GetAllHistoriesAsync();
+            foreach (var bh in allBalanceHistories)
+                _logger.LogInformation("BalanceHistory: {Id} - ClientId: {ClientId}, Sum: {Sum}, StatusId: {StatusId}",
+                    bh.Id, bh.ClientId, bh.Sum, bh.BalanceHistoryStatusId);
+
+            var allFeedbacks = await _feedbackService.GetAllFeedbacksAsync();
+            foreach (var feedback in allFeedbacks)
+                _logger.LogInformation("Feedback: {Id} - {Content} (RatingId: {RatingId}, OrderId: {OrderId})",
+                    feedback.Id, feedback.Content, feedback.RatingId, feedback.OrderId);
+
+            _logger.LogInformation("Seeding process completed successfully.");
+        }
     }
 }

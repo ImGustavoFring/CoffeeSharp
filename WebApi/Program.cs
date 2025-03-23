@@ -34,6 +34,11 @@ namespace WebApi
             builder.Services.AddScoped<IOrderItemService, OrderItemService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IRatingService, RatingService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IMenuPresetService, MenuPresetService>();
+            builder.Services.AddScoped<IMenuPresetItemService, MenuPresetItemService>();
+
+            builder.Services.AddScoped<ServiceSeeder>(); //Temp
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -46,14 +51,14 @@ namespace WebApi
             using (var scope = app.Services.CreateScope())
             {
                 var serviceProvider = scope.ServiceProvider;
-                var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
                 var dbContext = scope.ServiceProvider.GetRequiredService<CoffeeSharpDbContext>();
 
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-                //await ServiceSeeder.SeedAsync(serviceProvider, logger); // forcing error so far
+                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); //Temp
+                await seeder.SeedAsync();
             }
 
             app.UseSwagger();
