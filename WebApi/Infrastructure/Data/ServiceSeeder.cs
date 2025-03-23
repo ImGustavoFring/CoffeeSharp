@@ -227,7 +227,6 @@ namespace WebApi.Infrastructure.Data
             {
                 OrderId = order2.Id,
                 ProductId = productGreenTea.Id,
-                EmployeeId = employeeBob.Id,
                 Price = productGreenTea.Price,
                 Count = 1,
                 StartedAt = DateTime.UtcNow,
