@@ -83,10 +83,10 @@ namespace WebApi.Infrastructure.Data
             var statusCompleted = await _balanceHistoryStatusService.AddStatusAsync(new BalanceHistoryStatus { Name = "Completed" });
             _logger.LogInformation("Balance history statuses created successfully.");
 
-            var admin = await _adminService.AddAdminAsync(new Admin
+            var admin = await _adminService.AddAdminWithHashedPasswordAsync(new Admin
             {
                 UserName = "admin",
-                PasswordHash = "hashed_password"
+                PasswordHash = "admin"
             });
             _logger.LogInformation("Admin created successfully.");
 

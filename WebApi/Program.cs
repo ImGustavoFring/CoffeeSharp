@@ -5,6 +5,11 @@ using WebApi.Logic.Services.Interfaces;
 using WebApi.Logic.Services;
 using WebApi.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using WebApi.Logic.Features.Interfaces;
+using WebApi.Logic.Features;
 
 namespace WebApi
 {
@@ -40,10 +45,59 @@ namespace WebApi
 
             builder.Services.AddScoped<ServiceSeeder>(); //Temp
 
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CoffeeSharp API", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
+
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+                    };
+                });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy =>
+                policy.RequireClaim("user_type", "admin"));
+
+                options.AddPolicy("ChefOnly", policy =>
+                policy.RequireClaim("user_type", "chef"));
             });
 
             var app = builder.Build();
@@ -70,6 +124,9 @@ namespace WebApi
             app.MapGet("/", () => Results.Redirect("/swagger"));
 
             app.MapControllers();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.Run();
         }
