@@ -36,5 +36,17 @@ namespace WebApi.Logic.Services
         {
             await _repository.DeleteAsync(id);
         }
+
+        public async Task<Admin?> GetAdminByUsernameAsync(string username)
+        {
+            var admins = await _repository.GetAllAsync();
+            return admins.FirstOrDefault(a => a.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task<Admin> AddAdminFromRawPasswordAsync(string username, string password)
+        {
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            return await AddAdminAsync(new Admin {UserName = username, PasswordHash = passwordHash});
+        }
     }
 }
