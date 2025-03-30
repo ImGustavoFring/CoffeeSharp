@@ -19,6 +19,11 @@ namespace WebApi.Controllers
         [HttpPost("admin/login")]
         public async Task<IActionResult> Login([FromBody] AdminLoginRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var token = await _authService.LoginAsync(request.UserName, request.Password);

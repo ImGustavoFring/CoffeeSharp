@@ -43,7 +43,7 @@ namespace WebApi.Logic.Services
             return admins.FirstOrDefault(a => a.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<Admin> AddAdminWithHashedPasswordAsync(string username, string password)
+        public async Task<Admin> AddAdminFromRawPasswordAsync(string username, string password)
         {
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
             return await AddAdminAsync(new Admin {UserName = username, PasswordHash = passwordHash});

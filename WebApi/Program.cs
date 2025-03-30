@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApi.Logic.Features.Interfaces;
 using WebApi.Logic.Features;
+using WebApi.Infrastructure.Middleware;
 
 namespace WebApi
 {
@@ -102,6 +103,8 @@ namespace WebApi
             });
 
             var app = builder.Build();
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             using (var scope = app.Services.CreateScope())
             {

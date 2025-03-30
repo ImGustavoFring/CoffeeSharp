@@ -10,6 +10,6 @@ namespace WebApi.Logic.Services.Interfaces
         Task<Admin> UpdateAdminAsync(Admin admin);
         Task DeleteAdminAsync(int id);
         Task<Admin?> GetAdminByUsernameAsync(string username);
-        Task<Admin> AddAdminWithHashedPasswordAsync(string username, string password);
+        Task<Admin> AddAdminFromRawPasswordAsync(string username, string password);
     }
 }

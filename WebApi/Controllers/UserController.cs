@@ -32,8 +32,13 @@ namespace WebApi.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddAdmin([FromBody] AdminCreateRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var createdAdmin = await _userService.AddAdminAsync(request.UserName, request.Password);
-            return CreatedAtAction(nameof(GetAllAdmins), new { id = createdAdmin.Id }, new List<Admin> { createdAdmin });
+            return CreatedAtAction(nameof(GetAllAdmins), new { id = createdAdmin.Id }, createdAdmin);
         }
     }
 }
