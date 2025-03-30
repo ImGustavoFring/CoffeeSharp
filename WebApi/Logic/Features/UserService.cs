@@ -27,9 +27,7 @@ namespace WebApi.Logic.Features
                 throw new InvalidOperationException("Admin with this username already exists");
             }
 
-            var createdAdmin = await _adminService.AddAdminWithHashedPasswordAsync(
-                new Admin { UserName = userName, PasswordHash = password }
-            );
+            var createdAdmin = await _adminService.AddAdminWithHashedPasswordAsync(userName, password);
 
             return createdAdmin;
         }
