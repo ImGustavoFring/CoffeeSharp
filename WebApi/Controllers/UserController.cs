@@ -4,6 +4,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
+using Domain.DTOs;
+using WebApi.Logic.Features.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -11,27 +13,27 @@ namespace WebApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IAdminService _adminService;
+        private readonly IUserService _userService;
 
-        public UserController(IAdminService adminService)
+        public UserController(IUserService userService)
         {
-            _adminService = adminService;
+            _userService = userService;
         }
 
         [HttpGet("admins")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAllAdmins()
         {
-            var admins = await _adminService.GetAllAdminsAsync();
+            var admins = await _userService.GetAllAdminsAsync();
             return Ok(admins);
         }
 
-        [HttpPost("add-admin")]
+        [HttpPost("admin/add")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> AddAdmin([FromBody] LoginRequest admin)
+        public async Task<IActionResult> AddAdmin([FromBody] AdminCreateRequest request)
         {
-            var createdAdmin = await _adminService.AddAdminWithHashedPasswordAsync(new Admin() { UserName = admin.UserName, PasswordHash = admin.Password}); // need to refUCKtor
-            return CreatedAtAction(nameof(GetAllAdmins), new { id = createdAdmin.Id }, createdAdmin);
+            var createdAdmin = await _userService.AddAdminAsync(request.UserName, request.Password);
+            return CreatedAtAction(nameof(GetAllAdmins), new { id = createdAdmin.Id }, new List<Admin> { createdAdmin });
         }
     }
 }

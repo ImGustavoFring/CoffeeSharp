@@ -46,6 +46,7 @@ namespace WebApi
             builder.Services.AddScoped<ServiceSeeder>(); //Temp
 
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>

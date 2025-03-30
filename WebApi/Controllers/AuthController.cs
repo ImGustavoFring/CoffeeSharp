@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Domain.DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Features.Interfaces;
 
@@ -15,8 +16,8 @@ namespace WebApi.Controllers
             _authService = authService;
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        [HttpPost("admin/login")]
+        public async Task<IActionResult> Login([FromBody] AdminLoginRequest request)
         {
             try
             {
@@ -25,14 +26,10 @@ namespace WebApi.Controllers
             }
             catch (UnauthorizedAccessException)
             {
-                return Unauthorized("Неверное имя пользователя или пароль");
+                return Unauthorized("Invalid credentials");
             }
         }
     }
 
-    public class LoginRequest
-    {
-        public string UserName { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    
 }
