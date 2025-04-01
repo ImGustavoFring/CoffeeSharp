@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Order?> GetOrderByIdAsync(int id)
+        public async Task<Order?> GetOrderByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(order);
         }
 
-        public async Task DeleteOrderAsync(int id)
+        public async Task DeleteOrderAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

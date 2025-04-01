@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Feedback?> GetFeedbackByIdAsync(int id)
+        public async Task<Feedback?> GetFeedbackByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(feedback);
         }
 
-        public async Task DeleteFeedbackAsync(int id)
+        public async Task DeleteFeedbackAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

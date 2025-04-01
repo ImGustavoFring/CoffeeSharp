@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<BalanceHistory?> GetHistoryByIdAsync(int id)
+        public async Task<BalanceHistory?> GetHistoryByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(history);
         }
 
-        public async Task DeleteHistoryAsync(int id)
+        public async Task DeleteHistoryAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

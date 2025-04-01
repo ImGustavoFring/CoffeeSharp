@@ -20,7 +20,7 @@ namespace WebApi.Logic.Services
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(long id)
         {
             return await _dbSet.FindAsync(id);
         }
@@ -39,7 +39,7 @@ namespace WebApi.Logic.Services
             return entity;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(long id)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
@@ -49,7 +49,7 @@ namespace WebApi.Logic.Services
             }
             else
             {
-                throw new KeyNotFoundException($"Запись с id {id} не найдена.");
+                throw new KeyNotFoundException($"Entity with id {id} not found.");
             }
         }
     }

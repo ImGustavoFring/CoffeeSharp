@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Branch?> GetBranchByIdAsync(int id)
+        public async Task<Branch?> GetBranchByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(branch);
         }
 
-        public async Task DeleteBranchAsync(int id)
+        public async Task DeleteBranchAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

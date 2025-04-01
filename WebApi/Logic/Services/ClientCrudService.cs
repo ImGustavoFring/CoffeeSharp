@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Client?> GetClientByIdAsync(int id)
+        public async Task<Client?> GetClientByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(client);
         }
 
-        public async Task DeleteClientAsync(int id)
+        public async Task DeleteClientAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

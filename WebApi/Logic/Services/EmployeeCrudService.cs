@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Employee?> GetEmployeeByIdAsync(int id)
+        public async Task<Employee?> GetEmployeeByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(employee);
         }
 
-        public async Task DeleteEmployeeAsync(int id)
+        public async Task DeleteEmployeeAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

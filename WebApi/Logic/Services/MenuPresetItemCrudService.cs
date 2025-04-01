@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<MenuPresetItem?> GetMenuPresetItemByIdAsync(int id)
+        public async Task<MenuPresetItem?> GetMenuPresetItemByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(item);
         }
 
-        public async Task DeleteMenuPresetItemAsync(int id)
+        public async Task DeleteMenuPresetItemAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<BranchMenu?> GetBranchMenuByIdAsync(int id)
+        public async Task<BranchMenu?> GetBranchMenuByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(menu);
         }
 
-        public async Task DeleteBranchMenuAsync(int id)
+        public async Task DeleteBranchMenuAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

@@ -17,7 +17,7 @@ namespace WebApi.Logic.Services
             return await _repository.GetAllAsync();
         }
 
-        public async Task<BalanceHistoryStatus?> GetStatusByIdAsync(int id)
+        public async Task<BalanceHistoryStatus?> GetStatusByIdAsync(long id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -32,7 +32,7 @@ namespace WebApi.Logic.Services
             return await _repository.UpdateAsync(status);
         }
 
-        public async Task DeleteStatusAsync(int id)
+        public async Task DeleteStatusAsync(long id)
         {
             await _repository.DeleteAsync(id);
         }

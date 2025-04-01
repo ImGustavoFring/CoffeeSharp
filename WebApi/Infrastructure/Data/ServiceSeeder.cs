@@ -7,7 +7,7 @@ namespace WebApi.Infrastructure.Data
 {
     public class ServiceSeeder
     {
-        private readonly ICategoryCrudService _categoryService;
+        private readonly ICategoryCrudService _categoryCrudService;
         private readonly IEmployeeRoleCrudService _employeeRoleService;
         private readonly IRatingCrudService _ratingService;
         private readonly IBalanceHistoryStatusCrudService _balanceHistoryStatusService;
@@ -15,7 +15,7 @@ namespace WebApi.Infrastructure.Data
         private readonly IBranchCrudService _branchService;
         private readonly IClientCrudService _clientService;
         private readonly IMenuPresetCrudService _menuPresetService;
-        private readonly IProductCrudService _productService;
+        private readonly IProductCrudService _ProductCatalogService;
         private readonly IMenuPresetItemCrudService _menuPresetItemService;
         private readonly IEmployeeCrudService _employeeService;
         private readonly IBranchMenuCrudService _branchMenuService;
@@ -26,7 +26,7 @@ namespace WebApi.Infrastructure.Data
         private readonly ILogger<ServiceSeeder> _logger;
 
         public ServiceSeeder(
-            ICategoryCrudService categoryService,
+            ICategoryCrudService categoryCrudService,
             IEmployeeRoleCrudService employeeRoleService,
             IRatingCrudService ratingService,
             IBalanceHistoryStatusCrudService balanceHistoryStatusService,
@@ -34,7 +34,7 @@ namespace WebApi.Infrastructure.Data
             IBranchCrudService branchService,
             IClientCrudService clientService,
             IMenuPresetCrudService menuPresetService,
-            IProductCrudService productService,
+            IProductCrudService ProductCatalogService,
             IMenuPresetItemCrudService menuPresetItemService,
             IEmployeeCrudService employeeService,
             IBranchMenuCrudService branchMenuService,
@@ -44,7 +44,7 @@ namespace WebApi.Infrastructure.Data
             IFeedbackCrudService feedbackService,
             ILogger<ServiceSeeder> logger)
         {
-            _categoryService = categoryService;
+            _categoryCrudService = categoryCrudService;
             _employeeRoleService = employeeRoleService;
             _ratingService = ratingService;
             _balanceHistoryStatusService = balanceHistoryStatusService;
@@ -52,7 +52,7 @@ namespace WebApi.Infrastructure.Data
             _branchService = branchService;
             _clientService = clientService;
             _menuPresetService = menuPresetService;
-            _productService = productService;
+            _ProductCatalogService = ProductCatalogService;
             _menuPresetItemService = menuPresetItemService;
             _employeeService = employeeService;
             _branchMenuService = branchMenuService;
@@ -67,8 +67,8 @@ namespace WebApi.Infrastructure.Data
         {
             _logger.LogInformation("Starting seeding process.");
 
-            var categoryCoffee = await _categoryService.AddCategoryAsync(new Category { Name = "Coffee" });
-            var categoryTea = await _categoryService.AddCategoryAsync(new Category { Name = "Tea" });
+            var categoryCoffee = await _categoryCrudService.AddCategoryAsync(new Category { Name = "Coffee" });
+            var categoryTea = await _categoryCrudService.AddCategoryAsync(new Category { Name = "Tea" });
             _logger.LogInformation("Categories created successfully.");
 
             var roleManager = await _employeeRoleService.AddRoleAsync(new EmployeeRole { Name = "Manager" });
@@ -124,21 +124,21 @@ namespace WebApi.Infrastructure.Data
             });
             _logger.LogInformation("Menu presets created successfully.");
 
-            var productEspresso = await _productService.AddProductAsync(new Product
+            var productEspresso = await _ProductCatalogService.AddProductAsync(new Product
             {
                 Name = "Espresso",
                 Description = "Strong coffee shot",
                 Price = 2.5m,
                 CategoryId = categoryCoffee.Id
             });
-            var productLatte = await _productService.AddProductAsync(new Product
+            var productLatte = await _ProductCatalogService.AddProductAsync(new Product
             {
                 Name = "Latte",
                 Description = "Coffee with milk",
                 Price = 3.5m,
                 CategoryId = categoryCoffee.Id
             });
-            var productGreenTea = await _productService.AddProductAsync(new Product
+            var productGreenTea = await _ProductCatalogService.AddProductAsync(new Product
             {
                 Name = "Green Tea",
                 Description = "Refreshing green tea",
@@ -264,7 +264,7 @@ namespace WebApi.Infrastructure.Data
 
             _logger.LogInformation("Displaying contents of all tables:");
 
-            var allCategories = await _categoryService.GetAllCategoriesAsync();
+            var allCategories = await _categoryCrudService.GetAllCategoriesAsync();
             foreach (var category in allCategories)
                 _logger.LogInformation("Category: {Id} - {Name}", category.Id, category.Name);
 
@@ -297,7 +297,7 @@ namespace WebApi.Infrastructure.Data
             foreach (var preset in allMenuPresets)
                 _logger.LogInformation("MenuPreset: {Id} - {Name} ({Description})", preset.Id, preset.Name, preset.Description);
 
-            var allProducts = await _productService.GetAllProductsAsync();
+            var allProducts = await _ProductCatalogService.GetAllProductsAsync();
             foreach (var product in allProducts)
                 _logger.LogInformation("Product: {Id} - {Name} ({Description}, Price: {Price}, CategoryId: {CategoryId})",
                     product.Id, product.Name, product.Description, product.Price, product.CategoryId);
