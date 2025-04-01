@@ -7,41 +7,41 @@ namespace WebApi.Infrastructure.Data
 {
     public class ServiceSeeder
     {
-        private readonly ICategoryService _categoryService;
-        private readonly IEmployeeRoleService _employeeRoleService;
-        private readonly IRatingService _ratingService;
-        private readonly IBalanceHistoryStatusService _balanceHistoryStatusService;
-        private readonly IAdminService _adminService;
-        private readonly IBranchService _branchService;
-        private readonly IClientService _clientService;
-        private readonly IMenuPresetService _menuPresetService;
-        private readonly IProductService _productService;
-        private readonly IMenuPresetItemService _menuPresetItemService;
-        private readonly IEmployeeService _employeeService;
-        private readonly IBranchMenuService _branchMenuService;
-        private readonly IOrderService _orderService;
-        private readonly IOrderItemService _orderItemService;
-        private readonly IBalanceHistoryService _balanceHistoryService;
-        private readonly IFeedbackService _feedbackService;
+        private readonly ICategoryCrudService _categoryService;
+        private readonly IEmployeeRoleCrudService _employeeRoleService;
+        private readonly IRatingCrudService _ratingService;
+        private readonly IBalanceHistoryStatusCrudService _balanceHistoryStatusService;
+        private readonly IAdminCrudService _adminService;
+        private readonly IBranchCrudService _branchService;
+        private readonly IClientCrudService _clientService;
+        private readonly IMenuPresetCrudService _menuPresetService;
+        private readonly IProductCrudService _productService;
+        private readonly IMenuPresetItemCrudService _menuPresetItemService;
+        private readonly IEmployeeCrudService _employeeService;
+        private readonly IBranchMenuCrudService _branchMenuService;
+        private readonly IOrderCrudService _orderService;
+        private readonly IOrderItemCrudService _orderItemService;
+        private readonly IBalanceHistoryCrudService _balanceHistoryService;
+        private readonly IFeedbackCrudService _feedbackService;
         private readonly ILogger<ServiceSeeder> _logger;
 
         public ServiceSeeder(
-            ICategoryService categoryService,
-            IEmployeeRoleService employeeRoleService,
-            IRatingService ratingService,
-            IBalanceHistoryStatusService balanceHistoryStatusService,
-            IAdminService adminService,
-            IBranchService branchService,
-            IClientService clientService,
-            IMenuPresetService menuPresetService,
-            IProductService productService,
-            IMenuPresetItemService menuPresetItemService,
-            IEmployeeService employeeService,
-            IBranchMenuService branchMenuService,
-            IOrderService orderService,
-            IOrderItemService orderItemService,
-            IBalanceHistoryService balanceHistoryService,
-            IFeedbackService feedbackService,
+            ICategoryCrudService categoryService,
+            IEmployeeRoleCrudService employeeRoleService,
+            IRatingCrudService ratingService,
+            IBalanceHistoryStatusCrudService balanceHistoryStatusService,
+            IAdminCrudService adminService,
+            IBranchCrudService branchService,
+            IClientCrudService clientService,
+            IMenuPresetCrudService menuPresetService,
+            IProductCrudService productService,
+            IMenuPresetItemCrudService menuPresetItemService,
+            IEmployeeCrudService employeeService,
+            IBranchMenuCrudService branchMenuService,
+            IOrderCrudService orderService,
+            IOrderItemCrudService orderItemService,
+            IBalanceHistoryCrudService balanceHistoryService,
+            IFeedbackCrudService feedbackService,
             ILogger<ServiceSeeder> logger)
         {
             _categoryService = categoryService;

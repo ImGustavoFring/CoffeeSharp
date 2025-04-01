@@ -10,10 +10,10 @@ namespace WebApi.Logic.Features
 {
     public class AuthService : IAuthService
     {
-        private readonly IAdminService _adminService;
+        private readonly IAdminCrudService _adminService;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IAdminService adminService, IConfiguration configuration)
+        public AuthService(IAdminCrudService adminService, IConfiguration configuration)
         {
             _adminService = adminService;
             _configuration = configuration;

@@ -10,10 +10,10 @@ namespace WebApi.Logic.Features
 {
     public class UserService : IUserService
     {
-        private readonly IAdminService _adminService;
+        private readonly IAdminCrudService _adminService;
         private readonly IConfiguration _configuration;
 
-        public UserService(IAdminService adminService, IConfiguration configuration)
+        public UserService(IAdminCrudService adminService, IConfiguration configuration)
         {
             _adminService = adminService;
             _configuration = configuration;
