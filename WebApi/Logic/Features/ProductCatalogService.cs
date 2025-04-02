@@ -38,12 +38,18 @@ namespace WebApi.Logic.Features
 
         public async Task<Product> UpdateProductAsync(Product product)
         {
-            var category = await _categoryCrudService.GetCategoryByIdAsync((int)product.CategoryId);
-            if (category == null)
-            {
-                throw new ArgumentException("Invalid category.");
-            }
-            return await _productCrudService.UpdateProductAsync(product);
+            var existingProduct = await _productCrudService.GetProductByIdAsync(product.Id);
+            if (existingProduct == null) throw new ArgumentException("Product not found");
+
+            existingProduct.Name = product.Name;
+            existingProduct.Description = product.Description;
+            existingProduct.Price = product.Price;
+            existingProduct.CategoryId = product.CategoryId;
+
+            var category = await _categoryCrudService.GetCategoryByIdAsync((int)existingProduct.CategoryId);
+            if (category == null) throw new ArgumentException("Invalid category");
+
+            return await _productCrudService.UpdateProductAsync(existingProduct);
         }
 
         public async Task DeleteProductAsync(long id)
@@ -68,7 +74,25 @@ namespace WebApi.Logic.Features
 
         public async Task<Category> UpdateCategoryAsync(Category category)
         {
-            return await _categoryCrudService.UpdateCategoryAsync(category);
+            var existingCategory = await _categoryCrudService.GetCategoryByIdAsync(category.Id);
+            if (existingCategory == null)
+            {
+                throw new ArgumentException("Category not found.");
+            }
+
+            if (category.ParentId.HasValue)
+            {
+                var parentCategory = await _categoryCrudService.GetCategoryByIdAsync(category.ParentId.Value);
+                if (parentCategory == null)
+                {
+                    throw new ArgumentException("Parent category not found.");
+                }
+            }
+
+            existingCategory.Name = category.Name;
+            existingCategory.ParentId = category.ParentId;
+
+            return await _categoryCrudService.UpdateCategoryAsync(existingCategory);
         }
 
         public async Task DeleteCategoryAsync(long id)

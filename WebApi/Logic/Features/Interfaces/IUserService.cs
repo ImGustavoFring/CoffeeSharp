@@ -4,7 +4,10 @@ namespace WebApi.Logic.Features.Interfaces
 {
     public interface IUserService
     {
-        Task<Admin> AddAdminAsync(string userName, string password);
         Task<IEnumerable<Admin>> GetAllAdminsAsync();
+        Task<Admin> AddAdminAsync(string userName, string password);
+        Task<Admin?> GetAdminByIdAsync(long id);
+        Task<Admin> UpdateAdminAsync(Admin admin);
+        Task DeleteAdminAsync(long id);
     }
 }

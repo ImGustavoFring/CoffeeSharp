@@ -1,5 +1,6 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Features.Interfaces;
@@ -52,6 +53,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("products")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
             if (!ModelState.IsValid)
@@ -81,9 +83,14 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("products/{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateProduct(long id, [FromBody] UpdateProductRequest request)
         {
-            if (!ModelState.IsValid || id != request.Id)
+            if (id != request.Id)
+            {
+                ModelState.AddModelError("Id", "URL id does not match request body id.");
+            }
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -111,6 +118,7 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete("products/{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteProduct(long id)
         {
             await _productCatalogService.DeleteProductAsync((int)id);
@@ -148,6 +156,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("categories")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
         {
             if (!ModelState.IsValid)
@@ -173,9 +182,14 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("categories/{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateCategory(long id, [FromBody] UpdateCategoryRequest request)
         {
-            if (!ModelState.IsValid || id != request.Id)
+            if (id != request.Id)
+            {
+                ModelState.AddModelError("Id", "URL id does not match request body id.");
+            }
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -199,6 +213,7 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete("categories/{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteCategory(long id)
         {
             await _productCatalogService.DeleteCategoryAsync((int)id);

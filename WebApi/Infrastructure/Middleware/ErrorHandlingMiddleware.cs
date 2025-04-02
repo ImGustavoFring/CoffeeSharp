@@ -6,11 +6,13 @@ namespace WebApi.Infrastructure.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ErrorHandlingMiddleware> _logger;
+        private readonly IHostEnvironment _env;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
+        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger, IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task Invoke(HttpContext context)
@@ -21,42 +23,56 @@ namespace WebApi.Infrastructure.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unhandled exception occurred.");
+                _logger.LogError(ex, "Unhandled exception occurred. TraceId: {TraceId}", context.TraceIdentifier);
                 await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            int statusCode;
-            string errorType;
-            string message;
+            int statusCode = exception switch
+            {
+                InvalidOperationException => StatusCodes.Status400BadRequest,
+                ArgumentException => StatusCodes.Status400BadRequest,
+                KeyNotFoundException => StatusCodes.Status404NotFound,
+                _ => StatusCodes.Status500InternalServerError
+            };
 
-            if (exception is InvalidOperationException)
+            string errorTitle = exception switch
             {
-                statusCode = StatusCodes.Status409Conflict;
-                errorType = "Conflict";
-                message = exception.Message;
-            }
-            else
+                InvalidOperationException => "Invalid Operation",
+                ArgumentException => "Bad Request",
+                KeyNotFoundException => "Not Found",
+                _ => "Internal Server Error"
+            };
+
+            var errorResponse = new ErrorResponse
             {
-                statusCode = StatusCodes.Status500InternalServerError;
-                errorType = "InternalServerError";
-                message = "An unexpected error occurred";
-            }
+                Status = statusCode,
+                Title = errorTitle,
+                Detail = _env.IsDevelopment() ? exception.ToString() : exception.Message,
+                TraceId = context.TraceIdentifier
+            };
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 
-            var response = new
+            var jsonOptions = new JsonSerializerOptions
             {
-                status = statusCode,
-                type = errorType,
-                title = message,
-                traceId = context.TraceIdentifier
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = _env.IsDevelopment()
             };
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            string jsonResponse = JsonSerializer.Serialize(errorResponse, jsonOptions);
+            await context.Response.WriteAsync(jsonResponse);
         }
+    }
+
+    public class ErrorResponse
+    {
+        public int Status { get; set; }
+        public required string Title { get; set; }
+        public required string Detail { get; set; }
+        public required string TraceId { get; set; }
     }
 }

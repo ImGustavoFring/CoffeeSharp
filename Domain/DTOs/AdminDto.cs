@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 
 namespace Domain.DTOs
 {
-    public class UpdateCategoryRequest : CreateCategoryRequest
+    public class AdminDto
     {
-        [Required(ErrorMessage = "ID is required")]
         public long Id { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        public string UserName { get; set; } = string.Empty;
     }
 }

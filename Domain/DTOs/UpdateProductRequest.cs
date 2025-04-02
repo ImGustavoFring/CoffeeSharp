@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Domain.DTOs
 {
-    public class UpdateProductRequest
+    public class UpdateProductRequest : CreateProductRequest
     {
+        [Required(ErrorMessage = "ID is required")]
         public long Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
-        public long CategoryId { get; set; }
     }
 }

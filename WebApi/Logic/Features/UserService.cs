@@ -28,13 +28,37 @@ namespace WebApi.Logic.Features
             }
 
             var createdAdmin = await _adminService.AddAdminFromRawPasswordAsync(userName, password);
-
             return createdAdmin;
         }
 
         public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
         {
             return await _adminService.GetAllAdminsAsync();
+        }
+
+        public async Task<Admin?> GetAdminByIdAsync(long id)
+        {
+            return await _adminService.GetAdminByIdAsync(id);
+        }
+
+        public async Task<Admin> UpdateAdminAsync(Admin admin)
+        {
+            var existingAdmin = await _adminService.GetAdminByIdAsync(admin.Id);
+            if (existingAdmin == null) throw new KeyNotFoundException("Admin not found");
+
+            existingAdmin.UserName = admin.UserName;
+
+            if (!string.IsNullOrWhiteSpace(admin.PasswordHash))
+            {
+                existingAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(admin.PasswordHash);
+            }
+
+            return await _adminService.UpdateAdminAsync(existingAdmin);
+        }
+
+        public async Task DeleteAdminAsync(long id)
+        {
+            await _adminService.DeleteAdminAsync(id);
         }
     }
 }
