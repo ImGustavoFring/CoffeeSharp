@@ -4,24 +4,24 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApi.Logic.Services.Interfaces;
-using WebApi.Logic.CrudServices.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 
 namespace WebApi.Logic.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IAdminCrudService _adminService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IAdminCrudService adminService, IConfiguration configuration)
+        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
-            _adminService = adminService;
+            _unitOfWork = unitOfWork;
             _configuration = configuration;
         }
 
         public async Task<string> LoginAsync(string userName, string password)
         {
-            var admin = await _adminService.GetAdminByUsernameAsync(userName);
+            var admin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
             if (admin == null || !VerifyPassword(password, admin.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Неверные учетные данные");
@@ -42,10 +42,10 @@ namespace WebApi.Logic.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                new Claim("id", admin.Id.ToString()),
-                new Claim(ClaimTypes.Name, admin.UserName),
-                new Claim("user_type", "admin")
-            }),
+                    new Claim("id", admin.Id.ToString()),
+                    new Claim(ClaimTypes.Name, admin.UserName),
+                    new Claim("user_type", "admin")
+                }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };

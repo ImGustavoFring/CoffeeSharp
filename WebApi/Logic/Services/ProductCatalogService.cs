@@ -1,44 +1,41 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using WebApi.Logic.Services.Interfaces;
-using WebApi.Logic.CrudServices;
-using WebApi.Logic.CrudServices.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 
 namespace WebApi.Logic.Services
 {
     public class ProductCatalogService : IProductCatalogService
     {
-        private readonly IProductCrudService _productCrudService;
-        private readonly ICategoryCrudService _categoryCrudService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProductCatalogService(IProductCrudService productCrudService, ICategoryCrudService categoryCrudService)
+        public ProductCatalogService(IUnitOfWork unitOfWork)
         {
-            _productCrudService = productCrudService;
-            _categoryCrudService = categoryCrudService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            return await _productCrudService.GetAllProductsAsync();
+            return await _unitOfWork.Products.GetAllAsync();
         }
 
         public async Task<Product?> GetProductByIdAsync(long id)
         {
-            return await _productCrudService.GetProductByIdAsync(id);
+            return await _unitOfWork.Products.GetByIdAsync(id);
         }
 
         public async Task<Product> AddProductAsync(Product product)
         {
-            var category = await _categoryCrudService.GetCategoryByIdAsync((int)product.CategoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync((int)product.CategoryId);
             if (category == null)
             {
                 throw new ArgumentException("Invalid category.");
             }
-            return await _productCrudService.AddProductAsync(product);
+            return await _unitOfWork.Products.AddAsync(product);
         }
 
         public async Task<Product> UpdateProductAsync(Product product)
         {
-            var existingProduct = await _productCrudService.GetProductByIdAsync(product.Id);
+            var existingProduct = await _unitOfWork.Products.GetByIdAsync(product.Id);
             if (existingProduct == null) throw new ArgumentException("Product not found");
 
             existingProduct.Name = product.Name;
@@ -46,35 +43,35 @@ namespace WebApi.Logic.Services
             existingProduct.Price = product.Price;
             existingProduct.CategoryId = product.CategoryId;
 
-            var category = await _categoryCrudService.GetCategoryByIdAsync((int)existingProduct.CategoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync((int)existingProduct.CategoryId);
             if (category == null) throw new ArgumentException("Invalid category");
 
-            return await _productCrudService.UpdateProductAsync(existingProduct);
+            return await _unitOfWork.Products.UpdateAsync(existingProduct);
         }
 
         public async Task DeleteProductAsync(long id)
         {
-            await _productCrudService.DeleteProductAsync(id);
+            await _unitOfWork.Products.DeleteAsync(id);
         }
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
         {
-            return await _categoryCrudService.GetAllCategoriesAsync();
+            return await _unitOfWork.Categories.GetAllAsync();
         }
 
         public async Task<Category?> GetCategoryByIdAsync(long id)
         {
-            return await _categoryCrudService.GetCategoryByIdAsync(id);
+            return await _unitOfWork.Categories.GetByIdAsync(id);
         }
 
         public async Task<Category> AddCategoryAsync(Category category)
         {
-            return await _categoryCrudService.AddCategoryAsync(category);
+            return await _unitOfWork.Categories.AddAsync(category);
         }
 
         public async Task<Category> UpdateCategoryAsync(Category category)
         {
-            var existingCategory = await _categoryCrudService.GetCategoryByIdAsync(category.Id);
+            var existingCategory = await _unitOfWork.Categories.GetByIdAsync(category.Id);
             if (existingCategory == null)
             {
                 throw new ArgumentException("Category not found.");
@@ -82,7 +79,7 @@ namespace WebApi.Logic.Services
 
             if (category.ParentId.HasValue)
             {
-                var parentCategory = await _categoryCrudService.GetCategoryByIdAsync(category.ParentId.Value);
+                var parentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId.Value);
                 if (parentCategory == null)
                 {
                     throw new ArgumentException("Parent category not found.");
@@ -92,12 +89,12 @@ namespace WebApi.Logic.Services
             existingCategory.Name = category.Name;
             existingCategory.ParentId = category.ParentId;
 
-            return await _categoryCrudService.UpdateCategoryAsync(existingCategory);
+            return await _unitOfWork.Categories.UpdateAsync(existingCategory);
         }
 
         public async Task DeleteCategoryAsync(long id)
         {
-            await _categoryCrudService.DeleteCategoryAsync(id);
+            await _unitOfWork.Categories.DeleteAsync(id);
         }
     }
 }
