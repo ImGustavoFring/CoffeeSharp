@@ -1,7 +1,7 @@
 ﻿using Domain.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Features.Interfaces;
+using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -34,7 +34,5 @@ namespace WebApi.Controllers
                 return Unauthorized("Invalid credentials");
             }
         }
-    }
-
-    
+    }   
 }

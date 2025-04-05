@@ -3,7 +3,7 @@ using Domain.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Features.Interfaces;
+using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -36,7 +36,7 @@ namespace WebApi.Controllers
         [HttpGet("products/{id}")]
         public async Task<IActionResult> GetProductById(long id)
         {
-            Product? product = await _productCatalogService.GetProductByIdAsync((int)id);
+            Product? product = await _productCatalogService.GetProductByIdAsync(id);
             if (product == null)
             {
                 return NotFound();
@@ -121,7 +121,7 @@ namespace WebApi.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteProduct(long id)
         {
-            await _productCatalogService.DeleteProductAsync((int)id);
+            await _productCatalogService.DeleteProductAsync(id);
             return NoContent();
         }
 
@@ -141,7 +141,7 @@ namespace WebApi.Controllers
         [HttpGet("categories/{id}")]
         public async Task<IActionResult> GetCategoryById(long id)
         {
-            Category? category = await _productCatalogService.GetCategoryByIdAsync((int)id);
+            Category? category = await _productCatalogService.GetCategoryByIdAsync(id);
             if (category == null)
             {
                 return NotFound();
@@ -216,7 +216,7 @@ namespace WebApi.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteCategory(long id)
         {
-            await _productCatalogService.DeleteCategoryAsync((int)id);
+            await _productCatalogService.DeleteCategoryAsync(id);
             return NoContent();
         }
     }

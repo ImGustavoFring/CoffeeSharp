@@ -1,11 +1,8 @@
 ﻿using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
 using Domain.DTOs;
-using WebApi.Logic.Features.Interfaces;
 
 namespace WebApi.Controllers
 {
