@@ -25,7 +25,7 @@ namespace WebApi.Logic.Services
 
         public async Task<Product> AddProductAsync(Product product)
         {
-            var category = await _unitOfWork.Categories.GetByIdAsync((int)product.CategoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
             if (category == null)
             {
                 throw new ArgumentException("Invalid category.");
@@ -43,7 +43,7 @@ namespace WebApi.Logic.Services
             existingProduct.Price = product.Price;
             existingProduct.CategoryId = product.CategoryId;
 
-            var category = await _unitOfWork.Categories.GetByIdAsync((int)existingProduct.CategoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync(existingProduct.CategoryId);
             if (category == null) throw new ArgumentException("Invalid category");
 
             return await _unitOfWork.Products.UpdateAsync(existingProduct);
