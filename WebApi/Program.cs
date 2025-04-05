@@ -35,31 +35,12 @@ namespace WebApi
 
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            // Регистрация CRUD-сервисов (оставляем без изменений)
-            builder.Services.AddScoped<IClientCrudService, ClientCrudService>();
-            builder.Services.AddScoped<IBalanceHistoryCrudService, BalanceHistoryCrudService>();
-            builder.Services.AddScoped<IBalanceHistoryStatusCrudService, BalanceHistoryStatusCrudService>();
-            builder.Services.AddScoped<IBranchCrudService, BranchCrudService>();
-            builder.Services.AddScoped<IBranchMenuCrudService, BranchMenuCrudService>();
-            builder.Services.AddScoped<ICategoryCrudService, CategoryCrudService>();
-            builder.Services.AddScoped<IEmployeeCrudService, EmployeeCrudService>();
-            builder.Services.AddScoped<IEmployeeRoleCrudService, EmployeeRoleCrudService>();
-            builder.Services.AddScoped<IFeedbackCrudService, FeedbackCrudService>();
-            builder.Services.AddScoped<IOrderCrudService, OrderCrudService>();
-            builder.Services.AddScoped<IOrderItemCrudService, OrderItemCrudService>();
-            builder.Services.AddScoped<IProductCrudService, ProductCrudService>();
-            builder.Services.AddScoped<IRatingCrudService, RatingCrudService>();
-            builder.Services.AddScoped<IAdminCrudService, AdminCrudService>();
-            builder.Services.AddScoped<IMenuPresetCrudService, MenuPresetCrudService>();
-            builder.Services.AddScoped<IMenuPresetItemCrudService, MenuPresetItemCrudService>();
-
             builder.Services.AddScoped<ServiceSeeder>(); // Temp
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
 
-            // Регистрация Unit of Work для нового подхода
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddEndpointsApiExplorer();
