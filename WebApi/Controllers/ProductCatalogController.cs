@@ -3,7 +3,7 @@ using Domain.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Features.Interfaces;
+using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {

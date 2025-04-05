@@ -1,7 +1,7 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Domain.Entities;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.CrudServices.Interfaces;
 
 namespace WebApi.Infrastructure.Data
 {

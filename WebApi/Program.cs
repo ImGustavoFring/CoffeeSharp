@@ -1,17 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Microsoft.OpenApi.Models;
-using WebApi.Logic.Services.Interfaces;
-using WebApi.Logic.Services;
+using WebApi.Logic.CrudServices.Interfaces;
+using WebApi.Logic.CrudServices;
 using WebApi.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using WebApi.Logic.Features.Interfaces;
-using WebApi.Logic.Features;
-using WebApi.Infrastructure.Middleware;
+using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.Services;
 using System.Text.Json.Serialization;
+using WebApi.Middleware;
+using WebApi.Infrastructure.Repositories;
+using WebApi.Infrastructure.Repositories.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks;
 
 namespace WebApi
 {
@@ -31,6 +35,7 @@ namespace WebApi
 
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+            // Регистрация CRUD-сервисов (оставляем без изменений)
             builder.Services.AddScoped<IClientCrudService, ClientCrudService>();
             builder.Services.AddScoped<IBalanceHistoryCrudService, BalanceHistoryCrudService>();
             builder.Services.AddScoped<IBalanceHistoryStatusCrudService, BalanceHistoryStatusCrudService>();
@@ -48,11 +53,14 @@ namespace WebApi
             builder.Services.AddScoped<IMenuPresetCrudService, MenuPresetCrudService>();
             builder.Services.AddScoped<IMenuPresetItemCrudService, MenuPresetItemCrudService>();
 
-            builder.Services.AddScoped<ServiceSeeder>(); //Temp
+            builder.Services.AddScoped<ServiceSeeder>(); // Temp
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
+
+            // Регистрация Unit of Work для нового подхода
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -85,7 +93,6 @@ namespace WebApi
                 });
             });
 
-
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -101,10 +108,10 @@ namespace WebApi
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy =>
-                policy.RequireClaim("user_type", "admin"));
+                    policy.RequireClaim("user_type", "admin"));
 
                 options.AddPolicy("ChefOnly", policy =>
-                policy.RequireClaim("user_type", "chef"));
+                    policy.RequireClaim("user_type", "chef"));
             });
 
             var app = builder.Build();
@@ -114,13 +121,12 @@ namespace WebApi
             using (var scope = app.Services.CreateScope())
             {
                 var serviceProvider = scope.ServiceProvider;
-
-                var dbContext = scope.ServiceProvider.GetRequiredService<CoffeeSharpDbContext>();
+                var dbContext = serviceProvider.GetRequiredService<CoffeeSharpDbContext>();
 
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); //Temp
+                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); // Temp
                 await seeder.SeedAsync();
             }
 
