@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.DTOs
 {
-    public record AdminUpdateRequest(
+    public record UpdateAdminRequest(
         [Required(ErrorMessage = "ID is required")]
         long Id,
 

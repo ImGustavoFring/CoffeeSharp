@@ -119,16 +119,16 @@ namespace WebApi.Infrastructure.Data
             var employeeAlice = await _unitOfWork.Employees.AddAsync(new Employee
             {
                 Name = "Alice",
-                UserName = "alice",
-                PasswordHash = "hashed_alice",
+                UserName = "alice123",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("alice123"),
                 RoleId = roleManager.Id,
                 BranchId = branchMain.Id
             });
             var employeeBob = await _unitOfWork.Employees.AddAsync(new Employee
             {
                 Name = "Bob",
-                UserName = "bob",
-                PasswordHash = "hashed_bob",
+                UserName = "bobux123",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("bobux123"),
                 RoleId = roleStaff.Id,
                 BranchId = branchSecondary.Id
             });

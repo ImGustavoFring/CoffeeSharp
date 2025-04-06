@@ -16,6 +16,7 @@ using WebApi.Infrastructure.Repositories;
 using WebApi.Infrastructure.Repositories.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks;
+using System.Security.Claims;
 
 namespace WebApi
 {
@@ -88,14 +89,21 @@ namespace WebApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
                     };
                 });
-
+                        
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy =>
                     policy.RequireClaim("user_type", "admin"));
 
-                options.AddPolicy("ChefOnly", policy =>
-                    policy.RequireClaim("user_type", "chef"));
+                options.AddPolicy("ManagerOnly", policy =>
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c => c.Type == "user_type" && c.Value == "admin") ||
+                        (context.User.HasClaim(c => c.Type == "user_type" && c.Value == "employee") &&
+                         context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == builder.Configuration["Authorization:ManagerRoleId"])) // We need to implement some kind of cache so that roles can be changed without restarting. (using docker we can't use reloadOnChange)
+                    ));
+
+                options.AddPolicy("AllStaff", policy =>
+                    policy.RequireClaim("user_type", new string[] { "admin", "employee" }));
             });
 
             var app = builder.Build();
