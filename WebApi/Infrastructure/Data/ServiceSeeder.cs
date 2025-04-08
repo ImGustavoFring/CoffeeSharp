@@ -32,8 +32,9 @@ namespace WebApi.Infrastructure.Data
             var ratingAverage = await _unitOfWork.Ratings.AddAsync(new Rating { Name = "Average", Value = 3 });
             _logger.LogInformation("Ratings created successfully.");
 
-            var statusPending = await _unitOfWork.BalanceHistoryStatuses.AddAsync(new BalanceHistoryStatus { Name = "Pending" });
             var statusCompleted = await _unitOfWork.BalanceHistoryStatuses.AddAsync(new BalanceHistoryStatus { Name = "Completed" });
+            var statusCancelled = await _unitOfWork.BalanceHistoryStatuses.AddAsync(new BalanceHistoryStatus { Name = "Cancelled" });
+            var statusPending = await _unitOfWork.BalanceHistoryStatuses.AddAsync(new BalanceHistoryStatus { Name = "Pending" });
             _logger.LogInformation("Balance history statuses created successfully.");
 
             var admin = await _unitOfWork.Admins.AddAsync(new Admin

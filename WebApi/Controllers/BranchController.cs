@@ -111,9 +111,6 @@ namespace WebApi.Controllers
             return NoContent();
         }
 
-        // BranchMenu Endpoints
-
-        // Назначение пресета филиалу. POST: /api/branch/{branchId}/menupreset
         [HttpPost("{branchId}/menupreset")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AssignMenuPresetToBranch(long branchId, [FromBody] AssignMenuPresetRequest request)
@@ -127,7 +124,6 @@ namespace WebApi.Controllers
             return NoContent();
         }
 
-        // Получение меню филиала. GET: /api/branch/{branchId}/menu
         [HttpGet("{branchId}/menu")]
         public async Task<IActionResult> GetBranchMenuByBranchId(long branchId)
         {
@@ -142,7 +138,6 @@ namespace WebApi.Controllers
             return Ok(menuDtos);
         }
 
-        // Обновление доступности конкретного элемента меню. PATCH: /api/branch/menu/{id}/availability?availability=true
         [HttpPatch("menu/{id}/availability")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateBranchMenuAvailability(long id, [FromQuery] bool availability)

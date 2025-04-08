@@ -44,6 +44,7 @@ namespace WebApi
             builder.Services.AddScoped<IMenuService, MenuService>();
             builder.Services.AddScoped<IBranchService, BranchService>();
             builder.Services.AddScoped<IReferenceDataService, ReferenceDataService>();
+            builder.Services.AddScoped<IClientService, ClientService>();
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
