@@ -1,16 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Microsoft.OpenApi.Models;
-using WebApi.Logic.Services.Interfaces;
-using WebApi.Logic.Services;
+using WebApi.Logic.CrudServices.Interfaces;
+using WebApi.Logic.CrudServices;
 using WebApi.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using WebApi.Logic.Features.Interfaces;
-using WebApi.Logic.Features;
-using WebApi.Infrastructure.Middleware;
+using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.Services;
+using System.Text.Json.Serialization;
+using WebApi.Middleware;
+using WebApi.Infrastructure.Repositories;
+using WebApi.Infrastructure.Repositories.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
+using WebApi.Infrastructure.UnitsOfWorks;
+using System.Security.Claims;
 
 namespace WebApi
 {
@@ -23,31 +29,25 @@ namespace WebApi
             builder.Services.AddDbContext<CoffeeSharpDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
 
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            builder.Services.AddScoped<IClientService, ClientService>();
-            builder.Services.AddScoped<IBalanceHistoryService, BalanceHistoryService>();
-            builder.Services.AddScoped<IBalanceHistoryStatusService, BalanceHistoryStatusService>();
-            builder.Services.AddScoped<IBranchService, BranchService>();
-            builder.Services.AddScoped<IBranchMenuService, BranchMenuService>();
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
-            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-            builder.Services.AddScoped<IEmployeeRoleService, EmployeeRoleService>();
-            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-            builder.Services.AddScoped<IOrderService, OrderService>();
-            builder.Services.AddScoped<IOrderItemService, OrderItemService>();
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IRatingService, RatingService>();
-            builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IMenuPresetService, MenuPresetService>();
-            builder.Services.AddScoped<IMenuPresetItemService, MenuPresetItemService>();
-
-            builder.Services.AddScoped<ServiceSeeder>(); //Temp
+            builder.Services.AddScoped<ServiceSeeder>(); // Temp
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
+            builder.Services.AddScoped<IMenuService, MenuService>();
+            builder.Services.AddScoped<IBranchService, BranchService>();
+            builder.Services.AddScoped<IReferenceDataService, ReferenceDataService>();
+            builder.Services.AddScoped<IClientService, ClientService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -80,7 +80,6 @@ namespace WebApi
                 });
             });
 
-
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -92,14 +91,21 @@ namespace WebApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
                     };
                 });
-
+                        
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy =>
-                policy.RequireClaim("user_type", "admin"));
+                    policy.RequireClaim("user_type", "admin"));
 
-                options.AddPolicy("ChefOnly", policy =>
-                policy.RequireClaim("user_type", "chef"));
+                options.AddPolicy("ManagerOnly", policy =>
+                    policy.RequireAssertion(context =>
+                        context.User.HasClaim(c => c.Type == "user_type" && c.Value == "admin") ||
+                        (context.User.HasClaim(c => c.Type == "user_type" && c.Value == "employee") &&
+                         context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == builder.Configuration["Authorization:ManagerRoleId"])) // We need to implement some kind of cache so that roles can be changed without restarting. (using docker we can't use reloadOnChange)
+                    ));
+
+                options.AddPolicy("AllStaff", policy =>
+                    policy.RequireClaim("user_type", new string[] { "admin", "employee" }));
             });
 
             var app = builder.Build();
@@ -109,13 +115,12 @@ namespace WebApi
             using (var scope = app.Services.CreateScope())
             {
                 var serviceProvider = scope.ServiceProvider;
-
-                var dbContext = scope.ServiceProvider.GetRequiredService<CoffeeSharpDbContext>();
+                var dbContext = serviceProvider.GetRequiredService<CoffeeSharpDbContext>();
 
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); //Temp
+                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); // Temp
                 await seeder.SeedAsync();
             }
 
