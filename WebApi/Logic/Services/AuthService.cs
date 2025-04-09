@@ -25,7 +25,7 @@ namespace WebApi.Logic.Services
             var admin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
             if (admin == null || !VerifyPassword(password, admin.PasswordHash))
             {
-                throw new UnauthorizedAccessException("Неверные учетные данные");
+                throw new UnauthorizedAccessException("Invalid credentials");
             }
             return GenerateJwtToken(admin);
         }

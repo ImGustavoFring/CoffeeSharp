@@ -174,8 +174,7 @@ namespace WebApi.Infrastructure.Data
                 EmployeeId = employeeAlice.Id,
                 Price = productEspresso.Price,
                 Count = 2,
-                StartedAt = DateTime.UtcNow,
-                DoneAt = DateTime.UtcNow.AddMinutes(5)
+                StartedAt = DateTime.UtcNow
             });
             await _unitOfWork.OrderItems.AddAsync(new OrderItem
             {
@@ -183,8 +182,7 @@ namespace WebApi.Infrastructure.Data
                 ProductId = productGreenTea.Id,
                 Price = productGreenTea.Price,
                 Count = 1,
-                StartedAt = DateTime.UtcNow,
-                DoneAt = DateTime.UtcNow.AddMinutes(7)
+                StartedAt = DateTime.UtcNow
             });
             _logger.LogInformation("Order items created successfully.");
 
