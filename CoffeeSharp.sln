@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{63FE5806-9498-4EAB-BC3A-E30A50AC5970}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiClient", "ApiClient\ApiClient.csproj", "{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{63FE5806-9498-4EAB-BC3A-E30A50AC5970}.Release|x64.Build.0 = Release|Any CPU
 		{63FE5806-9498-4EAB-BC3A-E30A50AC5970}.Release|x86.ActiveCfg = Release|Any CPU
 		{63FE5806-9498-4EAB-BC3A-E30A50AC5970}.Release|x86.Build.0 = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|x64.Build.0 = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Debug|x86.Build.0 = Debug|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|x64.ActiveCfg = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|x64.Build.0 = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|x86.ActiveCfg = Release|Any CPU
+		{5DCDA011-B8BE-4EC1-9ECF-29D88F57DCAD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
