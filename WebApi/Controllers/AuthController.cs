@@ -1,7 +1,7 @@
 ﻿using Domain.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Features.Interfaces;
+using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -17,16 +17,31 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("admin/login")]
-        public async Task<IActionResult> Login([FromBody] AdminLoginRequest request)
+        public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
-                var token = await _authService.LoginAsync(request.UserName, request.Password);
+                var token = await _authService.AdminLoginAsync(request.UserName, request.Password);
+                return Ok(new { token });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid credentials");
+            }
+        }
+
+        [HttpPost("employee/login")]
+        public async Task<IActionResult> EmployeeLogin([FromBody] EmployeeLoginRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var token = await _authService.EmployeeLoginAsync(request.UserName, request.Password);
                 return Ok(new { token });
             }
             catch (UnauthorizedAccessException)
@@ -35,6 +50,4 @@ namespace WebApi.Controllers
             }
         }
     }
-
-    
 }
