@@ -3,6 +3,7 @@
         xmlns:vm="using:Client.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vs="using:Client.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Client.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -15,6 +16,27 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
+        <!-- Меню -->
+        <Border Width="200"
+                IsVisible="{Binding IsMenuOpen}">
+            <StackPanel Margin="10">
+                <Button Content="Главная" Command="{Binding NavigateFirstCommand}" Margin="0 5"/>
+                <Button Content="Настройки" Command="{Binding NavigateSecondCommand}" Margin="0 5"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Контент -->
+        <Grid Grid.Column="1">
+            <Button Content="☰" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40"
+                    Margin="5" Click="MenuToggle_Click"/>
+
+            <ContentControl Content="{Binding CurrentViewModel}" Margin="0,40,0,0" />
+        </Grid>
+    </Grid>
 </Window>

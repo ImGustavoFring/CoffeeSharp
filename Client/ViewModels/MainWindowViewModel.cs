@@ -1,6 +1,38 @@
-﻿namespace Client.ViewModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+namespace Client.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
+    [ObservableProperty]
+    private bool _isMenuOpen;
+
+    [ObservableProperty]
+    private ObservableObject _currentViewModel;
+
+    public MainWindowViewModel()
+    {
+        CurrentViewModel = new UserContol1VM();
+    }
+
+    [RelayCommand]
+    private void NavigateFirst()
+    {
+        CurrentViewModel = new UserContol1VM();
+        IsMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void NavigateSecond()
+    {
+        CurrentViewModel = new UserControl2VM();
+        IsMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void ToggleMenu()
+    {
+        IsMenuOpen = !IsMenuOpen;
+    }
 }
