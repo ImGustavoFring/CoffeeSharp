@@ -1,0 +1,41 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.OrderShortItem"
+             x:DataType="viewModels:OrderShortItemViewModel">
+    <StackPanel>
+        <TextBlock FontWeight="Bold">
+            <Run Text="Заказ номер" />
+            <Run Text="{Binding OrderDtoItem.Id}" />
+        </TextBlock>
+
+        <Panel Height="1" Background="Black" Margin="0,4,0,0" />
+
+        <Grid ColumnDefinitions="150,1,Auto,1,2*" RowDefinitions="Auto">
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Закачик:" FontWeight="Bold" />
+                <TextBlock Text="{Binding ClientName}" />
+                <TextBlock Text="Исполнители:" FontWeight="Bold" Margin="0,4,0,0" />
+                <ItemsControl ItemsSource="{Binding EmployeeNames}" />
+            </StackPanel>
+
+            <Panel Grid.Column="1" Grid.Row="0" Width="1" Background="Black" />
+
+            <StackPanel Grid.Column="2" Margin="12,0">
+                <TextBlock Text="Время заказа:" FontWeight="Bold" />
+                <TextBlock Text="{Binding CreateTime}" HorizontalAlignment="Right" />
+            </StackPanel>
+
+            <Panel Grid.Column="3" Grid.Row="0" Width="1" Background="Black" Margin="0,0,12, 0" />
+
+            <TextBlock Grid.Column="4" Text="{Binding ProductNamesDisplay}" TextWrapping="Wrap" VerticalAlignment="Top" />
+        </Grid>
+    </StackPanel>
+
+    <UserControl.DataContext>
+        <viewModels:OrderShortItemViewModel></viewModels:OrderShortItemViewModel>
+    </UserControl.DataContext>
+</UserControl>

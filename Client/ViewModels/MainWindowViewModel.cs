@@ -11,6 +11,12 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableObject _currentViewModel;
 
+    [ObservableProperty]
+    private bool _isAdminAuth = false;
+
+    [ObservableProperty]
+    private bool _isHighCook = false;
+
     public MainWindowViewModel()
     {
         CurrentViewModel = new UserContol1VM();

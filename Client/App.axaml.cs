@@ -14,6 +14,7 @@ public partial class App : Application
     public override void Initialize()
     {
         DataTemplates.Add(new StrongViewLocator()
+            .Register<OrderShortItemViewModel, OrderShortItem>()
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());
         AvaloniaXamlLoader.Load(this);

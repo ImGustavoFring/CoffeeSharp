@@ -1,0 +1,38 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             xmlns:views="clr-namespace:Client.Views"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="600"
+             x:Class="Client.Views.MainOrdersView"
+             x:DataType="viewModels:MainOrdersViewModel">
+    <StackPanel Margin="12">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <TextBlock Grid.Column="0" Text="12.04.2025 15:29" VerticalAlignment="Center"/>
+            <Panel Grid.Column="1" HorizontalAlignment="Stretch" />
+            <Button Grid.Column="2" Background="Transparent" VerticalAlignment="Center">
+                <Button.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuItem Header="По умолчанию" Command="{Binding SetDefaultSortingType}" />
+                        <MenuItem Header="Время ↓" Command="{Binding SetTimeAscendingSortingType}" />
+                        <MenuItem Header="Время ↑" Command="{Binding SetTimeDescendingSortingType}" />
+                    </MenuFlyout>
+                </Button.Flyout>
+                <PathIcon Data="M26.5833 3.625H2.41666L12.0833 15.0558V22.9583L16.9167 25.375V15.0558L26.5833 3.625Z"
+                          Foreground="#B3B3B3" Width="24" Height="24" />
+            </Button>
+        </Grid>
+        <ItemsControl ItemsSource="{Binding SortedOrderShortItemViewModels}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <views:OrderShortItem Margin="0, 6"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+
+    <UserControl.DataContext>
+        <viewModels:MainOrdersViewModel />
+    </UserControl.DataContext>
+</UserControl>
