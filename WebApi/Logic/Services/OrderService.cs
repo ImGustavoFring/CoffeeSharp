@@ -47,7 +47,7 @@ namespace WebApi.Logic.Services
                 Sum = -totalCost,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:InternalDeductionStatus"] ?? "0")
+                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0")
             };
             await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
 
