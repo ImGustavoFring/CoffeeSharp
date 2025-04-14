@@ -9,16 +9,47 @@ namespace WebApi.Logic.Services
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
 
-        public OrderService(IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
         }
 
         public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
         {
             if (request.Items == null || !request.Items.Any())
                 throw new ArgumentException("Order must contain at least one order item.");
+
+            decimal totalCost = 0;
+            foreach (var itemRequest in request.Items)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
+                if (product == null)
+                    throw new ArgumentException($"Product with id {itemRequest.ProductId} not found.");
+                totalCost += itemRequest.Count * product.Price;
+            }
+
+            var client = await _unitOfWork.Clients.GetByIdAsync(request.ClientId);
+            if (client == null)
+                throw new ArgumentException("Client not found.");
+
+            if (client.Balance < totalCost)
+                throw new ArgumentException("Insufficient balance.");
+
+            client.Balance -= totalCost;
+            await _unitOfWork.Clients.UpdateAsync(client);
+
+            var balanceHistory = new BalanceHistory
+            {
+                ClientId = client.Id,
+                Sum = -totalCost,
+                CreatedAt = DateTime.UtcNow,
+                FinishedAt = DateTime.UtcNow,
+                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:InternalDeductionStatus"] ?? "0")
+            };
+            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
 
             var order = new Order
             {
@@ -28,8 +59,7 @@ namespace WebApi.Logic.Services
                 CreatedAt = DateTime.UtcNow,
                 ExpectedIn = request.ExpectedIn
             };
-
-            order = await _unitOfWork.Orders.AddAsync(order);
+            await _unitOfWork.Orders.AddAsync(order);
 
             foreach (var itemRequest in request.Items)
             {
@@ -115,6 +145,7 @@ namespace WebApi.Logic.Services
         public async Task DeleteFeedbackAsync(long feedbackId)
         {
             await _unitOfWork.Feedbacks.DeleteAsync(feedbackId);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<OrderItem>> GetOrderItemsAsync(long? orderId = null, long? employeeId = null)
