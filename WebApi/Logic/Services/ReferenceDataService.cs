@@ -26,25 +26,40 @@ namespace WebApi.Logic.Services
         public async Task<Rating> AddRatingAsync(Rating rating)
         {
             var existing = await _unitOfWork.Ratings.GetSingleAsync(r => r.Value == rating.Value);
-            if (existing != null)
-                throw new InvalidOperationException($"Rating with value '{rating.Value}' already exists.");
 
-            return await _unitOfWork.Ratings.AddAsync(rating);
+            if (existing != null)
+            {
+                throw new InvalidOperationException($"Rating with value '{rating.Value}' already exists.");
+            }
+
+            var result = await _unitOfWork.Ratings.AddAsync(rating);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<Rating> UpdateRatingAsync(Rating rating)
         {
             var existing = await _unitOfWork.Ratings.GetByIdAsync(rating.Id);
+
             if (existing == null)
+            {
                 throw new ArgumentException("Rating not found.");
+            }
+
             existing.Name = rating.Name;
             existing.Value = rating.Value;
-            return await _unitOfWork.Ratings.UpdateAsync(existing);
+
+            await _unitOfWork.Ratings.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteRatingAsync(long id)
         {
             await _unitOfWork.Ratings.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<EmployeeRole>> GetAllEmployeeRolesAsync()
@@ -60,24 +75,39 @@ namespace WebApi.Logic.Services
         public async Task<EmployeeRole> AddEmployeeRoleAsync(EmployeeRole role)
         {
             var existing = await _unitOfWork.EmployeeRoles.GetSingleAsync(r => r.Name.ToLower() == role.Name.ToLower());
-            if (existing != null)
-                throw new InvalidOperationException($"EmployeeRole with name '{role.Name}' already exists.");
 
-            return await _unitOfWork.EmployeeRoles.AddAsync(role);
+            if (existing != null)
+            {
+                throw new InvalidOperationException($"EmployeeRole with name '{role.Name}' already exists.");
+            }
+
+            var result = await _unitOfWork.EmployeeRoles.AddAsync(role);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<EmployeeRole> UpdateEmployeeRoleAsync(EmployeeRole role)
         {
             var existing = await _unitOfWork.EmployeeRoles.GetByIdAsync(role.Id);
+
             if (existing == null)
+            {
                 throw new ArgumentException("EmployeeRole not found.");
+            }
+
             existing.Name = role.Name;
-            return await _unitOfWork.EmployeeRoles.UpdateAsync(existing);
+
+            await _unitOfWork.EmployeeRoles.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteEmployeeRoleAsync(long id)
         {
             await _unitOfWork.EmployeeRoles.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<BalanceHistoryStatus>> GetAllBalanceHistoryStatusesAsync()
@@ -93,24 +123,39 @@ namespace WebApi.Logic.Services
         public async Task<BalanceHistoryStatus> AddBalanceHistoryStatusAsync(BalanceHistoryStatus status)
         {
             var existing = await _unitOfWork.BalanceHistoryStatuses.GetSingleAsync(s => s.Name == status.Name);
-            if (existing != null)
-                throw new InvalidOperationException($"BalanceHistoryStatus with name '{status.Name}' already exists.");
 
-            return await _unitOfWork.BalanceHistoryStatuses.AddAsync(status);
+            if (existing != null)
+            {
+                throw new InvalidOperationException($"BalanceHistoryStatus with name '{status.Name}' already exists.");
+            }
+
+            var result = await _unitOfWork.BalanceHistoryStatuses.AddAsync(status);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<BalanceHistoryStatus> UpdateBalanceHistoryStatusAsync(BalanceHistoryStatus status)
         {
             var existing = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(status.Id);
+
             if (existing == null)
+            {
                 throw new ArgumentException("BalanceHistoryStatus not found.");
+            }
+
             existing.Name = status.Name;
-            return await _unitOfWork.BalanceHistoryStatuses.UpdateAsync(existing);
+
+            await _unitOfWork.BalanceHistoryStatuses.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteBalanceHistoryStatusAsync(long id)
         {
             await _unitOfWork.BalanceHistoryStatuses.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

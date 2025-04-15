@@ -14,5 +14,5 @@ public class Feedback
 
     public virtual Order Order { get; set; } = null!;
 
-    public virtual Rating Rating { get; set; } = null!;
+    public virtual Rating? Rating { get; set; } = null!;
 }

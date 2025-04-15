@@ -23,35 +23,54 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.Products.GetByIdAsync(id);
         }
 
-        public async Task<Product> AddProductAsync(Product product)
+        public async Task<Product> AddProductAsync(long categoryId, Product product)
         {
-            var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
+            var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
+
             if (category == null)
             {
                 throw new ArgumentException("Invalid category.");
             }
-            return await _unitOfWork.Products.AddAsync(product);
+
+            product.Category = category;
+
+            var result = await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<Product> UpdateProductAsync(Product product)
         {
             var existingProduct = await _unitOfWork.Products.GetByIdAsync(product.Id);
-            if (existingProduct == null) throw new ArgumentException("Product not found");
+
+            if (existingProduct == null)
+            {
+                throw new ArgumentException("Product not found");
+            }
+
+            var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
+
+            if (category == null)
+            {
+                throw new ArgumentException("Invalid category");
+            }
 
             existingProduct.Name = product.Name;
             existingProduct.Description = product.Description;
             existingProduct.Price = product.Price;
-            existingProduct.CategoryId = product.CategoryId;
+            existingProduct.Category = category;
 
-            var category = await _unitOfWork.Categories.GetByIdAsync(existingProduct.CategoryId);
-            if (category == null) throw new ArgumentException("Invalid category");
+            await _unitOfWork.Products.UpdateAsync(existingProduct);
+            await _unitOfWork.SaveChangesAsync();
 
-            return await _unitOfWork.Products.UpdateAsync(existingProduct);
+            return existingProduct;
         }
 
         public async Task DeleteProductAsync(long id)
         {
             await _unitOfWork.Products.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
@@ -66,12 +85,16 @@ namespace WebApi.Logic.Services
 
         public async Task<Category> AddCategoryAsync(Category category)
         {
-            return await _unitOfWork.Categories.AddAsync(category);
+            var result = await _unitOfWork.Categories.AddAsync(category);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<Category> UpdateCategoryAsync(Category category)
         {
             var existingCategory = await _unitOfWork.Categories.GetByIdAsync(category.Id);
+
             if (existingCategory == null)
             {
                 throw new ArgumentException("Category not found.");
@@ -80,21 +103,28 @@ namespace WebApi.Logic.Services
             if (category.ParentId.HasValue)
             {
                 var parentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId.Value);
+
                 if (parentCategory == null)
                 {
                     throw new ArgumentException("Parent category not found.");
                 }
             }
 
-            existingCategory.Name = category.Name;
-            existingCategory.ParentId = category.ParentId;
+            var existingParentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId);
 
-            return await _unitOfWork.Categories.UpdateAsync(existingCategory);
+            existingCategory.Name = category.Name;
+            existingCategory.Parent = existingParentCategory;
+
+            await _unitOfWork.Categories.UpdateAsync(existingCategory);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existingCategory;
         }
 
         public async Task DeleteCategoryAsync(long id)
         {
             await _unitOfWork.Categories.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

@@ -25,24 +25,34 @@ namespace WebApi.Logic.Services
 
         public async Task<MenuPreset> AddPresetAsync(MenuPreset preset)
         {
-            return await _unitOfWork.MenuPresets.AddAsync(preset);
+            var result = await _unitOfWork.MenuPresets.AddAsync(preset);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<MenuPreset> UpdatePresetAsync(MenuPreset preset)
         {
             var existing = await _unitOfWork.MenuPresets.GetByIdAsync(preset.Id);
+
             if (existing == null)
             {
                 throw new ArgumentException("MenuPreset not found.");
             }
+
             existing.Name = preset.Name;
             existing.Description = preset.Description;
-            return await _unitOfWork.MenuPresets.UpdateAsync(existing);
+
+            await _unitOfWork.MenuPresets.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeletePresetAsync(long id)
         {
             await _unitOfWork.MenuPresets.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<MenuPresetItem>> GetAllPresetItemsAsync()
@@ -58,28 +68,42 @@ namespace WebApi.Logic.Services
         public async Task<MenuPresetItem> AddPresetItemAsync(MenuPresetItem item)
         {
             var preset = await _unitOfWork.MenuPresets.GetByIdAsync(item.MenuPresetId);
+
             if (preset == null)
             {
                 throw new ArgumentException("MenuPreset not found.");
             }
-            return await _unitOfWork.MenuPresetItems.AddAsync(item);
+
+            var result = await _unitOfWork.MenuPresetItems.AddAsync(item); // ???
+                            //странности с логикой - в какой пресет мы добавляем?
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<MenuPresetItem> UpdatePresetItemAsync(MenuPresetItem item)
         {
-            var existing = await _unitOfWork.MenuPresetItems.GetByIdAsync(item.Id);
+            var existing = await _unitOfWork.MenuPresetItems.GetByIdAsync(item.Id); 
+
             if (existing == null)
             {
                 throw new ArgumentException("MenuPresetItem not found.");
             }
-            existing.ProductId = item.ProductId;
+
+            existing.ProductId = item.ProductId; // ???
             existing.MenuPresetId = item.MenuPresetId;
-            return await _unitOfWork.MenuPresetItems.UpdateAsync(existing);
+
+            await _unitOfWork.MenuPresetItems.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeletePresetItemAsync(long id)
         {
             await _unitOfWork.MenuPresetItems.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<MenuPresetItem>> GetPresetItemsByPresetIdAsync(long presetId)

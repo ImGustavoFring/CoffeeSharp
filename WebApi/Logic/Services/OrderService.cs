@@ -20,42 +20,59 @@ namespace WebApi.Logic.Services
         public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
         {
             if (request.Items == null || !request.Items.Any())
+            {
                 throw new ArgumentException("Order must contain at least one order item.");
+            }
 
             decimal totalCost = 0;
+
             foreach (var itemRequest in request.Items)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
+
                 if (product == null)
+                {
                     throw new ArgumentException($"Product with id {itemRequest.ProductId} not found.");
+                }
+
                 totalCost += itemRequest.Count * product.Price;
             }
 
             var client = await _unitOfWork.Clients.GetByIdAsync(request.ClientId);
+
             if (client == null)
+            {
                 throw new ArgumentException("Client not found.");
+            }
 
             if (client.Balance < totalCost)
+            {
                 throw new ArgumentException("Insufficient balance.");
+            }
 
             client.Balance -= totalCost;
             await _unitOfWork.Clients.UpdateAsync(client);
 
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0"));
+
             var balanceHistory = new BalanceHistory
             {
-                ClientId = client.Id,
+                Client = client,
                 Sum = -totalCost,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0")
+                BalanceHistoryStatus = balanceHistoryStatus
             };
             await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
 
+            var branch = await _unitOfWork.Branches.GetByIdAsync(request.BranchId);
+
             var order = new Order
             {
-                ClientId = request.ClientId,
+                Client = client,
                 ClientNote = request.ClientNote,
-                BranchId = request.BranchId,
+                Branch = branch,
                 CreatedAt = DateTime.UtcNow,
                 ExpectedIn = request.ExpectedIn
             };
@@ -64,19 +81,24 @@ namespace WebApi.Logic.Services
             foreach (var itemRequest in request.Items)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
+
                 if (product == null)
+                {
                     throw new ArgumentException("Product not found.");
+                }
 
                 var orderItem = new OrderItem
                 {
-                    OrderId = order.Id,
-                    ProductId = itemRequest.ProductId,
+                    Order = order,
+                    Product = product,
                     Count = itemRequest.Count,
                     Price = product.Price
                 };
                 await _unitOfWork.OrderItems.AddAsync(orderItem);
             }
+
             await _unitOfWork.SaveChangesAsync();
+
             return order;
         }
 
@@ -98,17 +120,24 @@ namespace WebApi.Logic.Services
         public async Task<Order> MarkOrderAsPickedUpAsync(long orderId)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
+
             if (order == null)
+            {
                 throw new ArgumentException("Order not found.");
+            }
 
             var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderId);
 
             if (!orderItems.Any() || orderItems.Any(oi => oi.DoneAt == null))
+            {
                 throw new InvalidOperationException("Order is not ready for pickup.");
+            }
 
             order.FinishedAt = DateTime.UtcNow;
+
             await _unitOfWork.Orders.UpdateAsync(order);
             await _unitOfWork.SaveChangesAsync();
+
             return order;
         }
 
@@ -120,26 +149,43 @@ namespace WebApi.Logic.Services
         public async Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId);
+
             if (order == null || order.FinishedAt == null)
-                throw new ArgumentException("Order not found or not completed. Feedback is allowed only for completed orders.");
+            {
+                throw new ArgumentException("Order not found or not completed." +
+                    " Feedback is allowed only for completed orders.");
+            }
+
+            var rating = await _unitOfWork.Ratings.GetByIdAsync(request.RatingId);
 
             var feedback = new Feedback
             {
-                Content = request.Content,
-                RatingId = request.RatingId,
-                OrderId = request.OrderId
+                Content = request.Content, 
+                Rating = rating,
+                Order = order
             };
+
             return await _unitOfWork.Feedbacks.AddAsync(feedback);
         }
 
         public async Task<Feedback> UpdateFeedbackAsync(Feedback feedback)
         {
             var existing = await _unitOfWork.Feedbacks.GetByIdAsync(feedback.Id);
+
             if (existing == null)
+            {
                 throw new ArgumentException("Feedback not found.");
+            }
+
+            var rating = await _unitOfWork.Ratings.GetByIdAsync(feedback.RatingId);
+
             existing.Content = feedback.Content;
-            existing.RatingId = feedback.RatingId;
-            return await _unitOfWork.Feedbacks.UpdateAsync(existing);
+            existing.Rating = rating;
+
+            await _unitOfWork.Feedbacks.UpdateAsync(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteFeedbackAsync(long feedbackId)
@@ -151,41 +197,64 @@ namespace WebApi.Logic.Services
         public async Task<IEnumerable<OrderItem>> GetOrderItemsAsync(long? orderId = null, long? employeeId = null)
         {
             Expression<Func<OrderItem, bool>>? filter = null;
+
             if (orderId.HasValue && employeeId.HasValue)
+            {
                 filter = oi => oi.OrderId == orderId.Value && oi.EmployeeId == employeeId.Value;
+            }
+
             else if (orderId.HasValue)
+            {
                 filter = oi => oi.OrderId == orderId.Value;
+            }
+
             else if (employeeId.HasValue)
+            {
                 filter = oi => oi.EmployeeId == employeeId.Value;
+            }
+
             return await _unitOfWork.OrderItems.GetAllAsync(filter: filter);
         }
 
         public async Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request)
         {
             var product = await _unitOfWork.Products.GetByIdAsync(request.ProductId);
+
             if (product == null)
+            {
                 throw new ArgumentException("Product not found.");
+            }
+
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
 
             var orderItem = new OrderItem
             {
-                OrderId = orderId,
-                ProductId = request.ProductId,
+                Order = order,
+                Product = product,
                 Count = request.Count,
                 Price = product.Price
             };
+
             await _unitOfWork.OrderItems.AddAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
+
             return orderItem;
         }
 
         public async Task<OrderItem> UpdateOrderItemAsync(OrderItem orderItem)
         {
             var existing = await _unitOfWork.OrderItems.GetByIdAsync(orderItem.Id);
+
             if (existing == null)
+            {
                 throw new ArgumentException("OrderItem not found.");
+            }
+
             existing.Count = orderItem.Count;
+
             await _unitOfWork.OrderItems.UpdateAsync(existing);
             await _unitOfWork.SaveChangesAsync();
+
             return existing;
         }
 
@@ -198,28 +267,44 @@ namespace WebApi.Logic.Services
         public async Task<OrderItem> AssignOrderItemToCookAsync(long orderItemId, long employeeId)
         {
             var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
+
             if (orderItem == null)
+            {
                 throw new ArgumentException("OrderItem not found.");
+            }
+
             if (orderItem.EmployeeId.HasValue)
+            {
                 throw new InvalidOperationException("OrderItem is already assigned.");
+            }
 
-            orderItem.EmployeeId = employeeId;
+            var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
+
+            orderItem.Employee = employee;
             orderItem.StartedAt = DateTime.UtcNow;
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
 
+            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
+
             return orderItem;
         }
 
         public async Task<OrderItem> MarkOrderItemCompletedAsync(long orderItemId, long employeeId)
         {
             var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
+
             if (orderItem == null)
+            {
                 throw new ArgumentException("OrderItem not found.");
+            }
+
             if (orderItem.EmployeeId != employeeId)
+            {
                 throw new UnauthorizedAccessException("You are not assigned to this OrderItem.");
+            }
 
             orderItem.DoneAt = DateTime.UtcNow;
+
             await _unitOfWork.OrderItems.UpdateAsync(orderItem);
 
             var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderItem.OrderId);
@@ -227,26 +312,36 @@ namespace WebApi.Logic.Services
             if (orderItems.All(oi => oi.DoneAt != null))
             {
                 var order = await _unitOfWork.Orders.GetByIdAsync(orderItem.OrderId);
+
                 if (order != null)
                 {
                     order.DoneAt = DateTime.UtcNow;
                     await _unitOfWork.Orders.UpdateAsync(order);
                 }
             }
+
             await _unitOfWork.SaveChangesAsync();
+
             return orderItem;
         }
 
         public async Task<OrderItem> ReassignOrderItemAsync(long orderItemId, long newEmployeeId)
         {
             var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
-            if (orderItem == null)
-                throw new ArgumentException("OrderItem not found.");
 
-            orderItem.EmployeeId = newEmployeeId;
+            if (orderItem == null)
+            {
+                throw new ArgumentException("OrderItem not found.");
+            }
+
+            var employee = await _unitOfWork.Employees.GetByIdAsync(newEmployeeId);
+
+            orderItem.Employee = employee;
             orderItem.StartedAt = DateTime.UtcNow;
+
             await _unitOfWork.OrderItems.UpdateAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
+
             return orderItem;
         }
     }

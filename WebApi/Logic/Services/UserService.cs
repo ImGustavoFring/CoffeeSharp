@@ -23,6 +23,7 @@ namespace WebApi.Logic.Services
         public async Task<Admin> AddAdminAsync(string userName, string password)
         {
             var existingAdmin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
+
             if (existingAdmin != null)
             {
                 throw new InvalidOperationException("Admin with this username already exists");
@@ -36,6 +37,7 @@ namespace WebApi.Logic.Services
 
             await _unitOfWork.Admins.AddAsync(admin);
             await _unitOfWork.SaveChangesAsync();
+
             return admin;
         }
 
@@ -52,8 +54,11 @@ namespace WebApi.Logic.Services
         public async Task<Admin> UpdateAdminAsync(Admin admin)
         {
             var existingAdmin = await _unitOfWork.Admins.GetByIdAsync(admin.Id);
+
             if (existingAdmin == null)
+            {
                 throw new KeyNotFoundException("Admin not found");
+            }
 
             existingAdmin.UserName = admin.UserName;
 
@@ -84,36 +89,51 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.Employees.GetByIdAsync(id);
         }
 
-        public async Task<Employee> AddEmployeeAsync(string name, string userName, string password, long roleId, long branchId)
+        public async Task<Employee> AddEmployeeAsync(string name,
+            string userName, string password,
+            long roleId, long branchId)
         {
+            
+            var role = await _unitOfWork.EmployeeRoles.GetByIdAsync(roleId);
+            var branch = await _unitOfWork.Branches.GetByIdAsync(branchId);
+
             var employee = new Employee
             {
                 Name = name,
                 UserName = userName,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                RoleId = roleId,
-                BranchId = branchId
+                Role = role,
+                Branch = branch
             };
 
             await _unitOfWork.Employees.AddAsync(employee);
             await _unitOfWork.SaveChangesAsync();
+
             return employee;
         }
 
         public async Task<Employee> UpdateEmployeeAsync(Employee employee)
         {
             var existingEmployee = await _unitOfWork.Employees.GetByIdAsync(employee.Id);
+
             if (existingEmployee == null)
+            {
                 throw new KeyNotFoundException("Employee not found");
+            }
 
             existingEmployee.Name = employee.Name;
             existingEmployee.UserName = employee.UserName;
+
             if (!string.IsNullOrWhiteSpace(employee.PasswordHash))
             {
                 existingEmployee.PasswordHash = BCrypt.Net.BCrypt.HashPassword(employee.PasswordHash);
             }
-            existingEmployee.RoleId = employee.RoleId;
-            existingEmployee.BranchId = employee.BranchId;
+
+            var role = await _unitOfWork.EmployeeRoles.GetByIdAsync(employee.RoleId);
+            var branch = await _unitOfWork.Branches.GetByIdAsync(employee.BranchId);
+
+            existingEmployee.Role = role;
+            existingEmployee.Branch = branch;
 
             await _unitOfWork.Employees.UpdateAsync(existingEmployee);
             await _unitOfWork.SaveChangesAsync();

@@ -37,14 +37,17 @@ namespace WebApi.Logic.Services
         public async Task<Client> CreateClientAsync(Client client)
         {
             client.Balance = 0;
+
             await _unitOfWork.Clients.AddAsync(client);
             await _unitOfWork.SaveChangesAsync();
+
             return client;
         }
 
         public async Task<Client> UpdateClientAsync(Client client)
         {
             var existing = await _unitOfWork.Clients.GetByIdAsync(client.Id);
+
             if (existing == null)
             {
                 throw new ArgumentException("Client not found.");
@@ -54,6 +57,7 @@ namespace WebApi.Logic.Services
 
             await _unitOfWork.Clients.UpdateAsync(existing);
             await _unitOfWork.SaveChangesAsync();
+
             return existing;
         }
 
@@ -66,50 +70,70 @@ namespace WebApi.Logic.Services
         public async Task<Client> AddBalanceAsync(long clientId, decimal amount)
         {
             var client = await _unitOfWork.Clients.GetByIdAsync(clientId);
+            
             if (client == null)
             {
                 throw new ArgumentException("Client not found.");
-            }                        
+            }
+
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+               long.Parse(_configuration["Transaction:PendingStatus"] ?? "0"));
+
             var balanceHistory = new BalanceHistory
             {
                 ClientId = clientId,
                 Sum = amount,
                 CreatedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:PendingStatus"] ?? "0")
+                BalanceHistoryStatus = balanceHistoryStatus
             };
 
             await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
             await _unitOfWork.SaveChangesAsync();
+
             return client;
         }
 
         public async Task<Client> CompletePendingBalanceTransactionAsync(long transactionId)
         {
             var transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId);
+
             if (transaction == null)
+            {
                 throw new ArgumentException("Transaction not found.");
+            }
 
             if (transaction.BalanceHistoryStatusId != long.Parse(_configuration["Transaction:PendingStatus"] ?? "0"))
+            {
                 throw new InvalidOperationException("Only pending transactions can be completed.");
+            }
 
             var client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId);
+
             if (client == null)
+            {
                 throw new ArgumentException("Client not found.");
+            }
 
             client.Balance += transaction.Sum;
+
             await _unitOfWork.Clients.UpdateAsync(client);
 
-            transaction.BalanceHistoryStatusId = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1");
-            transaction.FinishedAt = DateTime.UtcNow;
-            await _unitOfWork.BalanceHistories.UpdateAsync(transaction);
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1"));
 
+            transaction.BalanceHistoryStatus = balanceHistoryStatus;
+            transaction.FinishedAt = DateTime.UtcNow;
+
+            await _unitOfWork.BalanceHistories.UpdateAsync(transaction);
             await _unitOfWork.SaveChangesAsync();
+
             return client;
         }
 
         public async Task<Client> DeductBalanceAsync(long clientId, decimal amount)
         {
             var client = await _unitOfWork.Clients.GetByIdAsync(clientId);
+
             if (client == null)
             {
                 throw new ArgumentException("Client not found.");
@@ -121,25 +145,32 @@ namespace WebApi.Logic.Services
             }
 
             client.Balance -= amount;
+
             await _unitOfWork.Clients.UpdateAsync(client);
+
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0"));
 
             var balanceHistory = new BalanceHistory
             {
-                ClientId = client.Id,
+                Client = client,
                 Sum = -amount,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0")
+                BalanceHistoryStatus = balanceHistoryStatus
             };
-            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
 
+            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
             await _unitOfWork.SaveChangesAsync();
+
             return client;
         }
 
-        public async Task<IEnumerable<BalanceHistory>> GetClientTransactionsAsync(long clientId, bool orderByNewestFirst, TransactionType transactionType)
+        public async Task<IEnumerable<BalanceHistory>> GetClientTransactionsAsync(long clientId,
+            bool orderByNewestFirst, TransactionType transactionType)
         {
             Expression<Func<BalanceHistory, bool>> filter = bh => bh.ClientId == clientId;
+
             if (transactionType == TransactionType.TopUp)
             {
                 filter = bh => bh.ClientId == clientId && bh.Sum > 0;
@@ -158,23 +189,34 @@ namespace WebApi.Logic.Services
         public async Task<Client> CancelTransactionAsync(long transactionId)
         {
             var transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId);
+
             if (transaction == null)
+            {
                 throw new ArgumentException("Transaction not found.");
+            }
 
             var client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId);
+
             if (client == null)
+            {
                 throw new ArgumentException("Client not found.");
+            }
                         
             if (transaction.BalanceHistoryStatusId == long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1"))
             {
                 client.Balance -= transaction.Sum;
                 await _unitOfWork.Clients.UpdateAsync(client);
             }
-            transaction.BalanceHistoryStatusId = long.Parse(_configuration["Transaction:CancelledStatus"] ?? "2");
-            transaction.FinishedAt = DateTime.UtcNow;
-            await _unitOfWork.BalanceHistories.UpdateAsync(transaction);
 
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CancelledStatus"] ?? "2"));
+
+            transaction.BalanceHistoryStatus = balanceHistoryStatus;
+            transaction.FinishedAt = DateTime.UtcNow;
+
+            await _unitOfWork.BalanceHistories.UpdateAsync(transaction);
             await _unitOfWork.SaveChangesAsync();
+
             return client;
         }
     }
