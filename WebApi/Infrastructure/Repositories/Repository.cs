@@ -25,7 +25,7 @@ namespace WebApi.Infrastructure.Repositories
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             List<Expression<Func<T, object>>>? includes = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = _dbSet;
@@ -59,7 +59,7 @@ namespace WebApi.Infrastructure.Repositories
         public async Task<T?> GetSingleAsync(
             Expression<Func<T, bool>> filter,
             List<Expression<Func<T, object>>>? includes = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             CancellationToken cancellationToken = default)
         {
             IQueryable<T> query = _dbSet;
@@ -88,31 +88,37 @@ namespace WebApi.Infrastructure.Repositories
         public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
+            {
                 throw new ArgumentNullException(nameof(entity));
+            }
 
             await _dbSet.AddAsync(entity, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+
             return entity;
         }
 
         public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
         {
             if (entity == null)
+            {
                 throw new ArgumentNullException(nameof(entity));
+            }
 
             _dbSet.Update(entity);
-            await _context.SaveChangesAsync(cancellationToken);
-            return entity;
+
+            return await Task.FromResult(entity);
         }
 
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             var entity = await GetByIdAsync(id, cancellationToken);
+
             if (entity == null)
+            {
                 throw new KeyNotFoundException($"Entity with id {id} not found.");
+            }    
 
             _dbSet.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

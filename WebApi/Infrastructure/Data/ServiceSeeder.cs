@@ -87,33 +87,33 @@ namespace WebApi.Infrastructure.Data
                 Name = "Espresso",
                 Description = "Strong coffee shot",
                 Price = 2.5m,
-                CategoryId = categoryCoffee.Id
+                Category = categoryCoffee
             });
             var productLatte = await _unitOfWork.Products.AddAsync(new Product
             {
                 Name = "Latte",
                 Description = "Coffee with milk",
                 Price = 3.5m,
-                CategoryId = categoryCoffee.Id
+                Category = categoryCoffee
             });
             var productGreenTea = await _unitOfWork.Products.AddAsync(new Product
             {
                 Name = "Green Tea",
                 Description = "Refreshing green tea",
                 Price = 1.8m,
-                CategoryId = categoryTea.Id
+                Category = categoryTea
             });
             _logger.LogInformation("Products created successfully.");
 
             var menuPresetItemEspresso = await _unitOfWork.MenuPresetItems.AddAsync(new MenuPresetItem
             {
-                ProductId = productEspresso.Id,
-                MenuPresetId = menuPresetMorning.Id
+                Product = productEspresso,
+                MenuPreset = menuPresetMorning
             });
             var menuPresetItemLatte = await _unitOfWork.MenuPresetItems.AddAsync(new MenuPresetItem
             {
-                ProductId = productLatte.Id,
-                MenuPresetId = menuPresetEvening.Id
+                Product = productLatte,
+                MenuPreset = menuPresetEvening
             });
             _logger.LogInformation("Menu preset items created successfully.");
 
@@ -122,45 +122,45 @@ namespace WebApi.Infrastructure.Data
                 Name = "Alice",
                 UserName = "alice123",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("alice123"),
-                RoleId = roleManager.Id,
-                BranchId = branchMain.Id
+                Role = roleManager,
+                Branch = branchMain
             });
             var employeeBob = await _unitOfWork.Employees.AddAsync(new Employee
             {
                 Name = "Bob",
                 UserName = "bobux123",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("bobux123"),
-                RoleId = roleStaff.Id,
-                BranchId = branchSecondary.Id
+                Role = roleStaff,
+                Branch = branchSecondary
             });
             _logger.LogInformation("Employees created successfully.");
 
             await _unitOfWork.BranchMenus.AddAsync(new BranchMenu
             {
-                MenuPresetItemId = menuPresetItemEspresso.Id,
-                BranchId = branchMain.Id,
+                MenuPresetItem = menuPresetItemEspresso,
+                Branch = branchMain,
                 Availability = true
             });
             await _unitOfWork.BranchMenus.AddAsync(new BranchMenu
             {
-                MenuPresetItemId = menuPresetItemLatte.Id,
-                BranchId = branchSecondary.Id,
+                MenuPresetItem = menuPresetItemLatte,
+                Branch = branchSecondary,
                 Availability = true
             });
             _logger.LogInformation("Branch menus created successfully.");
 
             var order1 = await _unitOfWork.Orders.AddAsync(new Order
             {
-                ClientId = clientJohn.Id,
-                BranchId = branchMain.Id,
+                Client = clientJohn,
+                Branch = branchMain,
                 CreatedAt = DateTime.UtcNow,
                 ExpectedIn = DateTime.UtcNow.AddMinutes(30),
                 ClientNote = "Please deliver quickly."
             });
             var order2 = await _unitOfWork.Orders.AddAsync(new Order
             {
-                ClientId = clientJane.Id,
-                BranchId = branchSecondary.Id,
+                Client = clientJane,
+                Branch = branchSecondary,
                 CreatedAt = DateTime.UtcNow,
                 ExpectedIn = DateTime.UtcNow.AddMinutes(45),
                 ClientNote = "Extra sugar, please."
@@ -169,17 +169,17 @@ namespace WebApi.Infrastructure.Data
 
             await _unitOfWork.OrderItems.AddAsync(new OrderItem
             {
-                OrderId = order1.Id,
-                ProductId = productEspresso.Id,
-                EmployeeId = employeeAlice.Id,
+                Order = order1,
+                Product = productEspresso,
+                Employee = employeeAlice,
                 Price = productEspresso.Price,
                 Count = 2,
                 StartedAt = DateTime.UtcNow
             });
             await _unitOfWork.OrderItems.AddAsync(new OrderItem
             {
-                OrderId = order2.Id,
-                ProductId = productGreenTea.Id,
+                Order = order2,
+                Product = productGreenTea,
                 Price = productGreenTea.Price,
                 Count = 1,
                 StartedAt = DateTime.UtcNow
@@ -188,39 +188,43 @@ namespace WebApi.Infrastructure.Data
 
             await _unitOfWork.BalanceHistories.AddAsync(new BalanceHistory
             {
-                ClientId = clientJohn.Id,
+                Client = clientJohn,
                 Sum = 50m,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow.AddMinutes(15),
-                BalanceHistoryStatusId = statusCompleted.Id
+                BalanceHistoryStatus = statusCompleted
             });
             await _unitOfWork.BalanceHistories.AddAsync(new BalanceHistory
             {
-                ClientId = clientJane.Id,
+                Client = clientJane,
                 Sum = -20m,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow.AddMinutes(10),
-                BalanceHistoryStatusId = statusPending.Id
+                BalanceHistoryStatus = statusPending
             });
             _logger.LogInformation("Balance histories created successfully.");
 
             await _unitOfWork.Feedbacks.AddAsync(new Feedback
             {
                 Content = "Great service!",
-                RatingId = ratingGood.Id,
-                OrderId = order1.Id
+                Rating = ratingGood,
+                Order = order1
             });
             await _unitOfWork.Feedbacks.AddAsync(new Feedback
             {
                 Content = "Average experience.",
-                RatingId = ratingAverage.Id,
-                OrderId = order2.Id
+                Rating = ratingAverage,
+                Order = order2
             });
+
             _logger.LogInformation("Feedbacks created successfully.");
 
             _logger.LogInformation("Displaying contents of all tables:");
 
+            await _unitOfWork.SaveChangesAsync();
+
             var allCategories = await _unitOfWork.Categories.GetAllAsync();
+
             foreach (var category in allCategories)
                 _logger.LogInformation("Category: {Id} - {Name}", category.Id, category.Name);
 

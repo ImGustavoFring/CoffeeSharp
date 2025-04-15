@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Microsoft.OpenApi.Models;
-using WebApi.Logic.CrudServices.Interfaces;
-using WebApi.Logic.CrudServices;
 using WebApi.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
