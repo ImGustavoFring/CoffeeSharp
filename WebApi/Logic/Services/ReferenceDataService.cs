@@ -58,7 +58,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteRatingAsync(long id)
         {
-            _unitOfWork.Ratings.Delete(id);
+            await _unitOfWork.Ratings.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -106,7 +106,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteEmployeeRoleAsync(long id)
         {
-            _unitOfWork.EmployeeRoles.Delete(id);
+            await _unitOfWork.EmployeeRoles.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -154,7 +154,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteBalanceHistoryStatusAsync(long id)
         {
-            _unitOfWork.BalanceHistoryStatuses.Delete(id);
+            await _unitOfWork.BalanceHistoryStatuses.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

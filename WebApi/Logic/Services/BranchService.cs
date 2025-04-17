@@ -51,7 +51,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteBranchAsync(long id)
         {
-            _unitOfWork.Branches.Delete(id);
+            await _unitOfWork.Branches.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -91,7 +91,7 @@ namespace WebApi.Logic.Services
 
             foreach (var bm in existingMenus)
             {
-                _unitOfWork.BranchMenus.Delete(bm.Id);
+                await _unitOfWork.BranchMenus.DeleteAsync(bm.Id);
             }
 
             var presetItems = await _unitOfWork.MenuPresetItems.GetManyAsync(

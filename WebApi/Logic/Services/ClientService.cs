@@ -64,7 +64,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteClientAsync(long id)
         {
-            _unitOfWork.Clients.Delete(id);
+            await _unitOfWork.Clients.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 

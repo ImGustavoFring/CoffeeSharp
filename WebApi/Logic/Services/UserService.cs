@@ -75,7 +75,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteAdminAsync(long id)
         {
-            _unitOfWork.Admins.Delete(id);
+            await _unitOfWork.Admins.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -143,7 +143,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteEmployeeAsync(long id)
         {
-            _unitOfWork.Employees.Delete(id);
+            await _unitOfWork.Employees.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

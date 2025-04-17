@@ -51,7 +51,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeletePresetAsync(long id)
         {
-            _unitOfWork.MenuPresets.Delete(id);
+            await _unitOfWork.MenuPresets.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -108,7 +108,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeletePresetItemAsync(long id)
         {
-            _unitOfWork.MenuPresetItems.Delete(id);  
+            await _unitOfWork.MenuPresetItems.DeleteAsync(id);  
             await _unitOfWork.SaveChangesAsync();
         }
 

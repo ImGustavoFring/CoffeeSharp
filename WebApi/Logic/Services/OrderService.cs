@@ -192,7 +192,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteFeedbackAsync(long feedbackId)
         {
-            _unitOfWork.Feedbacks.Delete(feedbackId);
+            await _unitOfWork.Feedbacks.DeleteAsync(feedbackId);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -262,7 +262,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteOrderItemAsync(long orderItemId)
         {
-            _unitOfWork.OrderItems.Delete(orderItemId);
+            await _unitOfWork.OrderItems.DeleteAsync(orderItemId);
             await _unitOfWork.SaveChangesAsync();
         }
 

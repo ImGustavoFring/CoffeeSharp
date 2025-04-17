@@ -69,7 +69,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteProductAsync(long id)
         {
-            _unitOfWork.Products.Delete(id);
+            await _unitOfWork.Products.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -123,7 +123,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteCategoryAsync(long id)
         {
-            _unitOfWork.Categories.Delete(id);
+            await _unitOfWork.Categories.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

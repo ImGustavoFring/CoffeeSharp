@@ -134,9 +134,9 @@ namespace WebApi.Infrastructure.Repositories
             return entity;
         }
 
-        public void Delete(object id)
+        public async Task DeleteAsync(object id)
         {
-            var entity = _dbSet.Find(id);
+            var entity = await _dbSet.FindAsync(id);
 
             if (entity == null)
             {
