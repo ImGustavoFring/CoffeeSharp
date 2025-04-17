@@ -22,7 +22,7 @@ namespace WebApi.Logic.Services
 
         public async Task<Admin> AddAdminAsync(string userName, string password)
         {
-            var existingAdmin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
+            var existingAdmin = await _unitOfWork.Admins.GetOneAsync(x => x.UserName == userName);
 
             if (existingAdmin != null)
             {
@@ -35,7 +35,7 @@ namespace WebApi.Logic.Services
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
             };
 
-            await _unitOfWork.Admins.AddAsync(admin);
+            await _unitOfWork.Admins.AddOneAsync(admin);
             await _unitOfWork.SaveChangesAsync();
 
             return admin;
@@ -43,7 +43,7 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
         {
-            return await _unitOfWork.Admins.GetAllAsync();
+            return await _unitOfWork.Admins.GetManyAsync();
         }
 
         public async Task<Admin?> GetAdminByIdAsync(long id)
@@ -67,7 +67,7 @@ namespace WebApi.Logic.Services
                 existingAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(admin.PasswordHash);
             }
 
-            await _unitOfWork.Admins.UpdateAsync(existingAdmin);
+            _unitOfWork.Admins.Update(existingAdmin);
             await _unitOfWork.SaveChangesAsync();
 
             return existingAdmin;
@@ -75,13 +75,13 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteAdminAsync(long id)
         {
-            await _unitOfWork.Admins.DeleteAsync(id);
+            _unitOfWork.Admins.Delete(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
-            return await _unitOfWork.Employees.GetAllAsync();
+            return await _unitOfWork.Employees.GetManyAsync();
         }
 
         public async Task<Employee?> GetEmployeeByIdAsync(long id)
@@ -102,11 +102,11 @@ namespace WebApi.Logic.Services
                 Name = name,
                 UserName = userName,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                Role = role,
-                Branch = branch
+                RoleId = role.Id,
+                BranchId = branch.Id
             };
 
-            await _unitOfWork.Employees.AddAsync(employee);
+            await _unitOfWork.Employees.AddOneAsync(employee);
             await _unitOfWork.SaveChangesAsync();
 
             return employee;
@@ -132,10 +132,10 @@ namespace WebApi.Logic.Services
             var role = await _unitOfWork.EmployeeRoles.GetByIdAsync(employee.RoleId);
             var branch = await _unitOfWork.Branches.GetByIdAsync(employee.BranchId);
 
-            existingEmployee.Role = role;
-            existingEmployee.Branch = branch;
+            existingEmployee.RoleId = role.Id;
+            existingEmployee.BranchId = branch.Id;
 
-            await _unitOfWork.Employees.UpdateAsync(existingEmployee);
+            _unitOfWork.Employees.Update(existingEmployee);
             await _unitOfWork.SaveChangesAsync();
 
             return existingEmployee;
@@ -143,7 +143,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteEmployeeAsync(long id)
         {
-            await _unitOfWork.Employees.DeleteAsync(id);
+            _unitOfWork.Employees.Delete(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

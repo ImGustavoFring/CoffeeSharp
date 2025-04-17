@@ -15,7 +15,7 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            return await _unitOfWork.Products.GetAllAsync();
+            return await _unitOfWork.Products.GetManyAsync();
         }
 
         public async Task<Product?> GetProductByIdAsync(long id)
@@ -32,9 +32,9 @@ namespace WebApi.Logic.Services
                 throw new ArgumentException("Invalid category.");
             }
 
-            product.Category = category;
+            product.CategoryId = category.Id;
 
-            var result = await _unitOfWork.Products.AddAsync(product);
+            var result = await _unitOfWork.Products.AddOneAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
             return result;
@@ -59,9 +59,9 @@ namespace WebApi.Logic.Services
             existingProduct.Name = product.Name;
             existingProduct.Description = product.Description;
             existingProduct.Price = product.Price;
-            existingProduct.Category = category;
+            existingProduct.CategoryId = category.Id;
 
-            await _unitOfWork.Products.UpdateAsync(existingProduct);
+            _unitOfWork.Products.Update(existingProduct);
             await _unitOfWork.SaveChangesAsync();
 
             return existingProduct;
@@ -69,13 +69,13 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteProductAsync(long id)
         {
-            await _unitOfWork.Products.DeleteAsync(id);
+            _unitOfWork.Products.Delete(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
         {
-            return await _unitOfWork.Categories.GetAllAsync();
+            return await _unitOfWork.Categories.GetManyAsync();
         }
 
         public async Task<Category?> GetCategoryByIdAsync(long id)
@@ -85,7 +85,7 @@ namespace WebApi.Logic.Services
 
         public async Task<Category> AddCategoryAsync(Category category)
         {
-            var result = await _unitOfWork.Categories.AddAsync(category);
+            var result = await _unitOfWork.Categories.AddOneAsync(category);
             await _unitOfWork.SaveChangesAsync();
 
             return result;
@@ -113,9 +113,9 @@ namespace WebApi.Logic.Services
             var existingParentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId);
 
             existingCategory.Name = category.Name;
-            existingCategory.Parent = existingParentCategory;
+            existingCategory.ParentId = existingParentCategory.Id;
 
-            await _unitOfWork.Categories.UpdateAsync(existingCategory);
+            _unitOfWork.Categories.Update(existingCategory);
             await _unitOfWork.SaveChangesAsync();
 
             return existingCategory;
@@ -123,7 +123,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteCategoryAsync(long id)
         {
-            await _unitOfWork.Categories.DeleteAsync(id);
+            _unitOfWork.Categories.Delete(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

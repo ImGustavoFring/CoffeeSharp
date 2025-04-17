@@ -22,7 +22,7 @@ namespace WebApi.Logic.Services
 
         public async Task<string> AdminLoginAsync(string userName, string password)
         {
-            var admin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
+            var admin = await _unitOfWork.Admins.GetOneAsync(x => x.UserName == userName);
 
             if (admin == null || !VerifyPassword(password, admin.PasswordHash))
             {
@@ -34,7 +34,7 @@ namespace WebApi.Logic.Services
 
         public async Task<string> EmployeeLoginAsync(string userName, string password)
         {
-            var employee = await _unitOfWork.Employees.GetSingleAsync(x => x.UserName == userName);
+            var employee = await _unitOfWork.Employees.GetOneAsync(x => x.UserName == userName);
 
             if (employee == null || !VerifyPassword(password, employee.PasswordHash))
             {
@@ -62,6 +62,7 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Name, admin.UserName),
                     new Claim("user_type", "admin")
                 }),
+
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)
@@ -87,6 +88,7 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Role, employee.RoleId.ToString())
 
                 }),
+
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)

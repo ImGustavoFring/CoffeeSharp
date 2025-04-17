@@ -24,18 +24,18 @@ namespace WebApi.Logic.Services
                 throw new ArgumentException("Order must contain at least one order item.");
             }
 
-            decimal totalCost = 0;
+            decimal totalCost = 0m;
 
-            foreach (var itemRequest in request.Items)
+            foreach (var itemReq in request.Items)
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
+                var product = await _unitOfWork.Products.GetByIdAsync(itemReq.ProductId);
 
                 if (product == null)
                 {
-                    throw new ArgumentException($"Product with id {itemRequest.ProductId} not found.");
+                    throw new ArgumentException($"Product with id {itemReq.ProductId} not found.");
                 }
 
-                totalCost += itemRequest.Count * product.Price;
+                totalCost += itemReq.Count * product.Price;
             }
 
             var client = await _unitOfWork.Clients.GetByIdAsync(request.ClientId);
@@ -51,50 +51,51 @@ namespace WebApi.Logic.Services
             }
 
             client.Balance -= totalCost;
-            await _unitOfWork.Clients.UpdateAsync(client);
 
-            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
-                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0"));
+            var statusId = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0");
+            var historyStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(statusId);
 
-            var balanceHistory = new BalanceHistory
+            if (historyStatus == null)
             {
-                Client = client,
+                throw new InvalidOperationException("BalanceHistoryStatus not found.");
+            }
+
+            client.BalanceHistories.Add(new BalanceHistory
+            {
                 Sum = -totalCost,
                 CreatedAt = DateTime.UtcNow,
                 FinishedAt = DateTime.UtcNow,
-                BalanceHistoryStatus = balanceHistoryStatus
-            };
-            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
+                BalanceHistoryStatus = historyStatus
+            });
 
             var branch = await _unitOfWork.Branches.GetByIdAsync(request.BranchId);
+
+            if (branch == null)
+            {
+                throw new ArgumentException("Branch not found.");
+            }
 
             var order = new Order
             {
                 Client = client,
-                ClientNote = request.ClientNote,
                 Branch = branch,
+                ClientNote = request.ClientNote,
                 CreatedAt = DateTime.UtcNow,
                 ExpectedIn = request.ExpectedIn
             };
-            await _unitOfWork.Orders.AddAsync(order);
 
-            foreach (var itemRequest in request.Items)
+            client.Orders.Add(order);
+
+            foreach (var itemReq in request.Items)
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
+                var product = await _unitOfWork.Products.GetByIdAsync(itemReq.ProductId)!;
 
-                if (product == null)
+                order.OrderItems.Add(new OrderItem
                 {
-                    throw new ArgumentException("Product not found.");
-                }
-
-                var orderItem = new OrderItem
-                {
-                    Order = order,
                     Product = product,
-                    Count = itemRequest.Count,
+                    Count = itemReq.Count,
                     Price = product.Price
-                };
-                await _unitOfWork.OrderItems.AddAsync(orderItem);
+                });
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -109,12 +110,12 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            return await _unitOfWork.Orders.GetAllAsync();
+            return await _unitOfWork.Orders.GetManyAsync();
         }
 
         public async Task<IEnumerable<Order>> GetOrdersByClientAsync(long clientId)
         {
-            return await _unitOfWork.Orders.GetAllAsync(filter: o => o.ClientId == clientId);
+            return await _unitOfWork.Orders.GetManyAsync(filter: o => o.ClientId == clientId);
         }
 
         public async Task<Order> MarkOrderAsPickedUpAsync(long orderId)
@@ -126,7 +127,8 @@ namespace WebApi.Logic.Services
                 throw new ArgumentException("Order not found.");
             }
 
-            var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderId);
+            var orderItems = await _unitOfWork.OrderItems.GetManyAsync(filter: oi => oi.OrderId == orderId,
+                disableTracking: false);
 
             if (!orderItems.Any() || orderItems.Any(oi => oi.DoneAt == null))
             {
@@ -135,7 +137,7 @@ namespace WebApi.Logic.Services
 
             order.FinishedAt = DateTime.UtcNow;
 
-            await _unitOfWork.Orders.UpdateAsync(order);
+            _unitOfWork.Orders.Update(order);
             await _unitOfWork.SaveChangesAsync();
 
             return order;
@@ -143,7 +145,7 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Feedback>> GetAllFeedbacksAsync()
         {
-            return await _unitOfWork.Feedbacks.GetAllAsync();
+            return await _unitOfWork.Feedbacks.GetManyAsync();
         }
 
         public async Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request)
@@ -161,11 +163,11 @@ namespace WebApi.Logic.Services
             var feedback = new Feedback
             {
                 Content = request.Content, 
-                Rating = rating,
-                Order = order
+                RatingId = rating.Id,
+                OrderId = order.Id
             };
 
-            return await _unitOfWork.Feedbacks.AddAsync(feedback);
+            return await _unitOfWork.Feedbacks.AddOneAsync(feedback);
         }
 
         public async Task<Feedback> UpdateFeedbackAsync(Feedback feedback)
@@ -180,9 +182,9 @@ namespace WebApi.Logic.Services
             var rating = await _unitOfWork.Ratings.GetByIdAsync(feedback.RatingId);
 
             existing.Content = feedback.Content;
-            existing.Rating = rating;
+            existing.RatingId = rating.Id;
 
-            await _unitOfWork.Feedbacks.UpdateAsync(existing);
+            _unitOfWork.Feedbacks.Update(existing);
             await _unitOfWork.SaveChangesAsync();
 
             return existing;
@@ -190,7 +192,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteFeedbackAsync(long feedbackId)
         {
-            await _unitOfWork.Feedbacks.DeleteAsync(feedbackId);
+            _unitOfWork.Feedbacks.Delete(feedbackId);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -213,7 +215,7 @@ namespace WebApi.Logic.Services
                 filter = oi => oi.EmployeeId == employeeId.Value;
             }
 
-            return await _unitOfWork.OrderItems.GetAllAsync(filter: filter);
+            return await _unitOfWork.OrderItems.GetManyAsync(filter: filter);
         }
 
         public async Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request)
@@ -229,13 +231,13 @@ namespace WebApi.Logic.Services
 
             var orderItem = new OrderItem
             {
-                Order = order,
-                Product = product,
+                OrderId = order.Id,
+                ProductId = product.Id,
                 Count = request.Count,
                 Price = product.Price
             };
 
-            await _unitOfWork.OrderItems.AddAsync(orderItem);
+            await _unitOfWork.OrderItems.AddOneAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
 
             return orderItem;
@@ -252,7 +254,7 @@ namespace WebApi.Logic.Services
 
             existing.Count = orderItem.Count;
 
-            await _unitOfWork.OrderItems.UpdateAsync(existing);
+            _unitOfWork.OrderItems.Update(existing);
             await _unitOfWork.SaveChangesAsync();
 
             return existing;
@@ -260,7 +262,7 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteOrderItemAsync(long orderItemId)
         {
-            await _unitOfWork.OrderItems.DeleteAsync(orderItemId);
+            _unitOfWork.OrderItems.Delete(orderItemId);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -280,10 +282,10 @@ namespace WebApi.Logic.Services
 
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId);
 
-            orderItem.Employee = employee;
+            orderItem.EmployeeId = employee.Id;
             orderItem.StartedAt = DateTime.UtcNow;
 
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
+            _unitOfWork.OrderItems.Update(orderItem);
             await _unitOfWork.SaveChangesAsync();
 
             return orderItem;
@@ -305,9 +307,9 @@ namespace WebApi.Logic.Services
 
             orderItem.DoneAt = DateTime.UtcNow;
 
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
+            _unitOfWork.OrderItems.Update(orderItem);
 
-            var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderItem.OrderId);
+            var orderItems = await _unitOfWork.OrderItems.GetManyAsync(filter: oi => oi.OrderId == orderItem.OrderId);
 
             if (orderItems.All(oi => oi.DoneAt != null))
             {
@@ -316,7 +318,7 @@ namespace WebApi.Logic.Services
                 if (order != null)
                 {
                     order.DoneAt = DateTime.UtcNow;
-                    await _unitOfWork.Orders.UpdateAsync(order);
+                    _unitOfWork.Orders.Update(order);
                 }
             }
 
@@ -336,10 +338,10 @@ namespace WebApi.Logic.Services
 
             var employee = await _unitOfWork.Employees.GetByIdAsync(newEmployeeId);
 
-            orderItem.Employee = employee;
+            orderItem.EmployeeId = employee.Id;
             orderItem.StartedAt = DateTime.UtcNow;
 
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
+            _unitOfWork.OrderItems.Update(orderItem);
             await _unitOfWork.SaveChangesAsync();
 
             return orderItem;

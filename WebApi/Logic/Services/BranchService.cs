@@ -15,7 +15,7 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Branch>> GetAllBranchesAsync()
         {
-            return await _unitOfWork.Branches.GetAllAsync();
+            return await _unitOfWork.Branches.GetManyAsync();
         }
 
         public async Task<Branch?> GetBranchByIdAsync(long id)
@@ -25,7 +25,7 @@ namespace WebApi.Logic.Services
 
         public async Task<Branch> AddBranchAsync(Branch branch)
         {
-            var result = await _unitOfWork.Branches.AddAsync(branch);
+            var result = await _unitOfWork.Branches.AddOneAsync(branch);
             await _unitOfWork.SaveChangesAsync();
 
             return result;
@@ -43,7 +43,7 @@ namespace WebApi.Logic.Services
             existing.Name = branch.Name;
             existing.Address = branch.Address;
 
-            await _unitOfWork.Branches.UpdateAsync(existing);
+            _unitOfWork.Branches.Update(existing);
             await _unitOfWork.SaveChangesAsync();
 
             return existing;
@@ -51,18 +51,18 @@ namespace WebApi.Logic.Services
 
         public async Task DeleteBranchAsync(long id)
         {
-            await _unitOfWork.Branches.DeleteAsync(id);
+            _unitOfWork.Branches.Delete(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync()
         {
-            return await _unitOfWork.BranchMenus.GetAllAsync();
+            return await _unitOfWork.BranchMenus.GetManyAsync();
         }
 
         public async Task<IEnumerable<BranchMenu>> GetBranchMenusByBranchIdAsync(long branchId)
         {
-            return await _unitOfWork.BranchMenus.GetAllAsync(filter: bm => bm.BranchId == branchId);
+            return await _unitOfWork.BranchMenus.GetManyAsync(filter: bm => bm.BranchId == branchId);
         }
 
         public async Task<BranchMenu?> GetBranchMenuByIdAsync(long id)
@@ -86,27 +86,27 @@ namespace WebApi.Logic.Services
                 throw new ArgumentException("MenuPreset not found.");
             }
 
-            var existingMenus = await _unitOfWork.BranchMenus.GetAllAsync(
+            var existingMenus = await _unitOfWork.BranchMenus.GetManyAsync(
                 filter: bm => bm.BranchId == branchId);
 
             foreach (var bm in existingMenus)
             {
-                await _unitOfWork.BranchMenus.DeleteAsync(bm.Id);
+                _unitOfWork.BranchMenus.Delete(bm.Id);
             }
 
-            var presetItems = await _unitOfWork.MenuPresetItems.GetAllAsync(
+            var presetItems = await _unitOfWork.MenuPresetItems.GetManyAsync(
                 filter: mpi => mpi.MenuPresetId == menuPresetId);
 
             foreach (var item in presetItems)
             {
                 var branchMenu = new BranchMenu
                 {
-                    BranchId = branchId,
-                    MenuPresetItem = item,
+                    BranchId = branch.Id,
+                    MenuPresetItemId = item.Id,
                     Availability = true
                 };
 
-                await _unitOfWork.BranchMenus.AddAsync(branchMenu);
+                await _unitOfWork.BranchMenus.AddOneAsync(branchMenu);
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -123,7 +123,7 @@ namespace WebApi.Logic.Services
 
             existing.Availability = availability;
 
-            await _unitOfWork.BranchMenus.UpdateAsync(existing);
+            _unitOfWork.BranchMenus.Update(existing);
             await _unitOfWork.SaveChangesAsync();
 
             return existing;
