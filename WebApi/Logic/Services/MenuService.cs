@@ -1,4 +1,6 @@
-﻿using Domain.Entities;
+﻿using CoffeeSharp.Domain.Entities;
+using Domain.Entities;
+using System.Linq.Expressions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -67,25 +69,35 @@ namespace WebApi.Logic.Services
 
         public async Task<MenuPresetItem> AddPresetItemAsync(MenuPresetItem item)
         {
-            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(item.MenuPresetId);
+            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(item.MenuPresetId) ?? throw new ArgumentException("MenuPreset not found.");
+            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId) ?? throw new ArgumentException("Product not found.");
 
-            if (preset == null)
+            await _unitOfWork.MenuPresetItems.AddOneAsync(item);
+
+            var branchMenus = await _unitOfWork.BranchMenus.GetManyAsync(
+                filter: bm => bm.MenuPresetItem.MenuPresetId == item.MenuPresetId,
+                includes: new List<Expression<Func<BranchMenu, object>>>
+                {
+                    bm => bm.MenuPresetItem
+                }
+            );
+
+            var branchIds = branchMenus.Select(bm => bm.BranchId).Distinct();
+
+            foreach (var branchId in branchIds)
             {
-                throw new ArgumentException("MenuPreset not found.");
+                var bm = new BranchMenu
+                {
+                    BranchId = branchId,
+                    MenuPresetItem = item,
+                    Availability = true
+                };
+                await _unitOfWork.BranchMenus.AddOneAsync(bm);
             }
-
-            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-
-            if (product == null)
-            {
-                throw new ArgumentException("Product not found.");
-            }
-
-            var result = await _unitOfWork.MenuPresetItems.AddOneAsync(item);
 
             await _unitOfWork.SaveChangesAsync();
 
-            return result;
+            return item;
         }
 
         public async Task<MenuPresetItem> UpdatePresetItemAsync(MenuPresetItem item)
@@ -108,7 +120,17 @@ namespace WebApi.Logic.Services
 
         public async Task DeletePresetItemAsync(long id)
         {
-            await _unitOfWork.MenuPresetItems.DeleteAsync(id);  
+            var branchMenus = await _unitOfWork.BranchMenus.GetManyAsync(
+                filter: bm => bm.MenuPresetItemId == id
+            );
+
+            foreach (var bm in branchMenus)
+            {
+                await _unitOfWork.BranchMenus.DeleteAsync(bm.Id);
+            }
+
+            await _unitOfWork.MenuPresetItems.DeleteAsync(id);
+
             await _unitOfWork.SaveChangesAsync();
         }
 

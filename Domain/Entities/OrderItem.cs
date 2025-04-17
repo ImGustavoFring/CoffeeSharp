@@ -12,7 +12,7 @@ public class OrderItem
 
     public long ProductId { get; set; }
 
-    public long? EmployeeId { get; set; } = null; //Check other models, maybe the null should be removed
+    public long? EmployeeId { get; set; } = null;
 
     public decimal Price { get; set; }
 
