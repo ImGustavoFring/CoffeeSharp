@@ -1,5 +1,6 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -100,29 +101,28 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("{orderId}/items")]
-        public async Task<IActionResult> GetOrderItems(long orderId)
+        [HttpGet("items")]
+        public async Task<IActionResult> GetOrderItems(
+            [FromQuery] long? orderId,
+            [FromQuery] long? employeeId,
+            [FromQuery] OrderItemStatus? status,
+            [FromQuery] long? branchId)
         {
-            try
+            var items = await _orderService.GetOrderItemsAsync(orderId, employeeId, status, branchId);
+
+            var dtos = items.Select(oi => new OrderItemDto
             {
-                var orderItems = await _orderService.GetOrderItemsAsync(orderId);
-                var dtos = orderItems.Select(oi => new OrderItemDto
-                {
-                    Id = oi.Id,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId,
-                    EmployeeId = oi.EmployeeId,
-                    Price = oi.Price,
-                    Count = oi.Count,
-                    StartedAt = oi.StartedAt,
-                    DoneAt = oi.DoneAt
-                });
-                return Ok(dtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+                Id = oi.Id,
+                OrderId = oi.OrderId,
+                ProductId = oi.ProductId,
+                EmployeeId = oi.EmployeeId,
+                Price = oi.Price,
+                Count = oi.Count,
+                StartedAt = oi.StartedAt,
+                DoneAt = oi.DoneAt
+            });
+
+            return Ok(dtos);
         }
 
         [HttpPost("{orderId}/item")]
