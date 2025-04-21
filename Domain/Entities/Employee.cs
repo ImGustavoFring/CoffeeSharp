@@ -14,13 +14,13 @@ public class Employee
 
     public string PasswordHash { get; set; } = null!;
 
-    public long RoleId { get; set; }
+    public long? RoleId { get; set; } = null!;
 
-    public long BranchId { get; set; }
+    public long? BranchId { get; set; } = null!;
 
-    public virtual Branch Branch { get; set; } = null!;
+    public virtual Branch? Branch { get; set; } = null!;
 
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
 
-    public virtual EmployeeRole Role { get; set; } = null!;
+    public virtual EmployeeRole? Role { get; set; } = null!;
 }

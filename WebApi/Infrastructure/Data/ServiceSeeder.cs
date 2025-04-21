@@ -137,13 +137,13 @@ namespace WebApi.Infrastructure.Data
 
             await _unitOfWork.BranchMenus.AddOneAsync(new BranchMenu
             {
-                MenuPresetItem = menuPresetItemEspresso,
+                MenuPresetItems = menuPresetItemEspresso,
                 Branch = branchMain,
                 Availability = true
             });
             await _unitOfWork.BranchMenus.AddOneAsync(new BranchMenu
             {
-                MenuPresetItem = menuPresetItemLatte,
+                MenuPresetItems = menuPresetItemLatte,
                 Branch = branchSecondary,
                 Availability = true
             });
@@ -275,7 +275,7 @@ namespace WebApi.Infrastructure.Data
             var allBranchMenus = await _unitOfWork.BranchMenus.GetManyAsync();
             foreach (var bm in allBranchMenus)
                 _logger.LogInformation("BranchMenu: {Id} - MenuPresetItemId: {MenuPresetItemId}, BranchId: {BranchId}, Availability: {Availability}",
-                    bm.Id, bm.MenuPresetItemId, bm.BranchId, bm.Availability);
+                    bm.Id, bm.MenuPresetItemsId, bm.BranchId, bm.Availability);
 
             var allOrders = await _unitOfWork.Orders.GetManyAsync();
             foreach (var order in allOrders)

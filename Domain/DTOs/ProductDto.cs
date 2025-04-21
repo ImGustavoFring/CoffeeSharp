@@ -23,6 +23,6 @@ namespace Domain.DTOs
         public decimal Price { get; set; }
 
         [Required]
-        public long CategoryId { get; set; }
+        public long? CategoryId { get; set; }
     }
 }

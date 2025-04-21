@@ -102,7 +102,7 @@ namespace WebApi.Logic.Services
                 var branchMenu = new BranchMenu
                 {
                     BranchId = branch.Id,
-                    MenuPresetItemId = item.Id,
+                    MenuPresetItemsId = item.Id,
                     Availability = true
                 };
 

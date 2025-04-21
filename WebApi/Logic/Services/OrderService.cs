@@ -37,10 +37,10 @@ namespace WebApi.Logic.Services
                 var available = await _unitOfWork.BranchMenus.GetManyAsync(
                     filter: bm => bm.BranchId == request.BranchId
                                  && bm.Availability
-                                 && bm.MenuPresetItem.ProductId == items.ProductId,
+                                 && bm.MenuPresetItems.ProductId == items.ProductId,
                     includes: new List<Expression<Func<BranchMenu, object>>>
                     {
-                bm => bm.MenuPresetItem
+                bm => bm.MenuPresetItems
                     },
                     disableTracking: true);
 

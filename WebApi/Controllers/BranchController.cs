@@ -131,7 +131,7 @@ namespace WebApi.Controllers
             IEnumerable<BranchMenuDto> menuDtos = menus.Select(m => new BranchMenuDto
             {
                 Id = m.Id,
-                MenuPresetItemId = m.MenuPresetItemId,
+                MenuPresetItemId = m.MenuPresetItemsId,
                 BranchId = m.BranchId,
                 Availability = m.Availability
             });
@@ -146,7 +146,7 @@ namespace WebApi.Controllers
             var menuDto = new BranchMenuDto
             {
                 Id = updated.Id,
-                MenuPresetItemId = updated.MenuPresetItemId,
+                MenuPresetItemId = updated.MenuPresetItemsId,
                 BranchId = updated.BranchId,
                 Availability = updated.Availability
             };

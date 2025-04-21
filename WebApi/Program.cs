@@ -25,7 +25,9 @@ namespace WebApi
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<CoffeeSharpDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options
+                    .UseLazyLoadingProxies()
+                    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {

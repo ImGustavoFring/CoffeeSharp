@@ -75,10 +75,10 @@ namespace WebApi.Logic.Services
             await _unitOfWork.MenuPresetItems.AddOneAsync(item);
 
             var branchMenus = await _unitOfWork.BranchMenus.GetManyAsync(
-                filter: bm => bm.MenuPresetItem.MenuPresetId == item.MenuPresetId,
+                filter: bm => bm.MenuPresetItems.MenuPresetId == item.MenuPresetId,
                 includes: new List<Expression<Func<BranchMenu, object>>>
                 {
-                    bm => bm.MenuPresetItem
+                    bm => bm.MenuPresetItems
                 }
             );
 
@@ -89,7 +89,7 @@ namespace WebApi.Logic.Services
                 var bm = new BranchMenu
                 {
                     BranchId = branchId,
-                    MenuPresetItem = item,
+                    MenuPresetItems = item,
                     Availability = true
                 };
                 await _unitOfWork.BranchMenus.AddOneAsync(bm);
@@ -121,7 +121,7 @@ namespace WebApi.Logic.Services
         public async Task DeletePresetItemAsync(long id)
         {
             var branchMenus = await _unitOfWork.BranchMenus.GetManyAsync(
-                filter: bm => bm.MenuPresetItemId == id
+                filter: bm => bm.MenuPresetItemsId == id
             );
 
             foreach (var bm in branchMenus)

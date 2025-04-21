@@ -12,9 +12,9 @@ public class Category
 
     public long? ParentId { get; set; } = null;
 
-    public virtual ICollection<Category> InverseParent { get; set; } = new List<Category>();
+    public virtual ICollection<Category>? InverseParent { get; set; } = new List<Category>();
 
     public virtual Category? Parent { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public virtual ICollection<Product>? Products { get; set; } = new List<Product>();
 }

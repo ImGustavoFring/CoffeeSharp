@@ -12,7 +12,7 @@ public class Client
 
     public decimal Balance { get; set; }
 
-    public virtual ICollection<BalanceHistory> BalanceHistories { get; set; } = new List<BalanceHistory>();
+    public virtual ICollection<BalanceHistory>? BalanceHistories { get; set; } = new List<BalanceHistory>();
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<Order>? Orders { get; set; } = new List<Order>();
 }

@@ -12,9 +12,9 @@ public class Branch
 
     public string Address { get; set; } = null!;
 
-    public virtual ICollection<BranchMenu> BranchMenus { get; set; } = new List<BranchMenu>();
+    public virtual ICollection<BranchMenu>? BranchMenus { get; set; } = new List<BranchMenu>();
 
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public virtual ICollection<Employee>? Employees { get; set; } = new List<Employee>();
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<Order>? Orders { get; set; } = new List<Order>();
 }

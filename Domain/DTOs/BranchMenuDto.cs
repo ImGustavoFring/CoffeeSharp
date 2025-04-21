@@ -9,8 +9,8 @@ namespace Domain.DTOs
     public class BranchMenuDto
     {
         public long Id { get; set; }
-        public long MenuPresetItemId { get; set; }
-        public long BranchId { get; set; }
+        public long? MenuPresetItemId { get; set; }
+        public long? BranchId { get; set; }
         public bool Availability { get; set; }
     }
 }

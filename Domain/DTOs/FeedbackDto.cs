@@ -10,7 +10,7 @@ namespace Domain.DTOs
     {
         public long Id { get; set; }
         public string Content { get; set; } = string.Empty;
-        public long RatingId { get; set; }
-        public long OrderId { get; set; }
+        public long? RatingId { get; set; }
+        public long? OrderId { get; set; }
     }
 }
