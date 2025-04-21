@@ -17,7 +17,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("id");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(30)
                 .HasColumnName("name");
 
             entity.Property(e => e.ParentId)
@@ -27,6 +27,9 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .WithMany(p => p.InverseParent)
                 .HasForeignKey(d => d.ParentId)
                 .HasConstraintName("categories_parent_id_fkey");
+
+            entity.HasIndex(e => e.Name)
+                .IsUnique();
         }
     }
 }

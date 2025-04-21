@@ -20,11 +20,11 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("branch_id");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(100)
                 .HasColumnName("name");
 
             entity.Property(e => e.UserName)
-                .HasMaxLength(255)
+                .HasMaxLength(30)
                 .HasColumnName("user_name");
 
             entity.Property(e => e.PasswordHash)
@@ -44,6 +44,12 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("employees_role_id_fkey");
+
+            entity.HasIndex(e => e.Name);
+
+            entity.HasIndex(e => e.UserName)
+                 .IsUnique();
+
         }
     }
 }

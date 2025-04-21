@@ -17,8 +17,11 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("id");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(20)
                 .HasColumnName("name");
+
+            entity.HasIndex(e => e.Name)
+                .IsUnique();
         }
     }
 }

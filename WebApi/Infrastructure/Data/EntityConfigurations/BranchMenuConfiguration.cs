@@ -36,6 +36,8 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasForeignKey(d => d.MenuPresetItemsId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("branch_menus_menu_preset_item_id_fkey");
+
+            entity.HasIndex(e => e.Availability);
         }
     }
 }

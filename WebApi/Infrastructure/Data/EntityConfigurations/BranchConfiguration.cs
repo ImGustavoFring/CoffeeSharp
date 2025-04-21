@@ -20,8 +20,14 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("address");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(100)
                 .HasColumnName("name");
+
+            entity.HasIndex(e => e.Name)
+                  .IsUnique();
+
+            entity.HasIndex(e => e.Address)
+                  .IsUnique();
         }
     }
 }

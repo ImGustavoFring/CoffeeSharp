@@ -23,7 +23,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("description");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(100)
                 .HasColumnName("name");
 
             entity.Property(e => e.Price)
@@ -34,6 +34,11 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("products_category_id_fkey");
+
+            entity.HasIndex(e => e.Name)
+                .IsUnique();
+
+            entity.HasIndex(e => e.Price);
         }
     }
 }

@@ -24,8 +24,11 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("balance");
 
             entity.Property(e => e.Name)
-                .HasMaxLength(255)
+                .HasMaxLength(100)
                 .HasColumnName("name");
+
+            entity.HasIndex(e => e.Name)
+                 .IsUnique(); // ???
         }
     }
 }
