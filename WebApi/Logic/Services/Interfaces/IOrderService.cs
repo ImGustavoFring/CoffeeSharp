@@ -1,5 +1,6 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.Enums;
 
 namespace WebApi.Logic.Services.Interfaces
 {
@@ -10,18 +11,20 @@ namespace WebApi.Logic.Services.Interfaces
         Task<IEnumerable<Order>> GetAllOrdersAsync();
         Task<IEnumerable<Order>> GetOrdersByClientAsync(long clientId);
         Task<Order> MarkOrderAsPickedUpAsync(long orderId);
-
-        Task<IEnumerable<OrderItem>> GetOrderItemsAsync(long? orderId = null, long? employeeId = null);
+        Task<IEnumerable<Feedback>> GetAllFeedbacksAsync();
+        Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request);
+        Task<Feedback> UpdateFeedbackAsync(Feedback feedback);
+        Task DeleteFeedbackAsync(long feedbackId);
+        Task<IEnumerable<OrderItem>> GetOrderItemsAsync(
+            long? orderId = null,
+            long? employeeId = null,
+            OrderItemStatus? status = null,
+            long? branchId = null);
         Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request);
         Task<OrderItem> UpdateOrderItemAsync(OrderItem orderItem);
         Task DeleteOrderItemAsync(long orderItemId);
         Task<OrderItem> AssignOrderItemToCookAsync(long orderItemId, long employeeId);
         Task<OrderItem> MarkOrderItemCompletedAsync(long orderItemId, long employeeId);
         Task<OrderItem> ReassignOrderItemAsync(long orderItemId, long newEmployeeId);
-
-        Task<IEnumerable<Feedback>> GetAllFeedbacksAsync();
-        Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request);
-        Task<Feedback> UpdateFeedbackAsync(Feedback feedback);
-        Task DeleteFeedbackAsync(long feedbackId);
     }
 }

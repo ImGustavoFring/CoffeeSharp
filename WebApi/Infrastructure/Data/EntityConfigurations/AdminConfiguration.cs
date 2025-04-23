@@ -17,11 +17,14 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .HasColumnName("id");
 
             entity.Property(e => e.UserName)
-                .HasMaxLength(255)
+                .HasMaxLength(30)
                 .HasColumnName("user_name");
 
             entity.Property(e => e.PasswordHash)
                 .HasColumnName("password_hash");
+
+            entity.HasIndex(e => e.UserName)
+                  .IsUnique();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Domain.DTOs
     public class MenuPresetItemDto
     {
         public long Id { get; set; }
-        public long ProductId { get; set; }
-        public long MenuPresetId { get; set; }
+        public long? ProductId { get; set; }
+        public long? MenuPresetId { get; set; }
     }
 }

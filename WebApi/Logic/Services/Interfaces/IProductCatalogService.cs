@@ -4,15 +4,15 @@ namespace WebApi.Logic.Services.Interfaces
 {
     public interface IProductCatalogService
     {
-        Task<IEnumerable<Product>> GetAllProductsAsync();
-        Task<Product?> GetProductByIdAsync(long id);
-        Task<Product> AddProductAsync(Product product);
-        Task<Product> UpdateProductAsync(Product product);
+        Task<Category> AddCategoryAsync(Category category);
+        Task<Product> AddProductAsync(long categoryId, Product product);
+        Task DeleteCategoryAsync(long id);
         Task DeleteProductAsync(long id);
         Task<IEnumerable<Category>> GetAllCategoriesAsync();
+        Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Category?> GetCategoryByIdAsync(long id);
-        Task<Category> AddCategoryAsync(Category category);
+        Task<Product?> GetProductByIdAsync(long id);
         Task<Category> UpdateCategoryAsync(Category category);
-        Task DeleteCategoryAsync(long id);
+        Task<Product> UpdateProductAsync(Product product);
     }
 }

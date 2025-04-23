@@ -8,11 +8,11 @@ public class OrderItem
 {
     public long Id { get; set; }
 
-    public long OrderId { get; set; }
+    public long? OrderId { get; set; } = null!;
 
-    public long ProductId { get; set; }
+    public long? ProductId { get; set; } = null!;
 
-    public long? EmployeeId { get; set; } = null; //Check other models, maybe the null should be removed
+    public long? EmployeeId { get; set; } = null;
 
     public decimal Price { get; set; }
 
@@ -22,9 +22,9 @@ public class OrderItem
 
     public DateTime? DoneAt { get; set; } = null;
 
-    public virtual Employee Employee { get; set; } = null!;
+    public virtual Employee? Employee { get; set; } = null!;
 
-    public virtual Order Order { get; set; } = null!;
+    public virtual Order? Order { get; set; } = null!;
 
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product? Product { get; set; } = null!;
 }

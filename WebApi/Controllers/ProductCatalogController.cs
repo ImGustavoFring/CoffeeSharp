@@ -66,10 +66,10 @@ namespace WebApi.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
-                CategoryId = request.CategoryId
             };
 
-            Product createdProduct = await _productCatalogService.AddProductAsync(product);
+            Product createdProduct = await _productCatalogService.AddProductAsync(request.CategoryId, product);
+
             var productDto = new ProductDto
             {
                 Id = createdProduct.Id,
@@ -105,6 +105,7 @@ namespace WebApi.Controllers
             };
 
             Product updatedProduct = await _productCatalogService.UpdateProductAsync(product);
+
             var productDto = new ProductDto
             {
                 Id = updatedProduct.Id,

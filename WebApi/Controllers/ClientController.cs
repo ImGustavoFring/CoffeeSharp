@@ -177,24 +177,43 @@ namespace WebApi.Controllers
             return Ok(transactionDtos);
         }
 
-        [HttpPost("transaction/cancel")]
-        public async Task<IActionResult> CancelTransaction([FromBody] CancelTransactionRequest request)
+        [HttpPatch("transaction/{transactionId}/complete")]
+        public async Task<IActionResult> CompleteBalanceTransaction([FromRoute] long transactionId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
-                var previousBalance = await _clientService.CancelTransactionAsync(request.TransactionId);
-                var response = new CancelTransactionResponse
+                var updatedClient = await _clientService.CompletePendingBalanceTransactionAsync(transactionId);
+                var clientDto = new ClientDto
                 {
-                    PreviousBalance = previousBalance
+                    Id = updatedClient.Id,
+                    TelegramId = updatedClient.TelegramId,
+                    Name = updatedClient.Name,
+                    Balance = updatedClient.Balance
                 };
-                return Ok(response);
+                return Ok(clientDto);
             }
-            catch (ArgumentException ex)
+            catch (System.ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("transaction/{transactionId}/cancel")]
+        public async Task<IActionResult> CancelTransaction([FromRoute] long transactionId)
+        {
+            try
+            {
+                var updatedClient = await _clientService.CancelTransactionAsync(transactionId);
+                var clientDto = new ClientDto
+                {
+                    Id = updatedClient.Id,
+                    TelegramId = updatedClient.TelegramId,
+                    Name = updatedClient.Name,
+                    Balance = updatedClient.Balance
+                };
+                return Ok(clientDto);
+            }
+            catch (System.ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }

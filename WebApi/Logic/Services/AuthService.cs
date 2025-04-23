@@ -22,21 +22,25 @@ namespace WebApi.Logic.Services
 
         public async Task<string> AdminLoginAsync(string userName, string password)
         {
-            var admin = await _unitOfWork.Admins.GetSingleAsync(x => x.UserName == userName);
+            var admin = await _unitOfWork.Admins.GetOneAsync(x => x.UserName == userName);
+
             if (admin == null || !VerifyPassword(password, admin.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
+
             return GenerateJwtToken(admin);
         }
 
         public async Task<string> EmployeeLoginAsync(string userName, string password)
         {
-            var employee = await _unitOfWork.Employees.GetSingleAsync(x => x.UserName == userName);
+            var employee = await _unitOfWork.Employees.GetOneAsync(x => x.UserName == userName);
+
             if (employee == null || !VerifyPassword(password, employee.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
+
             return GenerateJwtToken(employee);
         }
 
@@ -49,6 +53,7 @@ namespace WebApi.Logic.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -57,18 +62,22 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Name, admin.UserName),
                     new Claim("user_type", "admin")
                 }),
+
                 Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
+
             return tokenHandler.WriteToken(token);
         }
 
         private string GenerateJwtToken(Employee employee)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]);            
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]); 
+            
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -79,10 +88,14 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Role, employee.RoleId.ToString())
 
                 }),
+
                 Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature)
             };
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
+
             return tokenHandler.WriteToken(token);
         }
     }

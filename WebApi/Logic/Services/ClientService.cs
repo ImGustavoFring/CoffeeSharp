@@ -26,7 +26,7 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<Client>> GetAllClientsAsync()
         {
-            return await _unitOfWork.Clients.GetAllAsync();
+            return await _unitOfWork.Clients.GetManyAsync();
         }
 
         public async Task<Client?> GetClientByIdAsync(long id)
@@ -37,47 +37,96 @@ namespace WebApi.Logic.Services
         public async Task<Client> CreateClientAsync(Client client)
         {
             client.Balance = 0;
-            return await _unitOfWork.Clients.AddAsync(client);
+
+            _unitOfWork.Clients.Update(client);
+            await _unitOfWork.SaveChangesAsync();
+
+            return client;
         }
 
         public async Task<Client> UpdateClientAsync(Client client)
         {
             var existing = await _unitOfWork.Clients.GetByIdAsync(client.Id);
+
             if (existing == null)
             {
                 throw new ArgumentException("Client not found.");
             }
+
             existing.TelegramId = client.TelegramId;
             existing.Name = client.Name;
 
-            return await _unitOfWork.Clients.UpdateAsync(existing);
+            _unitOfWork.Clients.Update(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteClientAsync(long id)
         {
             await _unitOfWork.Clients.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<Client> AddBalanceAsync(long clientId, decimal amount)
         {
             var client = await _unitOfWork.Clients.GetByIdAsync(clientId);
+            
             if (client == null)
             {
                 throw new ArgumentException("Client not found.");
             }
 
-            client.Balance += amount;
-            await _unitOfWork.Clients.UpdateAsync(client);
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+               long.Parse(_configuration["Transaction:PendingStatus"] ?? "0"));
 
             var balanceHistory = new BalanceHistory
             {
-                ClientId = clientId,
+                ClientId = client.Id,
                 Sum = amount,
                 CreatedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:DefaultStatus"])
+                BalanceHistoryStatusId = balanceHistoryStatus.Id
             };
 
-            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
+            _unitOfWork.BalanceHistories.Update(balanceHistory);    
+            await _unitOfWork.SaveChangesAsync();
+
+            return client;
+        }
+
+        public async Task<Client> CompletePendingBalanceTransactionAsync(long transactionId)
+        {
+            var transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId);
+
+            if (transaction == null)
+            {
+                throw new ArgumentException("Transaction not found.");
+            }
+
+            if (transaction.BalanceHistoryStatusId != long.Parse(_configuration["Transaction:PendingStatus"] ?? "0"))
+            {
+                throw new InvalidOperationException("Only pending transactions can be completed.");
+            }
+
+            var client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId);
+
+            if (client == null)
+            {
+                throw new ArgumentException("Client not found.");
+            }
+
+            client.Balance += transaction.Sum;
+
+            _unitOfWork.Clients.Update(client);
+
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1"));
+
+            transaction.BalanceHistoryStatusId = balanceHistoryStatus.Id;
+            transaction.FinishedAt = DateTime.UtcNow;
+
+            _unitOfWork.BalanceHistories.Update(transaction);
+            await _unitOfWork.SaveChangesAsync();
 
             return client;
         }
@@ -85,6 +134,7 @@ namespace WebApi.Logic.Services
         public async Task<Client> DeductBalanceAsync(long clientId, decimal amount)
         {
             var client = await _unitOfWork.Clients.GetByIdAsync(clientId);
+
             if (client == null)
             {
                 throw new ArgumentException("Client not found.");
@@ -96,23 +146,32 @@ namespace WebApi.Logic.Services
             }
 
             client.Balance -= amount;
-            await _unitOfWork.Clients.UpdateAsync(client);
+
+            _unitOfWork.Clients.Update(client);
+
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0"));
 
             var balanceHistory = new BalanceHistory
             {
-                ClientId = clientId,
+                ClientId = client.Id,
                 Sum = -amount,
                 CreatedAt = DateTime.UtcNow,
-                BalanceHistoryStatusId = long.Parse(_configuration["Transaction:DefaultStatus"])
+                FinishedAt = DateTime.UtcNow,
+                BalanceHistoryStatusId = balanceHistoryStatus.Id
             };
-            await _unitOfWork.BalanceHistories.AddAsync(balanceHistory);
+
+            _unitOfWork.BalanceHistories.Update(balanceHistory);
+            await _unitOfWork.SaveChangesAsync();
 
             return client;
         }
 
-        public async Task<IEnumerable<BalanceHistory>> GetClientTransactionsAsync(long clientId, bool orderByNewestFirst, TransactionType transactionType)
+        public async Task<IEnumerable<BalanceHistory>> GetClientTransactionsAsync(long clientId,
+            bool orderByNewestFirst, TransactionType transactionType)
         {
             Expression<Func<BalanceHistory, bool>> filter = bh => bh.ClientId == clientId;
+
             if (transactionType == TransactionType.TopUp)
             {
                 filter = bh => bh.ClientId == clientId && bh.Sum > 0;
@@ -125,25 +184,41 @@ namespace WebApi.Logic.Services
             Func<IQueryable<BalanceHistory>, IOrderedQueryable<BalanceHistory>> orderBy = q =>
                 orderByNewestFirst ? q.OrderByDescending(bh => bh.CreatedAt) : q.OrderBy(bh => bh.CreatedAt);
 
-            return await _unitOfWork.BalanceHistories.GetAllAsync(filter: filter, orderBy: orderBy);
+            return await _unitOfWork.BalanceHistories.GetManyAsync(filter: filter, orderBy: orderBy);
         }
 
-        public async Task<decimal> CancelTransactionAsync(long transactionId)
+        public async Task<Client> CancelTransactionAsync(long transactionId)
         {
             var transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId);
+
             if (transaction == null)
+            {
                 throw new ArgumentException("Transaction not found.");
+            }
 
             var client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId);
+
             if (client == null)
+            {
                 throw new ArgumentException("Client not found.");
+            }
+                        
+            if (transaction.BalanceHistoryStatusId == long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1"))
+            {
+                client.Balance -= transaction.Sum;
+                _unitOfWork.Clients.Update(client);
+            }
 
-            decimal previousBalance = client.Balance - transaction.Sum;
+            var balanceHistoryStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(
+                long.Parse(_configuration["Transaction:CancelledStatus"] ?? "2"));
 
-            client.Balance = previousBalance;
-            await _unitOfWork.Clients.UpdateAsync(client);
+            transaction.BalanceHistoryStatusId = balanceHistoryStatus.Id;
+            transaction.FinishedAt = DateTime.UtcNow;
 
-            return previousBalance;
+            _unitOfWork.BalanceHistories.Update(transaction);
+            await _unitOfWork.SaveChangesAsync();
+
+            return client;
         }
     }
 }

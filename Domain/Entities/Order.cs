@@ -9,7 +9,7 @@ public class Order
 
     public string? ClientNote { get; set; } = null;
 
-    public long ClientId { get; set; }
+    public long? ClientId { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
 
@@ -18,13 +18,13 @@ public class Order
     public DateTime? FinishedAt { get; set; } = null;
     public DateTime? ExpectedIn { get; set; } = null;
 
-    public long BranchId { get; set; }
+    public long? BranchId { get; set; } = null!;
 
-    public virtual Branch Branch { get; set; } = null!;
+    public virtual Branch? Branch { get; set; } = null!;
 
-    public virtual Client Client { get; set; } = null!;
+    public virtual Client? Client { get; set; } = null!;
 
     public virtual Feedback? Feedback { get; set; } = null;
 
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
 }

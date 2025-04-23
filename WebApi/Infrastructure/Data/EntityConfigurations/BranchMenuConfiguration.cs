@@ -22,7 +22,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.Property(e => e.BranchId)
                 .HasColumnName("branch_id");
 
-            entity.Property(e => e.MenuPresetItemId)
+            entity.Property(e => e.MenuPresetItemsId)
                 .HasColumnName("menu_preset_item_Id");
 
             entity.HasOne(d => d.Branch)
@@ -31,11 +31,13 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("branch_menus_branch_id_fkey");
 
-            entity.HasOne(d => d.MenuPresetItem)
+            entity.HasOne(d => d.MenuPresetItems)
                 .WithMany(p => p.BranchMenus)
-                .HasForeignKey(d => d.MenuPresetItemId)
+                .HasForeignKey(d => d.MenuPresetItemsId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("branch_menus_menu_preset_item_id_fkey");
+
+            entity.HasIndex(e => e.Availability);
         }
     }
 }

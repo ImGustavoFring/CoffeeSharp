@@ -11,15 +11,15 @@ public class MenuPresetItem
 {
     public long Id { get; set; }
 
-    public long ProductId { get; set; }
+    public long? ProductId { get; set; } = null!;
 
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product? Product { get; set; } = null!;
 
-    public long MenuPresetId { get; set; }
+    public long? MenuPresetId { get; set; } = null!;
 
-    public virtual MenuPreset MenuPreset { get; set; } = null!;
+    public virtual MenuPreset? MenuPreset { get; set; } = null!;
 
-    public virtual ICollection<BranchMenu> BranchMenus { get; set; } = new List<BranchMenu>();
+    public virtual ICollection<BranchMenu>? BranchMenus { get; set; } = new List<BranchMenu>();
 
 
 }

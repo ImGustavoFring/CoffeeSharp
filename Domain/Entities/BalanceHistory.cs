@@ -7,7 +7,7 @@ public class BalanceHistory
 {
     public long Id { get; set; }
 
-    public long ClientId { get; set; }
+    public long? ClientId { get; set; } = null!;
 
     public decimal Sum { get; set; }
 
@@ -15,9 +15,9 @@ public class BalanceHistory
 
     public DateTime? FinishedAt { get; set; } = null;
 
-    public long BalanceHistoryStatusId { get; set; }
+    public long? BalanceHistoryStatusId { get; set; } = null!;
 
-    public virtual BalanceHistoryStatus BalanceHistoryStatus { get; set; } = null!;
+    public virtual BalanceHistoryStatus? BalanceHistoryStatus { get; set; } = null!;
 
-    public virtual Client Client { get; set; } = null!;
+    public virtual Client? Client { get; set; } = null!;
 }

@@ -8,11 +8,11 @@ public class Feedback
 
     public string Content { get; set; } = null!;
 
-    public long RatingId { get; set; }
+    public long? RatingId { get; set; } = null!;
 
-    public long OrderId { get; set; }
+    public long? OrderId { get; set; } = null!;
 
-    public virtual Order Order { get; set; } = null!;
+    public virtual Order? Order { get; set; } = null!;
 
-    public virtual Rating Rating { get; set; } = null!;
+    public virtual Rating? Rating { get; set; } = null!;
 }
