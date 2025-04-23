@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using ApiClient.Models;
 using Domain.DTOs;
 
 namespace ApiClient.Apis;
@@ -15,8 +16,8 @@ public partial class HttpApiClient
         }
 
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<dynamic>();
-        return result.token;
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        return result!.token;
     }
 
     public async Task<string?> EmployeeLogin(EmployeeLoginRequest request)
@@ -29,7 +30,7 @@ public partial class HttpApiClient
         }
 
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<dynamic>();
-        return result.token;
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        return result!.token;
     }
 }

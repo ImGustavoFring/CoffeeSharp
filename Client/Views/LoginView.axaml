@@ -1,0 +1,33 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.LoginView"
+             x:DataType="viewModels:LoginViewModel">
+    <Grid Margin="30" Width="300">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Вход в систему" FontSize="20" HorizontalAlignment="Center" Margin="0 0 0 20"/>
+
+        <TextBox Grid.Row="1" Watermark="Логин" Text="{Binding Username}" Margin="0 5"/>
+        <TextBox Grid.Row="2" PasswordChar="*" Watermark="Пароль" Text="{Binding Password}" Margin="0 5"/>
+        
+        <CheckBox Grid.Row="3" IsChecked="{Binding LoggingAsAdmin}">Войти как админ</CheckBox>
+        <Button Grid.Row="4" HorizontalAlignment="Center" IsEnabled="{Binding LoginButtonIsEnabled}" Command="{Binding LoginCommand}">Войти</Button>
+        
+        <TextBlock Grid.Row="5" Text="{Binding ErrorMessage}" HorizontalAlignment="Center" Margin="0 10 0 0" />
+    </Grid>
+    
+    <UserControl.DataContext>
+        <viewModels:LoginViewModel />
+    </UserControl.DataContext>
+</UserControl>

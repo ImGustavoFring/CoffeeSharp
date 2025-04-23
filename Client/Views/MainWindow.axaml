@@ -25,12 +25,12 @@
         </StackPanel>
         
         <StackPanel Grid.Column="0" Grid.Row="1">
-            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Вход</Button>
+            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding NavigateToLoginCommand}">Вход</Button>
         </StackPanel>
         
         <Panel Grid.Column="1" Grid.Row="0" Width="1" Background="Black" Grid.RowSpan="2" Margin="12,0"/>
         <Grid Grid.Column="2" Grid.Row="0" Grid.ColumnSpan="1">
-            
+            <ContentControl Content="{Binding CurrentViewModel}" />
         </Grid>
     </Grid>
 </Window>

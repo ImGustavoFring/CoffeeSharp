@@ -15,6 +15,8 @@ public partial class App : Application
     {
         DataTemplates.Add(new StrongViewLocator()
             .Register<OrderShortItemViewModel, OrderShortItem>()
+            .Register<LoginViewModel, LoginView>()
+            // all later are deprecated and will be removed
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());
         AvaloniaXamlLoader.Load(this);
