@@ -21,30 +21,38 @@ namespace WebApi.Controllers
 
         [HttpGet]
         [Authorize(Policy = "ManagerOnly")]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetOrders(
+            [FromQuery] long? clientId,
+            [FromQuery] long? branchId,
+            [FromQuery] DateTime? createdFrom,
+            [FromQuery] DateTime? createdTo,
+            [FromQuery] OrderStatus? status,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            var orders = await _orderService.GetAllOrdersAsync();
-            var orderDtos = orders.Select(o => new OrderDto
+            var (orders, total) = await _orderService.GetOrdersAsync(
+                clientId, branchId, createdFrom, createdTo, status, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = orders.Select(order => new OrderDto
             {
-                Id = o.Id,
-                ClientId = o.ClientId,
-                ClientNote = o.ClientNote,
-                CreatedAt = o.CreatedAt,
-                DoneAt = o.DoneAt,
-                FinishedAt = o.FinishedAt,
-                ExpectedIn = o.ExpectedIn,
-                BranchId = o.BranchId
+                Id = order.Id,
+                ClientId = order.ClientId,
+                ClientNote = order.ClientNote,
+                CreatedAt = order.CreatedAt,
+                DoneAt = order.DoneAt,
+                FinishedAt = order.FinishedAt,
+                ExpectedIn = order.ExpectedIn,
+                BranchId = order.BranchId
             });
-            return Ok(orderDtos);
+            return Ok(dtos);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(long id)
         {
             var order = await _orderService.GetOrderByIdAsync(id);
-            if (order == null)
-                return NotFound();
-            var orderDto = new OrderDto
+            if (order == null) return NotFound();
+            var dto = new OrderDto
             {
                 Id = order.Id,
                 ClientId = order.ClientId,
@@ -55,36 +63,17 @@ namespace WebApi.Controllers
                 ExpectedIn = order.ExpectedIn,
                 BranchId = order.BranchId
             };
-            return Ok(orderDto);
-        }
-
-        [HttpGet("client/{clientId}")]
-        public async Task<IActionResult> GetOrdersByClient(long clientId)
-        {
-            var orders = await _orderService.GetOrdersByClientAsync(clientId);
-            var orderDtos = orders.Select(o => new OrderDto
-            {
-                Id = o.Id,
-                ClientId = o.ClientId,
-                ClientNote = o.ClientNote,
-                CreatedAt = o.CreatedAt,
-                DoneAt = o.DoneAt,
-                FinishedAt = o.FinishedAt,
-                ExpectedIn = o.ExpectedIn,
-                BranchId = o.BranchId
-            });
-            return Ok(orderDtos);
+            return Ok(dto);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 var order = await _orderService.CreateOrderAsync(request);
-                var orderDto = new OrderDto
+                var dto = new OrderDto
                 {
                     Id = order.Id,
                     ClientId = order.ClientId,
@@ -93,35 +82,38 @@ namespace WebApi.Controllers
                     ExpectedIn = order.ExpectedIn,
                     BranchId = order.BranchId
                 };
-                return CreatedAtAction(nameof(GetOrderById), new { id = orderDto.Id }, orderDto);
+                return CreatedAtAction(nameof(GetOrderById), new { id = dto.Id }, dto);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
 
         [HttpGet("items")]
+        [Authorize(Policy = "AllStaff")]
         public async Task<IActionResult> GetOrderItems(
             [FromQuery] long? orderId,
             [FromQuery] long? employeeId,
             [FromQuery] OrderItemStatus? status,
-            [FromQuery] long? branchId)
+            [FromQuery] long? branchId,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            var items = await _orderService.GetOrderItemsAsync(orderId, employeeId, status, branchId);
-
-            var dtos = items.Select(oi => new OrderItemDto
+            var (items, total) = await _orderService.GetOrderItemsAsync(
+                orderId, employeeId, status, branchId, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = items.Select(orderItem => new OrderItemDto
             {
-                Id = oi.Id,
-                OrderId = oi.OrderId,
-                ProductId = oi.ProductId,
-                EmployeeId = oi.EmployeeId,
-                Price = oi.Price,
-                Count = oi.Count,
-                StartedAt = oi.StartedAt,
-                DoneAt = oi.DoneAt
+                Id = orderItem.Id,
+                OrderId = orderItem.OrderId,
+                ProductId = orderItem.ProductId,
+                EmployeeId = orderItem.EmployeeId,
+                Price = orderItem.Price,
+                Count = orderItem.Count,
+                StartedAt = orderItem.StartedAt,
+                DoneAt = orderItem.DoneAt
             });
-
             return Ok(dtos);
         }
 
@@ -129,12 +121,11 @@ namespace WebApi.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateOrderItem(long orderId, [FromBody] CreateOrderItemRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 var orderItem = await _orderService.CreateOrderItemAsync(orderId, request);
-                var itemDto = new OrderItemDto
+                var dto = new OrderItemDto
                 {
                     Id = orderItem.Id,
                     OrderId = orderItem.OrderId,
@@ -145,9 +136,9 @@ namespace WebApi.Controllers
                     StartedAt = orderItem.StartedAt,
                     DoneAt = orderItem.DoneAt
                 };
-                return CreatedAtAction(nameof(GetOrderById), new { id = orderId }, itemDto);
+                return CreatedAtAction(nameof(GetOrderById), new { id = orderId }, dto);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -155,32 +146,30 @@ namespace WebApi.Controllers
 
         [HttpPut("item/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateOrderItem(long id, [FromBody] OrderItemDto request)
+        public async Task<IActionResult> UpdateOrderItem(long id, [FromBody] UpdateOrderItemRequest request)
         {
-            if (id != request.Id)
-                return BadRequest("ID mismatch.");
+            if (id != request.Id) return BadRequest("ID mismatch");
             try
             {
-                var orderItem = new OrderItem
+                var orderItem = await _orderService.UpdateOrderItemAsync(new OrderItem
                 {
                     Id = request.Id,
                     Count = request.Count
-                };
-                var updated = await _orderService.UpdateOrderItemAsync(orderItem);
+                });
                 var dto = new OrderItemDto
                 {
-                    Id = updated.Id,
-                    OrderId = updated.OrderId,
-                    ProductId = updated.ProductId,
-                    EmployeeId = updated.EmployeeId,
-                    Price = updated.Price,
-                    Count = updated.Count,
-                    StartedAt = updated.StartedAt,
-                    DoneAt = updated.DoneAt
+                    Id = orderItem.Id,
+                    OrderId = orderItem.OrderId,
+                    ProductId = orderItem.ProductId,
+                    EmployeeId = orderItem.EmployeeId,
+                    Price = orderItem.Price,
+                    Count = orderItem.Count,
+                    StartedAt = orderItem.StartedAt,
+                    DoneAt = orderItem.DoneAt
                 };
                 return Ok(dto);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -195,33 +184,7 @@ namespace WebApi.Controllers
                 await _orderService.DeleteOrderItemAsync(id);
                 return NoContent();
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [HttpPatch("item/{id}/reassign")]
-        [Authorize(Policy = "ManagerOnly")]
-        public async Task<IActionResult> ReassignOrderItem(long id, [FromQuery] long newEmployeeId)
-        {
-            try
-            {
-                var item = await _orderService.ReassignOrderItemAsync(id, newEmployeeId);
-                var dto = new OrderItemDto
-                {
-                    Id = item.Id,
-                    OrderId = item.OrderId,
-                    ProductId = item.ProductId,
-                    EmployeeId = item.EmployeeId,
-                    Price = item.Price,
-                    Count = item.Count,
-                    StartedAt = item.StartedAt,
-                    DoneAt = item.DoneAt
-                };
-                return Ok(dto);
-            }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -234,27 +197,23 @@ namespace WebApi.Controllers
             try
             {
                 var employeeId = GetCurrentEmployeeId();
-                var item = await _orderService.AssignOrderItemToCookAsync(id, employeeId);
+                var orderItem = await _orderService.AssignOrderItemAsync(id, employeeId);
                 var dto = new OrderItemDto
                 {
-                    Id = item.Id,
-                    OrderId = item.OrderId,
-                    ProductId = item.ProductId,
-                    EmployeeId = item.EmployeeId,
-                    Price = item.Price,
-                    Count = item.Count,
-                    StartedAt = item.StartedAt,
-                    DoneAt = item.DoneAt
+                    Id = orderItem.Id,
+                    OrderId = orderItem.OrderId,
+                    ProductId = orderItem.ProductId,
+                    EmployeeId = orderItem.EmployeeId,
+                    Price = orderItem.Price,
+                    Count = orderItem.Count,
+                    StartedAt = orderItem.StartedAt,
+                    DoneAt = orderItem.DoneAt
                 };
                 return Ok(dto);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -265,17 +224,17 @@ namespace WebApi.Controllers
             try
             {
                 var employeeId = GetCurrentEmployeeId();
-                var item = await _orderService.MarkOrderItemCompletedAsync(id, employeeId);
+                var orderItem = await _orderService.CompleteOrderItemAsync(id, employeeId);
                 var dto = new OrderItemDto
                 {
-                    Id = item.Id,
-                    OrderId = item.OrderId,
-                    ProductId = item.ProductId,
-                    EmployeeId = item.EmployeeId,
-                    Price = item.Price,
-                    Count = item.Count,
-                    StartedAt = item.StartedAt,
-                    DoneAt = item.DoneAt
+                    Id = orderItem.Id,
+                    OrderId = orderItem.OrderId,
+                    ProductId = orderItem.ProductId,
+                    EmployeeId = orderItem.EmployeeId,
+                    Price = orderItem.Price,
+                    Count = orderItem.Count,
+                    StartedAt = orderItem.StartedAt,
+                    DoneAt = orderItem.DoneAt
                 };
                 return Ok(dto);
             }
@@ -283,30 +242,42 @@ namespace WebApi.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+        }
+
+        [HttpPatch("item/{id}/reassign")]
+        [Authorize(Policy = "ManagerOnly")]
+        public async Task<IActionResult> ReassignOrderItem(long id, [FromQuery] long newEmployeeId)
+        {
+            try
+            {
+                var orderItem = await _orderService.ReassignOrderItemAsync(id, newEmployeeId);
+                var dto = new OrderItemDto
+                {
+                    Id = orderItem.Id,
+                    OrderId = orderItem.OrderId,
+                    ProductId = orderItem.ProductId,
+                    EmployeeId = orderItem.EmployeeId,
+                    Price = orderItem.Price,
+                    Count = orderItem.Count,
+                    StartedAt = orderItem.StartedAt,
+                    DoneAt = orderItem.DoneAt
+                };
+                return Ok(dto);
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
 
-        private long GetCurrentEmployeeId()
-        {
-            var userIdClaim = User.FindFirst("id");
-            if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long employeeId))
-            {
-                throw new UnauthorizedAccessException("Invalid user identifier");
-            }
-            return employeeId;
-        }
-
         [HttpPatch("{id}/pickup")]
         [Authorize(Policy = "AllStaff")]
-        public async Task<IActionResult> MarkOrderAsPickedUp(long id)
+        public async Task<IActionResult> PickupOrder(long id)
         {
             try
             {
-                var order = await _orderService.MarkOrderAsPickedUpAsync(id);
-                var orderDto = new OrderDto
+                var order = await _orderService.PickupOrderAsync(id);
+                var dto = new OrderDto
                 {
                     Id = order.Id,
                     ClientId = order.ClientId,
@@ -317,9 +288,9 @@ namespace WebApi.Controllers
                     ExpectedIn = order.ExpectedIn,
                     BranchId = order.BranchId
                 };
-                return Ok(orderDto);
+                return Ok(dto);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -327,24 +298,28 @@ namespace WebApi.Controllers
 
         [HttpGet("feedback")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> GetAllFeedbacks()
+        public async Task<IActionResult> GetFeedbacks(
+            [FromQuery] long? orderId,
+            [FromQuery] int? ratingId,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            var feedbacks = await _orderService.GetAllFeedbacksAsync();
-            var feedbackDtos = feedbacks.Select(f => new FeedbackDto
+            var (items, total) = await _orderService.GetFeedbacksAsync(orderId, ratingId, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = items.Select(feedback => new FeedbackDto
             {
-                Id = f.Id,
-                Content = f.Content,
-                RatingId = f.RatingId,
-                OrderId = f.OrderId
+                Id = feedback.Id,
+                Content = feedback.Content,
+                RatingId = feedback.RatingId,
+                OrderId = feedback.OrderId
             });
-            return Ok(feedbackDtos);
+            return Ok(dtos);
         }
 
         [HttpPost("feedback")]
         public async Task<IActionResult> CreateFeedback([FromBody] CreateFeedbackRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 var feedback = await _orderService.CreateFeedbackAsync(request);
@@ -355,9 +330,9 @@ namespace WebApi.Controllers
                     RatingId = feedback.RatingId,
                     OrderId = feedback.OrderId
                 };
-                return CreatedAtAction(nameof(GetOrderById), new { id = feedback.OrderId }, dto);
+                return CreatedAtAction(nameof(GetOrderById), new { id = dto.OrderId }, dto);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -367,27 +342,25 @@ namespace WebApi.Controllers
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateFeedback(long id, [FromBody] UpdateFeedbackRequest request)
         {
-            if (id != request.Id)
-                return BadRequest("ID mismatch.");
+            if (id != request.Id) return BadRequest("ID mismatch");
             try
             {
-                var feedback = new Feedback
+                var feedback = await _orderService.UpdateFeedbackAsync(new Feedback
                 {
                     Id = request.Id,
                     Content = request.Content,
                     RatingId = request.RatingId
-                };
-                var updated = await _orderService.UpdateFeedbackAsync(feedback);
+                });
                 var dto = new FeedbackDto
                 {
-                    Id = updated.Id,
-                    Content = updated.Content,
-                    RatingId = updated.RatingId,
-                    OrderId = updated.OrderId
+                    Id = feedback.Id,
+                    Content = feedback.Content,
+                    RatingId = feedback.RatingId,
+                    OrderId = feedback.OrderId
                 };
                 return Ok(dto);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -402,12 +375,19 @@ namespace WebApi.Controllers
                 await _orderService.DeleteFeedbackAsync(id);
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
-    }
 
+        private long GetCurrentEmployeeId()
+        {
+            var claim = User.FindFirst("id");
+            if (claim == null || !long.TryParse(claim.Value, out var id))
+                throw new UnauthorizedAccessException();
+            return id;
+        }
+    }
 }
 
