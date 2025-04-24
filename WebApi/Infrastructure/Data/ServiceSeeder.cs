@@ -105,12 +105,12 @@ namespace WebApi.Infrastructure.Data
             });
             _logger.LogInformation("Products created successfully.");
 
-            var menuPresetItemEspresso = await _unitOfWork.MenuPresetItems.AddOneAsync(new MenuPresetItem
+            var menuPresetItemEspresso = await _unitOfWork.MenuPresetItems.AddOneAsync(new MenuPresetItems
             {
                 Product = productEspresso,
                 MenuPreset = menuPresetMorning
             });
-            var menuPresetItemLatte = await _unitOfWork.MenuPresetItems.AddOneAsync(new MenuPresetItem
+            var menuPresetItemLatte = await _unitOfWork.MenuPresetItems.AddOneAsync(new MenuPresetItems
             {
                 Product = productLatte,
                 MenuPreset = menuPresetEvening

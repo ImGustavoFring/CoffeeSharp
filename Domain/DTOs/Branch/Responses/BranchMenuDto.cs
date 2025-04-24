@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.DTOs
+namespace Domain.DTOs.Branch.Responses
 {
     public class BranchMenuDto
     {

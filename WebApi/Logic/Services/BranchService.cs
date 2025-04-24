@@ -1,4 +1,6 @@
-﻿using CoffeeSharp.Domain.Entities;
+﻿using System.Linq.Expressions;
+using CoffeeSharp.Domain.Entities;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -13,10 +15,27 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Branch>> GetAllBranchesAsync()
+        public async Task<IEnumerable<Branch>> GetBranchesAsync(string? searchTerm, int pageIndex, int pageSize)
         {
-            return await _unitOfWork.Branches.GetManyAsync();
+            Expression<Func<Branch, bool>>? filter = null;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string lowered = searchTerm.ToLower();
+
+                filter = b =>
+                    b.Name.ToLower().Contains(lowered) ||
+                    b.Address.ToLower().Contains(lowered); // think about optimization
+            }
+
+            return await _unitOfWork.Branches.GetManyAsync(
+                filter: filter,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
         }
+
+
 
         public async Task<Branch?> GetBranchByIdAsync(long id)
         {
@@ -55,16 +74,37 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync()
+        public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync(
+            long? branchId,
+            long? menuPresetItemsId,
+            bool? availability,
+            int pageIndex,
+            int pageSize)
         {
-            return await _unitOfWork.BranchMenus.GetManyAsync();
-        }
+            Expression<Func<BranchMenu, bool>>? filter = null;
 
-        public async Task<IEnumerable<BranchMenu>> GetBranchMenusByBranchIdAsync(long branchId)
-        {
-            return await _unitOfWork.BranchMenus.GetManyAsync(filter: bm => bm.BranchId == branchId);
-        }
+            if (branchId.HasValue)
+                filter = filter == null
+                    ? bm => bm.BranchId == branchId.Value
+                    : filter.AndAlso(bm => bm.BranchId == branchId.Value);
 
+            if (menuPresetItemsId.HasValue)
+                filter = filter == null
+                    ? bm => bm.MenuPresetItemsId == menuPresetItemsId.Value
+                    : filter.AndAlso(bm => bm.MenuPresetItemsId == menuPresetItemsId.Value);
+
+            if (availability.HasValue)
+                filter = filter == null
+                    ? bm => bm.Availability == availability.Value
+                    : filter.AndAlso(bm => bm.Availability == availability.Value);
+
+            return await _unitOfWork.BranchMenus.GetManyAsync(
+                filter: filter,
+                disableTracking: false,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+        }
+    
         public async Task<BranchMenu?> GetBranchMenuByIdAsync(long id)
         {
             return await _unitOfWork.BranchMenus.GetByIdAsync(id);

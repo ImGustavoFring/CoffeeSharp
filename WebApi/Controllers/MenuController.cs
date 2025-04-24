@@ -114,7 +114,7 @@ namespace WebApi.Controllers
         [HttpGet("items")]
         public async Task<IActionResult> GetPresetItems([FromQuery] long? menuPresetId)
         {
-            IEnumerable<MenuPresetItem> items;
+            IEnumerable<MenuPresetItems> items;
             if (menuPresetId.HasValue)
             {
                 items = await _menuService.GetPresetItemsByPresetIdAsync(menuPresetId.Value);
@@ -135,7 +135,7 @@ namespace WebApi.Controllers
         [HttpGet("items/{id}")]
         public async Task<IActionResult> GetPresetItemById(long id)
         {
-            MenuPresetItem? item = await _menuService.GetPresetItemByIdAsync(id);
+            MenuPresetItems? item = await _menuService.GetPresetItemByIdAsync(id);
             if (item == null)
             {
                 return NotFound();
@@ -158,13 +158,13 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var item = new MenuPresetItem
+            var item = new MenuPresetItems
             {
                 ProductId = request.ProductId,
                 MenuPresetId = request.MenuPresetId
             };
 
-            MenuPresetItem created = await _menuService.AddPresetItemAsync(item);
+            MenuPresetItems created = await _menuService.AddPresetItemAsync(item);
             var itemDto = new MenuPresetItemDto
             {
                 Id = created.Id,
@@ -187,14 +187,14 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var item = new MenuPresetItem
+            var item = new MenuPresetItems
             {
                 Id = request.Id,
                 ProductId = request.ProductId,
                 MenuPresetId = request.MenuPresetId
             };
 
-            MenuPresetItem updated = await _menuService.UpdatePresetItemAsync(item);
+            MenuPresetItems updated = await _menuService.UpdatePresetItemAsync(item);
             var itemDto = new MenuPresetItemDto
             {
                 Id = updated.Id,

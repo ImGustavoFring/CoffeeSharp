@@ -1,5 +1,7 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.DTOs.Branch.Requests;
+using Domain.DTOs.Branch.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,15 +21,18 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllBranches()
+        public async Task<IActionResult> GetAllBranches([FromQuery] GetBranchesRequest request)
         {
-            IEnumerable<Branch> branches = await _branchService.GetAllBranchesAsync();
+            IEnumerable<Branch> branches = await _branchService.GetBranchesAsync(
+                request.SearchTerm, request.Page, request.PageSize);
+
             IEnumerable<BranchDto> branchDtos = branches.Select(b => new BranchDto
             {
                 Id = b.Id,
                 Name = b.Name,
                 Address = b.Address
             });
+
             return Ok(branchDtos);
         }
 
@@ -124,18 +129,30 @@ namespace WebApi.Controllers
             return NoContent();
         }
 
-        [HttpGet("{branchId}/menu")]
-        public async Task<IActionResult> GetBranchMenuByBranchId(long branchId)
+        [HttpGet("menus")]
+        public async Task<IActionResult> GetBranchMenus([FromQuery] GetBranchMenusRequest request)
         {
-            IEnumerable<BranchMenu> menus = await _branchService.GetBranchMenusByBranchIdAsync(branchId);
-            IEnumerable<BranchMenuDto> menuDtos = menus.Select(m => new BranchMenuDto
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var menus = await _branchService.GetAllBranchMenusAsync(
+                request.BranchId,
+                request.MenuPresetItemsId,
+                request.Availability,
+                request.Page,
+                request.PageSize);
+
+            var dto = menus.Select(m => new BranchMenuDto
             {
                 Id = m.Id,
-                MenuPresetItemId = m.MenuPresetItemsId,
                 BranchId = m.BranchId,
+                MenuPresetItemId = m.MenuPresetItemsId,
                 Availability = m.Availability
             });
-            return Ok(menuDtos);
+
+            return Ok(dto);
         }
 
         [HttpPatch("menu/{id}/availability")]

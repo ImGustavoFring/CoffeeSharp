@@ -9,11 +9,11 @@ namespace WebApi.Logic.Services.Interfaces
         Task<MenuPreset> AddPresetAsync(MenuPreset preset);
         Task<MenuPreset> UpdatePresetAsync(MenuPreset preset);
         Task DeletePresetAsync(long id);
-        Task<IEnumerable<MenuPresetItem>> GetAllPresetItemsAsync();
-        Task<MenuPresetItem?> GetPresetItemByIdAsync(long id);
-        Task<MenuPresetItem> AddPresetItemAsync(MenuPresetItem item);
-        Task<MenuPresetItem> UpdatePresetItemAsync(MenuPresetItem item);
+        Task<IEnumerable<MenuPresetItems>> GetAllPresetItemsAsync();
+        Task<MenuPresetItems?> GetPresetItemByIdAsync(long id);
+        Task<MenuPresetItems> AddPresetItemAsync(MenuPresetItems item);
+        Task<MenuPresetItems> UpdatePresetItemAsync(MenuPresetItems item);
         Task DeletePresetItemAsync(long id);
-        Task<IEnumerable<MenuPresetItem>> GetPresetItemsByPresetIdAsync(long presetId);
+        Task<IEnumerable<MenuPresetItems>> GetPresetItemsByPresetIdAsync(long presetId);
     }
 }

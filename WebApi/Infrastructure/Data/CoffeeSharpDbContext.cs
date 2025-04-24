@@ -33,7 +33,7 @@ public partial class CoffeeSharpDbContext : DbContext
     public virtual DbSet<Rating> Ratings { get; set; }
     public virtual DbSet<Admin> Admins { get; set; }
     public virtual DbSet<MenuPreset> MenuPresets { get; set; }
-    public virtual DbSet<MenuPresetItem> MenuPresetItems { get; set; }
+    public virtual DbSet<MenuPresetItems> MenuPresetItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

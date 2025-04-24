@@ -21,7 +21,7 @@ namespace WebApi.Infrastructure.UnitsOfWorks.Interfaces
         IRepository<Rating> Ratings { get; }
         IRepository<Admin> Admins { get; }
         IRepository<MenuPreset> MenuPresets { get; }
-        IRepository<MenuPresetItem> MenuPresetItems { get; }
+        IRepository<MenuPresetItems> MenuPresetItems { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
