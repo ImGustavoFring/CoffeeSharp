@@ -7,7 +7,7 @@ using CoffeeSharp.Domain.Entities;
 
 namespace Domain.Entities;
 
-public class MenuPresetItems
+public class MenuPresetItem
 {
     public long Id { get; set; }
 

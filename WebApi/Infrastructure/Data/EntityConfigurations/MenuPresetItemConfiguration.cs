@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace WebApi.Infrastructure.Data.EntityConfigurations
 {
-    public class MenuPresetItemConfiguration : IEntityTypeConfiguration<MenuPresetItems>
+    public class MenuPresetItemConfiguration : IEntityTypeConfiguration<MenuPresetItem>
     {
-        public void Configure(EntityTypeBuilder<MenuPresetItems> entity)
+        public void Configure(EntityTypeBuilder<MenuPresetItem> entity)
         {
             entity.HasKey(menuPresetItem => menuPresetItem.Id)
                 .HasName("menu_preset_items_pkey");

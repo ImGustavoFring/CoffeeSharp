@@ -57,17 +57,17 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<MenuPresetItems>> GetAllPresetItemsAsync()
+        public async Task<IEnumerable<MenuPresetItem>> GetAllPresetItemsAsync()
         {
             return await _unitOfWork.MenuPresetItems.GetManyAsync();
         }
 
-        public async Task<MenuPresetItems?> GetPresetItemByIdAsync(long id)
+        public async Task<MenuPresetItem?> GetPresetItemByIdAsync(long id)
         {
             return await _unitOfWork.MenuPresetItems.GetByIdAsync(id);
         }
 
-        public async Task<MenuPresetItems> AddPresetItemAsync(MenuPresetItems item)
+        public async Task<MenuPresetItem> AddPresetItemAsync(MenuPresetItem item)
         {
             var preset = await _unitOfWork.MenuPresets.GetByIdAsync(item.MenuPresetId) ?? throw new ArgumentException("MenuPreset not found.");
             var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId) ?? throw new ArgumentException("Product not found.");
@@ -100,7 +100,7 @@ namespace WebApi.Logic.Services
             return item;
         }
 
-        public async Task<MenuPresetItems> UpdatePresetItemAsync(MenuPresetItems item)
+        public async Task<MenuPresetItem> UpdatePresetItemAsync(MenuPresetItem item)
         {
             var existing = await _unitOfWork.MenuPresetItems.GetByIdAsync(item.Id); 
 
@@ -134,7 +134,7 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<MenuPresetItems>> GetPresetItemsByPresetIdAsync(long presetId)
+        public async Task<IEnumerable<MenuPresetItem>> GetPresetItemsByPresetIdAsync(long presetId)
         {
             return await _unitOfWork.MenuPresetItems.GetManyAsync(
                 filter: item => item.MenuPresetId == presetId);

@@ -10,7 +10,7 @@ using WebApi.Logic.Services.Interfaces;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/branch")]
+    [Route("api/branches")]
     public class BranchController : ControllerBase
     {
         private readonly IBranchService _branchService;
@@ -24,13 +24,16 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetAllBranches([FromQuery] GetBranchesRequest request)
         {
             IEnumerable<Branch> branches = await _branchService.GetBranchesAsync(
-                request.SearchTerm, request.Page, request.PageSize);
+                request.Name,
+                request.Address,
+                request.Page,
+                request.PageSize);
 
-            IEnumerable<BranchDto> branchDtos = branches.Select(b => new BranchDto
+            IEnumerable<BranchDto> branchDtos = branches.Select(branch => new BranchDto
             {
-                Id = b.Id,
-                Name = b.Name,
-                Address = b.Address
+                Id = branch.Id,
+                Name = branch.Name,
+                Address = branch.Address
             });
 
             return Ok(branchDtos);
@@ -137,25 +140,27 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var menus = await _branchService.GetAllBranchMenusAsync(
+            var branchMenus = await _branchService.GetAllBranchMenusAsync(
                 request.BranchId,
                 request.MenuPresetItemsId,
+                request.MenuPresetId,
                 request.Availability,
                 request.Page,
                 request.PageSize);
 
-            var dto = menus.Select(m => new BranchMenuDto
+            var dto = branchMenus.Select(branchMenu => new BranchMenuDto
             {
-                Id = m.Id,
-                BranchId = m.BranchId,
-                MenuPresetItemId = m.MenuPresetItemsId,
-                Availability = m.Availability
+                Id = branchMenu.Id,
+                BranchId = branchMenu.BranchId,
+                MenuPresetItemId = branchMenu.MenuPresetItemsId,
+                Availability = branchMenu.Availability
             });
 
             return Ok(dto);
         }
 
-        [HttpPatch("menu/{id}/availability")]
+
+        [HttpPatch("menus/{id}/availability")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateBranchMenuAvailability(long id, [FromQuery] bool availability)
         {

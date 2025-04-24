@@ -12,8 +12,13 @@ namespace Domain.DTOs.Branch.Requests
 
         public long? MenuPresetItemsId { get; set; }
 
+        public long? MenuPresetId { get; set; }
+
         public bool? Availability { get; set; }
+
         public int Page { get; set; } = 0;
+
         public int PageSize { get; set; } = 50;
     }
+
 }

@@ -27,7 +27,7 @@ namespace WebApi.Infrastructure.UnitsOfWorks
         public IRepository<Rating> Ratings { get; }
         public IRepository<Admin> Admins { get; }
         public IRepository<MenuPreset> MenuPresets { get; }
-        public IRepository<MenuPresetItems> MenuPresetItems { get; }
+        public IRepository<MenuPresetItem> MenuPresetItems { get; }
 
         public UnitOfWork(CoffeeSharpDbContext context)
         {
@@ -48,7 +48,7 @@ namespace WebApi.Infrastructure.UnitsOfWorks
             Ratings = new Repository<Rating>(_context);
             Admins = new Repository<Admin>(_context);
             MenuPresets = new Repository<MenuPreset>(_context);
-            MenuPresetItems = new Repository<MenuPresetItems>(_context);
+            MenuPresetItems = new Repository<MenuPresetItem>(_context);
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

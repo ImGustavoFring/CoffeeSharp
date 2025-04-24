@@ -17,5 +17,5 @@ public class BranchMenu
 
     public virtual Branch? Branch { get; set; } = null!;
 
-    public virtual MenuPresetItems? MenuPresetItems { get; set; } = null!;
+    public virtual MenuPresetItem? MenuPresetItems { get; set; } = null!;
 }

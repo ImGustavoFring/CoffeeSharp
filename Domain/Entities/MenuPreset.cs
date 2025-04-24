@@ -14,7 +14,7 @@ public class MenuPreset
 
     public string? Description { get; set; } = null;
 
-    public virtual ICollection<MenuPresetItems>? MenuPresetItems { get; set; } = new List<MenuPresetItems>();
+    public virtual ICollection<MenuPresetItem>? MenuPresetItems { get; set; } = new List<MenuPresetItem>();
 
 }
 

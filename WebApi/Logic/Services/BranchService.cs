@@ -15,17 +15,19 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Branch>> GetBranchesAsync(string? searchTerm, int pageIndex, int pageSize)
+        public async Task<IEnumerable<Branch>> GetBranchesAsync(
+            string? name,
+            string? address,
+            int pageIndex,
+            int pageSize)
         {
             Expression<Func<Branch, bool>>? filter = null;
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(address))
             {
-                string lowered = searchTerm.ToLower();
-
-                filter = b =>
-                    b.Name.ToLower().Contains(lowered) ||
-                    b.Address.ToLower().Contains(lowered); // think about optimization
+                filter = branch =>
+                    (string.IsNullOrWhiteSpace(name) || branch.Name.Contains(name)) &&
+                    (string.IsNullOrWhiteSpace(address) || branch.Address.Contains(address));
             }
 
             return await _unitOfWork.Branches.GetManyAsync(
@@ -34,7 +36,6 @@ namespace WebApi.Logic.Services
                 pageSize: pageSize
             );
         }
-
 
 
         public async Task<Branch?> GetBranchByIdAsync(long id)
@@ -76,7 +77,8 @@ namespace WebApi.Logic.Services
 
         public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync(
             long? branchId,
-            long? menuPresetItemsId,
+            long? menuPresetItemId,
+            long? menuPresetId,
             bool? availability,
             int pageIndex,
             int pageSize)
@@ -85,26 +87,37 @@ namespace WebApi.Logic.Services
 
             if (branchId.HasValue)
                 filter = filter == null
-                    ? bm => bm.BranchId == branchId.Value
-                    : filter.AndAlso(bm => bm.BranchId == branchId.Value);
+                    ? branchMenu => branchMenu.BranchId == branchId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.BranchId == branchId.Value);
 
-            if (menuPresetItemsId.HasValue)
+            if (menuPresetItemId.HasValue)
                 filter = filter == null
-                    ? bm => bm.MenuPresetItemsId == menuPresetItemsId.Value
-                    : filter.AndAlso(bm => bm.MenuPresetItemsId == menuPresetItemsId.Value);
+                    ? branchMenu => branchMenu.MenuPresetItemsId == menuPresetItemId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.MenuPresetItemsId == menuPresetItemId.Value);
+
+            if (menuPresetId.HasValue)
+                filter = filter == null
+                    ? branchMenu => branchMenu.MenuPresetItems != null &&
+                                    branchMenu.MenuPresetItems.MenuPresetId == menuPresetId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.MenuPresetItems != null &&
+                                                   branchMenu.MenuPresetItems.MenuPresetId == menuPresetId.Value);
 
             if (availability.HasValue)
                 filter = filter == null
-                    ? bm => bm.Availability == availability.Value
-                    : filter.AndAlso(bm => bm.Availability == availability.Value);
+                    ? branchMenu => branchMenu.Availability == availability.Value
+                    : filter.AndAlso(branchMenu => branchMenu.Availability == availability.Value);
 
             return await _unitOfWork.BranchMenus.GetManyAsync(
                 filter: filter,
+                includes: new List<Expression<Func<BranchMenu, object>>>
+                {
+                    branchMenu => branchMenu.MenuPresetItems
+                },
                 disableTracking: false,
                 pageIndex: pageIndex,
                 pageSize: pageSize);
         }
-    
+
         public async Task<BranchMenu?> GetBranchMenuByIdAsync(long id)
         {
             return await _unitOfWork.BranchMenus.GetByIdAsync(id);
@@ -127,7 +140,7 @@ namespace WebApi.Logic.Services
             }
 
             var existingMenus = await _unitOfWork.BranchMenus.GetManyAsync(
-                filter: bm => bm.BranchId == branchId);
+                filter: branchMenus => branchMenus.BranchId == branchId);
 
             foreach (var bm in existingMenus)
             {
@@ -135,7 +148,7 @@ namespace WebApi.Logic.Services
             }
 
             var presetItems = await _unitOfWork.MenuPresetItems.GetManyAsync(
-                filter: mpi => mpi.MenuPresetId == menuPresetId);
+                filter: menuPresetItems => menuPresetItems.MenuPresetId == menuPresetId);
 
             foreach (var item in presetItems)
             {

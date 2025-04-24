@@ -17,7 +17,7 @@ public class Product
 
     public long CategoryId { get; set; }
 
-    public virtual ICollection<MenuPresetItems>? MenuPresetItems { get; set; } = new List<MenuPresetItems>();
+    public virtual ICollection<MenuPresetItem>? MenuPresetItems { get; set; } = new List<MenuPresetItem>();
 
     public virtual Category? Category { get; set; } = null!;
 
