@@ -9,7 +9,7 @@ public class Order
 
     public string? ClientNote { get; set; } = null;
 
-    public long? ClientId { get; set; } = null!;
+    public long ClientId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -18,7 +18,7 @@ public class Order
     public DateTime? FinishedAt { get; set; } = null;
     public DateTime? ExpectedIn { get; set; } = null;
 
-    public long? BranchId { get; set; } = null!;
+    public long BranchId { get; set; }
 
     public virtual Branch? Branch { get; set; } = null!;
 

@@ -15,7 +15,7 @@ public class Product
 
     public decimal Price { get; set; }
 
-    public long? CategoryId { get; set; } = null!;
+    public long CategoryId { get; set; }
 
     public virtual ICollection<MenuPresetItem>? MenuPresetItems { get; set; } = new List<MenuPresetItem>();
 

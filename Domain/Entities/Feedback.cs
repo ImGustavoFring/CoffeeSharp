@@ -10,7 +10,7 @@ public class Feedback
 
     public long? RatingId { get; set; } = null!;
 
-    public long? OrderId { get; set; } = null!;
+    public long OrderId { get; set; }
 
     public virtual Order? Order { get; set; } = null!;
 

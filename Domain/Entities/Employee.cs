@@ -14,7 +14,7 @@ public class Employee
 
     public string PasswordHash { get; set; } = null!;
 
-    public long? RoleId { get; set; } = null!;
+    public long RoleId { get; set; }
 
     public long? BranchId { get; set; } = null!;
 

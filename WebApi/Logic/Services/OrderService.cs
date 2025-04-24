@@ -196,7 +196,7 @@ namespace WebApi.Logic.Services
                 throw new InvalidOperationException("OrderItem already assigned.");
             var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId)
                       ?? throw new ArgumentException("Employee not found.");
-            var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId.Value)
+            var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId)
                       ?? throw new ArgumentException("Order not found.");
             if (employee.BranchId != order.BranchId)
                 throw new UnauthorizedAccessException("Employee from different branch.");
@@ -219,7 +219,7 @@ namespace WebApi.Logic.Services
             var all = await _unitOfWork.OrderItems.GetManyAsync(orderItem => orderItem.OrderId == item.OrderId);
             if (all.All(orderItem => orderItem.DoneAt != null))
             {
-                var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId.Value)
+                var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId)
                           ?? throw new ArgumentException("Order not found.");
                 order.DoneAt = DateTime.UtcNow;
                 _unitOfWork.Orders.Update(order);

@@ -11,11 +11,11 @@ public class MenuPresetItem
 {
     public long Id { get; set; }
 
-    public long? ProductId { get; set; } = null!;
+    public long ProductId { get; set; }
 
     public virtual Product? Product { get; set; } = null!;
 
-    public long? MenuPresetId { get; set; } = null!;
+    public long MenuPresetId { get; set; }
 
     public virtual MenuPreset? MenuPreset { get; set; } = null!;
 

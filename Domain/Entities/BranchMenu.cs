@@ -9,9 +9,9 @@ public class BranchMenu
 {
     public long Id { get; set; }
 
-    public long? MenuPresetItemsId { get; set; } = null!;
+    public long MenuPresetItemsId { get; set; }
 
-    public long? BranchId { get; set; } = null!;
+    public long BranchId { get; set; }
 
     public bool Availability { get; set; }
 
