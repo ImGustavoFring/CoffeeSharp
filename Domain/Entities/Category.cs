@@ -10,11 +10,11 @@ public class Category
 
     public string Name { get; set; } = null!;
 
-    public long? ParentId { get; set; } = null;
+    public long? ParentCategoryId { get; set; } = null;
 
-    public virtual ICollection<Category>? InverseParent { get; set; } = new List<Category>();
+    public virtual ICollection<Category>? ChildСategories { get; set; } = new List<Category>();
 
-    public virtual Category? Parent { get; set; } = null!;
+    public virtual Category? ParentCategory { get; set; } = null!;
 
     public virtual ICollection<Product>? Products { get; set; } = new List<Product>();
 }

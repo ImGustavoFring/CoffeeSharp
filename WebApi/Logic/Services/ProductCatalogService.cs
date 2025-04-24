@@ -100,9 +100,9 @@ namespace WebApi.Logic.Services
                 throw new ArgumentException("Category not found.");
             }
 
-            if (category.ParentId.HasValue)
+            if (category.ParentCategoryId.HasValue)
             {
-                var parentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId.Value);
+                var parentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentCategoryId.Value);
 
                 if (parentCategory == null)
                 {
@@ -110,10 +110,10 @@ namespace WebApi.Logic.Services
                 }
             }
 
-            var existingParentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentId);
+            var existingParentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentCategoryId);
 
             existingCategory.Name = category.Name;
-            existingCategory.ParentId = existingParentCategory.Id;
+            existingCategory.ParentCategoryId = existingParentCategory.Id;
 
             _unitOfWork.Categories.Update(existingCategory);
             await _unitOfWork.SaveChangesAsync();

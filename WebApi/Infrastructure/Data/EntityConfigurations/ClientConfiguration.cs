@@ -8,27 +8,30 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Client> entity)
         {
-            entity.HasKey(e => e.Id).HasName("clients_pkey");
+            entity.HasKey(client => client.Id)
+                .HasName("clients_pkey");
 
             entity.ToTable("clients");
 
-            entity.Property(e => e.Id)
+            entity.Property(client => client.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.TelegramId)
+            entity.Property(client => client.TelegramId)
                 .ValueGeneratedNever()
                 .HasColumnName("telegram_id");
 
-            entity.Property(e => e.Balance)
+            entity.Property(client => client.Balance)
                 .HasColumnName("balance");
 
-            entity.Property(e => e.Name)
+            entity.Property(client => client.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
 
-            entity.HasIndex(e => e.Name)
-                 .IsUnique(); // ???
+            entity.HasIndex(client => client.Name);
+
+            entity.HasIndex(client => client.TelegramId)
+                .IsUnique();
         }
     }
 }

@@ -8,27 +8,28 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Category> entity)
         {
-            entity.HasKey(e => e.Id).HasName("categories_pkey");
+            entity.HasKey(category => category.Id)
+                .HasName("categories_pkey");
 
             entity.ToTable("categories");
 
-            entity.Property(e => e.Id)
+            entity.Property(category => category.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Name)
+            entity.Property(category => category.Name)
                 .HasMaxLength(30)
                 .HasColumnName("name");
 
-            entity.Property(e => e.ParentId)
-                .HasColumnName("parent_id");
+            entity.Property(category => category.ParentCategoryId)
+                .HasColumnName("parent_category_id");
 
-            entity.HasOne(d => d.Parent)
-                .WithMany(p => p.InverseParent)
-                .HasForeignKey(d => d.ParentId)
+            entity.HasOne(category => category.ParentCategory)
+                .WithMany(parentCategory => parentCategory.ChildСategories)
+                .HasForeignKey(category => category.ParentCategoryId)
                 .HasConstraintName("categories_parent_id_fkey");
 
-            entity.HasIndex(e => e.Name)
+            entity.HasIndex(category => category.Name)
                 .IsUnique();
         }
     }

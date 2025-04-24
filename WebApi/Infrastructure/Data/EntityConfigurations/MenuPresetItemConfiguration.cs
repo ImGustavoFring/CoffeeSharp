@@ -11,24 +11,25 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<MenuPresetItem> entity)
         {
-            entity.HasKey(e => e.Id).HasName("menu_preset_items_pkey");
+            entity.HasKey(menuPresetItem => menuPresetItem.Id)
+                .HasName("menu_preset_items_pkey");
 
             entity.ToTable("menu_preset_items");
 
-            entity.Property(e => e.Id)
+            entity.Property(menuPresetItem => menuPresetItem.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.HasOne(d => d.MenuPreset)
-                 .WithMany(p => p.MenuPresetItems)
-                 .HasForeignKey(d => d.MenuPresetId)
-                 .OnDelete(DeleteBehavior.Cascade)
+            entity.HasOne(menuPresetItem => menuPresetItem.MenuPreset)
+                 .WithMany(menuPreset => menuPreset.MenuPresetItems)
+                 .HasForeignKey(menuPresetItem => menuPresetItem.MenuPresetId)
+                 .OnDelete(DeleteBehavior.Cascade) // need to think
                  .HasConstraintName("menu_preset_items_menu_preset_id_fkey");
 
-            entity.HasOne(d => d.Product)
-                 .WithMany(p => p.MenuPresetItems)
-                 .HasForeignKey(d => d.ProductId)
-                 .OnDelete(DeleteBehavior.Cascade)
+            entity.HasOne(menuPresetItem => menuPresetItem.Product)
+                 .WithMany(product => product.MenuPresetItems)
+                 .HasForeignKey(menuPresetItem => menuPresetItem.ProductId)
+                 .OnDelete(DeleteBehavior.Cascade) // need to think
                  .HasConstraintName("menu_preset_items_product_id_fkey");
         }
     }

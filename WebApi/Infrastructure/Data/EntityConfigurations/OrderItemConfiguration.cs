@@ -8,53 +8,54 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<OrderItem> entity)
         {
-            entity.HasKey(e => e.Id).HasName("order_items_pkey");
+            entity.HasKey(orderItem => orderItem.Id)
+                .HasName("order_items_pkey");
 
             entity.ToTable("order_items");
 
-            entity.Property(e => e.Id)
+            entity.Property(orderItem => orderItem.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Count)
+            entity.Property(orderItem => orderItem.Count)
                 .HasColumnName("count");
 
-            entity.Property(e => e.DoneAt)
+            entity.Property(orderItem => orderItem.DoneAt)
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("done_at");
 
-            entity.Property(e => e.EmployeeId)
+            entity.Property(orderItem => orderItem.EmployeeId)
                 .HasColumnName("employee_id");
 
-            entity.Property(e => e.OrderId)
+            entity.Property(orderItem => orderItem.OrderId)
                 .HasColumnName("order_id");
 
-            entity.Property(e => e.Price)
+            entity.Property(orderItem => orderItem.Price)
                 .HasColumnName("price");
 
-            entity.Property(e => e.ProductId)
+            entity.Property(orderItem => orderItem.ProductId)
                 .HasColumnName("product_id");
 
-            entity.Property(e => e.StartedAt)
+            entity.Property(orderItem => orderItem.StartedAt)
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("started_at");
 
-            entity.HasOne(d => d.Employee)
-                .WithMany(p => p.OrderItems)
-                .HasForeignKey(d => d.EmployeeId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(orderItem => orderItem.Employee)
+                .WithMany(employee => employee.OrderItems)
+                .HasForeignKey(orderItem => orderItem.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("order_items_employee_id_fkey");
 
-            entity.HasOne(d => d.Order)
-                .WithMany(p => p.OrderItems)
-                .HasForeignKey(d => d.OrderId)
+            entity.HasOne(orderItem => orderItem.Order)
+                .WithMany(order => order.OrderItems)
+                .HasForeignKey(orderItem => orderItem.OrderId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("order_items_order_id_fkey");
 
-            entity.HasOne(d => d.Product)
-                .WithMany(p => p.OrderItems)
-                .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(orderItem => orderItem.Product)
+                .WithMany(product => product.OrderItems)
+                .HasForeignKey(orderItem => orderItem.ProductId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("order_items_product_id_fkey");
         }
     }

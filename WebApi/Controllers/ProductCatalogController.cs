@@ -134,7 +134,7 @@ namespace WebApi.Controllers
             {
                 Id = c.Id,
                 Name = c.Name,
-                ParentId = c.ParentId
+                ParentId = c.ParentCategoryId
             });
             return Ok(categoryDtos);
         }
@@ -151,7 +151,7 @@ namespace WebApi.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
-                ParentId = category.ParentId
+                ParentId = category.ParentCategoryId
             };
             return Ok(categoryDto);
         }
@@ -168,7 +168,7 @@ namespace WebApi.Controllers
             var category = new Category
             {
                 Name = request.Name,
-                ParentId = request.ParentId
+                ParentCategoryId = request.ParentId
             };
 
             Category createdCategory = await _productCatalogService.AddCategoryAsync(category);
@@ -176,7 +176,7 @@ namespace WebApi.Controllers
             {
                 Id = createdCategory.Id,
                 Name = createdCategory.Name,
-                ParentId = createdCategory.ParentId
+                ParentId = createdCategory.ParentCategoryId
             };
 
             return CreatedAtAction(nameof(GetCategoryById), new { id = categoryDto.Id }, categoryDto);
@@ -199,7 +199,7 @@ namespace WebApi.Controllers
             {
                 Id = request.Id,
                 Name = request.Name,
-                ParentId = request.ParentId
+                ParentCategoryId = request.ParentId
             };
 
             Category updatedCategory = await _productCatalogService.UpdateCategoryAsync(category);
@@ -207,7 +207,7 @@ namespace WebApi.Controllers
             {
                 Id = updatedCategory.Id,
                 Name = updatedCategory.Name,
-                ParentId = updatedCategory.ParentId
+                ParentId = updatedCategory.ParentCategoryId
             };
 
             return Ok(categoryDto);

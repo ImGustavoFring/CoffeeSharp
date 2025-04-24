@@ -8,32 +8,33 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Feedback> entity)
         {
-            entity.HasKey(e => e.Id).HasName("feedbacks_pkey");
+            entity.HasKey(feedback => feedback.Id)
+                .HasName("feedbacks_pkey");
 
             entity.ToTable("feedbacks");
 
-            entity.Property(e => e.Id)
+            entity.Property(feedback => feedback.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Content)
+            entity.Property(feedback => feedback.Content)
                 .HasColumnName("content");
 
-            entity.Property(e => e.OrderId)
+            entity.Property(feedback => feedback.OrderId)
                 .HasColumnName("order_id");
 
-            entity.Property(e => e.RatingId)
+            entity.Property(feedback => feedback.RatingId)
                 .HasColumnName("rating_id");
 
-            entity.HasOne(d => d.Rating)
-                .WithMany(p => p.Feedbacks)
-                .HasForeignKey(d => d.RatingId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(feedback => feedback.Rating)
+                .WithMany(rating => rating.Feedbacks)
+                .HasForeignKey(feedback => feedback.RatingId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("feedbacks_rating_id_fkey");
 
-            entity.HasOne(d => d.Order)
-                .WithOne(p => p.Feedback)
-                .HasForeignKey<Feedback>(d => d.OrderId)
+            entity.HasOne(feedback => feedback.Order)
+                .WithOne(order => order.Feedback)
+                .HasForeignKey<Feedback>(feedback => feedback.OrderId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("feedbacks_order_id_fkey");
         }

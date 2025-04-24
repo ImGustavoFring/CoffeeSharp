@@ -8,25 +8,26 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Rating> entity)
         {
-            entity.HasKey(e => e.Id).HasName("ratings_pkey");
+            entity.HasKey(rating => rating.Id)
+                .HasName("ratings_pkey");
 
             entity.ToTable("ratings");
 
-            entity.Property(e => e.Id)
+            entity.Property(rating => rating.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Name)
+            entity.Property(rating => rating.Name)
                 .HasMaxLength(20)
                 .HasColumnName("name");
 
-            entity.Property(e => e.Value)
+            entity.Property(rating => rating.Value)
                 .HasColumnName("value");
 
-            entity.HasIndex(e => e.Name)
+            entity.HasIndex(rating => rating.Name)
                 .IsUnique();
 
-            entity.HasIndex(e => e.Value)
+            entity.HasIndex(rating => rating.Value)
                .IsUnique();
         }
     }
