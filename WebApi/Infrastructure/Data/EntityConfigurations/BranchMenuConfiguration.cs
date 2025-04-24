@@ -29,13 +29,13 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(branchMenu => branchMenu.Branch)
                 .WithMany(branch => branch.BranchMenus)
                 .HasForeignKey(branchMenu => branchMenu.BranchId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("branch_menus_branch_id_fkey");
 
             entity.HasOne(branchMenu => branchMenu.MenuPresetItems)
                 .WithMany(menuPresetItems => menuPresetItems.BranchMenus)
                 .HasForeignKey(branchMenu => branchMenu.MenuPresetItemsId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("branch_menus_menu_preset_item_id_fkey");
 
             entity.HasIndex(branchMenu => branchMenu.Availability);

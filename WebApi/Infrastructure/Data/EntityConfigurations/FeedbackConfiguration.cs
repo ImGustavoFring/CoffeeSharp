@@ -35,7 +35,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(feedback => feedback.Order)
                 .WithOne(order => order.Feedback)
                 .HasForeignKey<Feedback>(feedback => feedback.OrderId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("feedbacks_order_id_fkey");
         }
     }

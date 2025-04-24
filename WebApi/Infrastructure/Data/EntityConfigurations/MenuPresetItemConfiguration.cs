@@ -23,13 +23,13 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(menuPresetItem => menuPresetItem.MenuPreset)
                  .WithMany(menuPreset => menuPreset.MenuPresetItems)
                  .HasForeignKey(menuPresetItem => menuPresetItem.MenuPresetId)
-                 .OnDelete(DeleteBehavior.Cascade) // need to think
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("menu_preset_items_menu_preset_id_fkey");
 
             entity.HasOne(menuPresetItem => menuPresetItem.Product)
                  .WithMany(product => product.MenuPresetItems)
                  .HasForeignKey(menuPresetItem => menuPresetItem.ProductId)
-                 .OnDelete(DeleteBehavior.Cascade) // need to think
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("menu_preset_items_product_id_fkey");
         }
     }

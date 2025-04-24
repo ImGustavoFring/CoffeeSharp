@@ -37,7 +37,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(employee => employee.Branch)
                 .WithMany(branch => branch.Employees)
                 .HasForeignKey(employee => employee.BranchId)
-                .OnDelete(DeleteBehavior.SetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("employees_branch_id_fkey");
 
             entity.HasOne(employee => employee.Role)

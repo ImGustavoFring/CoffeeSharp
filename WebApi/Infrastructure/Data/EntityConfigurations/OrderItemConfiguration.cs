@@ -49,7 +49,7 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
             entity.HasOne(orderItem => orderItem.Order)
                 .WithMany(order => order.OrderItems)
                 .HasForeignKey(orderItem => orderItem.OrderId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("order_items_order_id_fkey");
 
             entity.HasOne(orderItem => orderItem.Product)
