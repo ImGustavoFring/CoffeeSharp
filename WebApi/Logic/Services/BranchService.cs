@@ -23,6 +23,7 @@ namespace WebApi.Logic.Services
         {
             Expression<Func<Branch, bool>>? filter = null;
 
+            // the method is case sensitive to input data - a hard match of input substrings is required
             if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(address))
             {
                 filter = branch =>
@@ -53,12 +54,8 @@ namespace WebApi.Logic.Services
 
         public async Task<Branch> UpdateBranchAsync(Branch branch)
         {
-            var existing = await _unitOfWork.Branches.GetByIdAsync(branch.Id);
-
-            if (existing == null)
-            {
-                throw new ArgumentException("Branch not found.");
-            }
+            var existing = await _unitOfWork.Branches.GetByIdAsync(branch.Id) 
+                ?? throw new ArgumentException("Branch not found.");
 
             existing.Name = branch.Name;
             existing.Address = branch.Address;
@@ -125,26 +122,19 @@ namespace WebApi.Logic.Services
 
         public async Task AssignMenuPresetToBranchAsync(long branchId, long menuPresetId)
         {
-            var branch = await _unitOfWork.Branches.GetByIdAsync(branchId);
+            var branch = await _unitOfWork.Branches.GetByIdAsync(branchId) 
+                ?? throw new ArgumentException("Branch not found.");
 
-            if (branch == null)
-            {
-                throw new ArgumentException("Branch not found.");
-            }
 
-            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(menuPresetId);
-
-            if (preset == null)
-            {
-                throw new ArgumentException("MenuPreset not found.");
-            }
+            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(menuPresetId) 
+                ?? throw new ArgumentException("MenuPreset not found."); ;
 
             var existingMenus = await _unitOfWork.BranchMenus.GetManyAsync(
                 filter: branchMenus => branchMenus.BranchId == branchId);
 
-            foreach (var bm in existingMenus)
+            foreach (var branchMenu in existingMenus) 
             {
-                await _unitOfWork.BranchMenus.DeleteAsync(bm.Id);
+                await _unitOfWork.BranchMenus.DeleteAsync(branchMenu.Id);
             }
 
             var presetItems = await _unitOfWork.MenuPresetItems.GetManyAsync(
@@ -167,12 +157,8 @@ namespace WebApi.Logic.Services
 
         public async Task<BranchMenu> UpdateBranchMenuAvailabilityAsync(long branchMenuId, bool availability)
         {
-            var existing = await _unitOfWork.BranchMenus.GetByIdAsync(branchMenuId);
-
-            if (existing == null)
-            {
-                throw new ArgumentException("BranchMenu not found.");
-            }
+            var existing = await _unitOfWork.BranchMenus.GetByIdAsync(branchMenuId) 
+                ?? throw new ArgumentException("BranchMenu not found."); ;
 
             existing.Availability = availability;
 

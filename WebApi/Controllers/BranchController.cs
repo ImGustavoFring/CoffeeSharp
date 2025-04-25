@@ -21,13 +21,17 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllBranches([FromQuery] GetBranchesRequest request)
+        public async Task<IActionResult> GetAllBranches(
+         [FromQuery] string? name,
+         [FromQuery] string? address,
+         [FromQuery] int page = 0,
+         [FromQuery] int pageSize = 50)
         {
             IEnumerable<Branch> branches = await _branchService.GetBranchesAsync(
-                request.Name,
-                request.Address,
-                request.Page,
-                request.PageSize);
+                name,
+                address,
+                page,
+                pageSize);
 
             IEnumerable<BranchDto> branchDtos = branches.Select(branch => new BranchDto
             {
@@ -133,20 +137,21 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("menus")]
-        public async Task<IActionResult> GetBranchMenus([FromQuery] GetBranchMenusRequest request)
+        public async Task<IActionResult> GetBranchMenus(
+         [FromQuery] long? branchId,
+         [FromQuery] long? menuPresetItemId,
+         [FromQuery] long? menuPresetId,
+         [FromQuery] bool? availability,
+         [FromQuery] int page = 0,
+         [FromQuery] int pageSize = 50)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var branchMenus = await _branchService.GetAllBranchMenusAsync(
-                request.BranchId,
-                request.MenuPresetItemsId,
-                request.MenuPresetId,
-                request.Availability,
-                request.Page,
-                request.PageSize);
+                branchId,
+                menuPresetItemId,
+                menuPresetId,
+                availability,
+                page,
+                pageSize);
 
             var dto = branchMenus.Select(branchMenu => new BranchMenuDto
             {
@@ -158,6 +163,7 @@ namespace WebApi.Controllers
 
             return Ok(dto);
         }
+
 
 
         [HttpPatch("menus/{id}/availability")]
