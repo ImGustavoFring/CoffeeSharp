@@ -9,7 +9,7 @@ using WebApi.Logic.Services.Interfaces;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/order")]
+    [Route("api/orders")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -117,7 +117,7 @@ namespace WebApi.Controllers
             return Ok(dtos);
         }
 
-        [HttpPost("{orderId}/item")]
+        [HttpPost("{orderId}/items")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateOrderItem(long orderId, [FromBody] CreateOrderItemRequest request)
         {
@@ -144,7 +144,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut("item/{id}")]
+        [HttpPut("items/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateOrderItem(long id, [FromBody] UpdateOrderItemRequest request)
         {
@@ -175,7 +175,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpDelete("item/{id}")]
+        [HttpDelete("items/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteOrderItem(long id)
         {
@@ -190,7 +190,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPatch("item/{id}/assign")]
+        [HttpPatch("items/{id}/assign")]
         [Authorize(Policy = "AllStaff")]
         public async Task<IActionResult> AssignOrderItem(long id)
         {
@@ -217,7 +217,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPatch("item/{id}/complete")]
+        [HttpPatch("items/{id}/complete")]
         [Authorize(Policy = "AllStaff")]
         public async Task<IActionResult> CompleteOrderItem(long id)
         {
@@ -244,7 +244,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPatch("item/{id}/reassign")]
+        [HttpPatch("items/{id}/reassign")]
         [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> ReassignOrderItem(long id, [FromQuery] long newEmployeeId)
         {
@@ -296,7 +296,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("feedback")]
+        [HttpGet("feedbacks")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetFeedbacks(
             [FromQuery] long? orderId,
@@ -316,7 +316,7 @@ namespace WebApi.Controllers
             return Ok(dtos);
         }
 
-        [HttpPost("feedback")]
+        [HttpPost("feedbacks")]
         public async Task<IActionResult> CreateFeedback([FromBody] CreateFeedbackRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -338,7 +338,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut("feedback/{id}")]
+        [HttpPut("feedbacks/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateFeedback(long id, [FromBody] UpdateFeedbackRequest request)
         {
@@ -366,7 +366,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpDelete("feedback/{id}")]
+        [HttpDelete("feedbacks/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteFeedback(long id)
         {
