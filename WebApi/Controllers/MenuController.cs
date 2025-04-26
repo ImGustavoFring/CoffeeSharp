@@ -1,4 +1,5 @@
-﻿using Domain.DTOs;
+﻿using Domain.DTOs.Menu.Requests;
+using Domain.DTOs.Shared;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

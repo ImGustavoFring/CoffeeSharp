@@ -1,7 +1,6 @@
 ﻿using CoffeeSharp.Domain.Entities;
-using Domain.DTOs;
 using Domain.DTOs.Branch.Requests;
-using Domain.DTOs.Branch.Responses;
+using Domain.DTOs.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

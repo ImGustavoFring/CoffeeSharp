@@ -1,5 +1,5 @@
 ﻿using CoffeeSharp.Domain.Entities;
-using Domain.DTOs;
+using Domain.DTOs.Order.Requests;
 using Domain.Enums;
 
 namespace WebApi.Logic.Services.Interfaces

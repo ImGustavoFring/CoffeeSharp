@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
-using Domain.DTOs;
 using CoffeeSharp.Domain.Entities;
+using Domain.DTOs.Shared;
+using Domain.DTOs.User.Requests;
 
 namespace WebApi.Controllers
 {

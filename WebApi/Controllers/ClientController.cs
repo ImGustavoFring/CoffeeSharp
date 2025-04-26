@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.DTOs.Client.Requests;
+using Domain.DTOs.Shared;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;

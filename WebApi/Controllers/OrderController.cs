@@ -1,5 +1,7 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.DTOs.Order.Requests;
+using Domain.DTOs.Shared;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
