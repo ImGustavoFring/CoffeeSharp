@@ -9,6 +9,9 @@ namespace Domain.DTOs.Order.Requests
 {
     public class CreateOrderItemRequest
     {
+        [Required(ErrorMessage = "OrderId is required.")]
+        public long OrderId { get; set; }
+
         [Required(ErrorMessage = "ProductId is required.")]
         public long ProductId { get; set; }
 

@@ -150,22 +150,20 @@ namespace WebApi.Logic.Services
             return (list, total);
         }
 
-        public async Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request)
+        public async Task<OrderItem> CreateOrderItemAsync(OrderItem orderItem)
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(request.ProductId)
-                       ?? throw new ArgumentException("Product not found.");
-            var order = await _unitOfWork.Orders.GetByIdAsync(orderId)
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderItem.OrderId)
                       ?? throw new ArgumentException("Order not found.");
-            var item = new OrderItem
-            {
-                OrderId = order.Id,
-                ProductId = product.Id,
-                Count = request.Count,
-                Price = product.Price
-            };
-            await _unitOfWork.OrderItems.AddOneAsync(item);
+
+            var product = await _unitOfWork.Products.GetByIdAsync(orderItem.ProductId)
+                       ?? throw new ArgumentException("Product not found.");
+
+            orderItem.Price = product.Price;
+
+            var result = await _unitOfWork.OrderItems.AddOneAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
-            return item;
+
+            return result;
         }
 
         public async Task<OrderItem> UpdateOrderItemAsync(OrderItem orderItem)

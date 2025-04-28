@@ -10,7 +10,7 @@ namespace WebApi.Logic.Services.Interfaces
         Task<OrderItem> CompleteOrderItemAsync(long id, long employeeId);
         Task<Feedback> CreateFeedbackAsync(Feedback feedback);
         Task<Order> CreateOrderAsync(Order order);
-        Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request);
+        Task<OrderItem> CreateOrderItemAsync(OrderItem orderItem);
         Task DeleteFeedbackAsync(long id);
         Task DeleteOrderItemAsync(long id);
         Task<(IEnumerable<Feedback>, int)> GetFeedbacksAsync(long? orderId, int? ratingId, int pageIndex, int pageSize);

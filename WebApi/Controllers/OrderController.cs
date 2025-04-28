@@ -137,14 +137,24 @@ namespace WebApi.Controllers
             return Ok(dtos);
         }
 
-        [HttpPost("{orderId}/items")]
+        [HttpPost("items")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> CreateOrderItem(long orderId, [FromBody] CreateOrderItemRequest request)
+        public async Task<IActionResult> CreateOrderItem([FromBody] CreateOrderItemRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
-                var orderItem = await _orderService.CreateOrderItemAsync(orderId, request);
+                var orderItem = new OrderItem
+                {
+                    OrderId = request.OrderId,
+                    ProductId = request.ProductId,
+                    Count = request.Count
+                };
+
+                var createdItem = await _orderService.CreateOrderItemAsync(orderItem);
+
                 var dto = new OrderItemDto
                 {
                     Id = orderItem.Id,
@@ -156,7 +166,7 @@ namespace WebApi.Controllers
                     StartedAt = orderItem.StartedAt,
                     DoneAt = orderItem.DoneAt
                 };
-                return CreatedAtAction(nameof(GetOrderById), new { id = orderId }, dto);
+                return CreatedAtAction(nameof(GetOrderById), new { id = createdItem.OrderId }, dto);
             }
             catch (ArgumentException ex)
             {
