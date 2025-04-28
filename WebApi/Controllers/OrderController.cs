@@ -72,17 +72,35 @@ namespace WebApi.Controllers
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (request.Items == null || !request.Items.Any())
+                throw new ArgumentException("Order must contain at least one item.");
+
             try
             {
-                var order = await _orderService.CreateOrderAsync(request);
+                var order = new Order
+                {
+                    ClientId = request.ClientId,
+                    BranchId = request.BranchId,
+                    ClientNote = request.ClientNote,
+                    ExpectedIn = request.ExpectedIn,
+                    OrderItems = request.Items
+                        .Select(i => new OrderItem
+                        {
+                            ProductId = i.ProductId,
+                            Count = i.Count
+                        })
+                        .ToList()
+                };
+                var created = await _orderService.CreateOrderAsync(order);
                 var dto = new OrderDto
                 {
-                    Id = order.Id,
-                    ClientId = order.ClientId,
-                    ClientNote = order.ClientNote,
-                    CreatedAt = order.CreatedAt,
-                    ExpectedIn = order.ExpectedIn,
-                    BranchId = order.BranchId
+                    Id = created.Id,
+                    ClientId = created.ClientId,
+                    ClientNote = created.ClientNote,
+                    CreatedAt = created.CreatedAt,
+                    ExpectedIn = created.ExpectedIn,
+                    BranchId = created.BranchId
                 };
                 return CreatedAtAction(nameof(GetOrderById), new { id = dto.Id }, dto);
             }

@@ -54,38 +54,52 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.Orders.GetByIdAsync(id);
         }
 
-        public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
+        public async Task<Order> CreateOrderAsync(Order order)
         {
-            if (request.Items == null || !request.Items.Any())
-                throw new ArgumentException("Order must contain at least one item.");
+            var branch = await _unitOfWork.Branches.GetByIdAsync(order.BranchId)
+             ?? throw new ArgumentException($"Branch {order.BranchId} not found.");
 
-            var productIds = request.Items.Select(item => item.ProductId).Distinct().ToList();
-            var products = (await _unitOfWork.Products.GetManyAsync(product => productIds.Contains(product.Id)))
+            var client = await _unitOfWork.Clients.GetByIdAsync(order.ClientId)
+                         ?? throw new ArgumentException("Client not found.");
+
+            var productIds = order.OrderItems.Select(item => item.ProductId).Distinct().ToList();
+
+            var products = (await _unitOfWork.Products
+                    .GetManyAsync(product => productIds.Contains(product.Id)))
                 .ToDictionary(product => product.Id);
 
             decimal totalCost = 0;
-            foreach (var item in request.Items)
+            foreach (var item in order.OrderItems)
             {
                 if (!products.TryGetValue(item.ProductId, out var product))
                     throw new ArgumentException($"Product {item.ProductId} not found.");
+
                 var available = await _unitOfWork.BranchMenus.GetManyAsync(
-                    branchMenu => branchMenu.BranchId == request.BranchId && branchMenu.Availability && branchMenu.MenuPresetItems.ProductId == item.ProductId,
-                    includes: new List<Expression<Func<BranchMenu, object>>> { branchMenu => branchMenu.MenuPresetItems },
+                    branchMenu => branchMenu.BranchId == order.BranchId
+                                  && branchMenu.Availability
+                                  && branchMenu.MenuPresetItems.ProductId == item.ProductId,
+                    includes: new List<Expression<Func<BranchMenu, object>>>
+                    {
+                branchMenu => branchMenu.MenuPresetItems
+                    },
                     disableTracking: true);
+
                 if (!available.Any())
-                    throw new ArgumentException($"Product {item.ProductId} not available in branch {request.BranchId}.");
+                    throw new ArgumentException($"Product {item.ProductId} not available in branch {order.BranchId}.");
+
+                item.Price = product.Price;
                 totalCost += item.Count * product.Price;
             }
-
-            var client = await _unitOfWork.Clients.GetByIdAsync(request.ClientId)
-                         ?? throw new ArgumentException("Client not found.");
+                        
             if (client.Balance < totalCost)
                 throw new ArgumentException("Insufficient balance.");
 
             client.Balance -= totalCost;
+
             var statusId = long.Parse(_config["Transaction:CompletedStatus"] ?? "0");
             var historyStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(statusId)
-                             ?? throw new ArgumentException("Balance history status not found.");
+                                 ?? throw new ArgumentException("Balance history status not found.");
+
             client.BalanceHistories.Add(new BalanceHistory
             {
                 Sum = -totalCost,
@@ -94,29 +108,12 @@ namespace WebApi.Logic.Services
                 BalanceHistoryStatus = historyStatus
             });
 
-            var branch = await _unitOfWork.Branches.GetByIdAsync(request.BranchId)
-                         ?? throw new ArgumentException("Branch not found.");
 
-            var order = new Order
-            {
-                ClientId = client.Id,
-                BranchId = branch.Id,
-                ClientNote = request.ClientNote,
-                CreatedAt = DateTime.UtcNow,
-                ExpectedIn = request.ExpectedIn
-            };
-            foreach (var item in request.Items)
-            {
-                order.OrderItems.Add(new OrderItem
-                {
-                    ProductId = item.ProductId,
-                    Count = item.Count,
-                    Price = products[item.ProductId].Price
-                });
-            }
+            order.CreatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Orders.AddOneAsync(order);
             await _unitOfWork.SaveChangesAsync();
+
             return order;
         }
 
