@@ -1,6 +1,8 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using WebApi.Logic.Services.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
+using System.Linq.Expressions;
+using WebApi.Infrastructure.Extensions;
 
 namespace WebApi.Logic.Services
 {
@@ -13,9 +15,39 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        public async Task<(IEnumerable<Product> Items, int TotalCount)> GetAllProductsAsync(
+            string? nameFilter = null,
+            long? categoryId = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Products.GetManyAsync();
+            Expression<Func<Product, bool>> filter = p => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(p => p.Name.Contains(nameFilter));
+
+            if (categoryId.HasValue)
+                filter = filter.AndAlso(p => p.CategoryId == categoryId.Value);
+
+            if (minPrice.HasValue)
+                filter = filter.AndAlso(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                filter = filter.AndAlso(p => p.Price <= maxPrice.Value);
+
+            var total = await _unitOfWork.Products.CountAsync(filter);
+
+            var items = await _unitOfWork.Products.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(p => p.Name),
+                includes: new List<Expression<Func<Product, object>>> { p => p.Category },
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<Product?> GetProductByIdAsync(long id)
@@ -73,9 +105,31 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<(IEnumerable<Category> Items, int TotalCount)> GetAllCategoriesAsync(
+            string? nameFilter = null,
+            long? parentCategoryId = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Categories.GetManyAsync();
+            Expression<Func<Category, bool>> filter = c => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(c => c.Name.Contains(nameFilter));
+
+            if (parentCategoryId.HasValue)
+                filter = filter.AndAlso(c => c.ParentCategoryId == parentCategoryId.Value);
+
+            var total = await _unitOfWork.Categories.CountAsync(filter);
+
+            var items = await _unitOfWork.Categories.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(c => c.Name),
+                includes: new List<Expression<Func<Category, object>>> { c => c.ParentCategory },
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<Category?> GetCategoryByIdAsync(long id)
