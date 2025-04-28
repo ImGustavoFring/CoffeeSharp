@@ -266,23 +266,26 @@ namespace WebApi.Logic.Services
             return (list, total);
         }
 
-        public async Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request)
+        public async Task<Feedback> CreateFeedbackAsync(Feedback feedback)
         {
-            var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId)
+            var order = await _unitOfWork.Orders.GetByIdAsync(feedback.OrderId)
                       ?? throw new ArgumentException("Order not found.");
+
             if (order.FinishedAt == null)
                 throw new ArgumentException("Order not completed yet.");
-            var rating = await _unitOfWork.Ratings.GetByIdAsync(request.RatingId)
+
+            var rating = await _unitOfWork.Ratings.GetByIdAsync(feedback.RatingId)
                          ?? throw new ArgumentException("Rating not found.");
-            var feedback = new Feedback
-            {
-                OrderId = order.Id,
-                RatingId = rating.Id,
-                Content = request.Content
-            };
-            await _unitOfWork.Feedbacks.AddOneAsync(feedback);
+
+            var existingFeedback = await _unitOfWork.Feedbacks.GetOneAsync(f => f.OrderId == feedback.OrderId);
+
+            if (existingFeedback != null)
+                throw new ArgumentException("Feedback for this order already exists.");
+
+            var result = await _unitOfWork.Feedbacks.AddOneAsync(feedback);
             await _unitOfWork.SaveChangesAsync();
-            return feedback;
+
+            return result;
         }
 
         public async Task<Feedback> UpdateFeedbackAsync(Feedback feedback)

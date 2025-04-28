@@ -342,7 +342,15 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
-                var feedback = await _orderService.CreateFeedbackAsync(request);
+                var feedbackEntity = new Feedback
+                {
+                    OrderId = request.OrderId,
+                    RatingId = request.RatingId,
+                    Content = request.Content
+                };
+
+                var feedback = await _orderService.CreateFeedbackAsync(feedbackEntity);
+
                 var dto = new FeedbackDto
                 {
                     Id = feedback.Id,
@@ -350,6 +358,7 @@ namespace WebApi.Controllers
                     RatingId = feedback.RatingId,
                     OrderId = feedback.OrderId
                 };
+
                 return CreatedAtAction(nameof(GetOrderById), new { id = dto.OrderId }, dto);
             }
             catch (ArgumentException ex)

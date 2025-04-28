@@ -8,7 +8,7 @@ namespace WebApi.Logic.Services.Interfaces
     {
         Task<OrderItem> AssignOrderItemAsync(long id, long employeeId);
         Task<OrderItem> CompleteOrderItemAsync(long id, long employeeId);
-        Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request);
+        Task<Feedback> CreateFeedbackAsync(Feedback feedback);
         Task<Order> CreateOrderAsync(Order order);
         Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request);
         Task DeleteFeedbackAsync(long id);
