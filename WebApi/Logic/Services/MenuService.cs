@@ -25,7 +25,7 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.MenuPresets.GetByIdAsync(id);
         }
 
-        public async Task<MenuPreset> AddPresetAsync(MenuPreset preset)
+        public async Task<MenuPreset> AddPresetAsync(MenuPreset preset) // add menu preset items
         {
             var result = await _unitOfWork.MenuPresets.AddOneAsync(preset);
             await _unitOfWork.SaveChangesAsync();

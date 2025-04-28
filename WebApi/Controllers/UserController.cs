@@ -8,7 +8,7 @@ using Domain.DTOs.User.Requests;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -21,18 +21,20 @@ namespace WebApi.Controllers
 
         [HttpGet("admins")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> GetAllAdmins()
+        public async Task<IActionResult> GetAllAdmins(
+          [FromQuery] string? userName = null,
+          [FromQuery] int pageIndex = 0,
+          [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Admin> admins = await _userService.GetAllAdminsAsync();
-            IEnumerable<AdminDto> adminDtos = admins.Select(a => new AdminDto
-            {
-                Id = a.Id,
-                UserName = a.UserName
-            });
-            return Ok(adminDtos);
+            var (admins, total) = await _userService.GetAllAdminsAsync(userName, pageIndex, pageSize);
+            var dtos = admins.Select(a => new AdminDto { Id = a.Id, UserName = a.UserName });
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            return Ok(dtos);
         }
 
-        [HttpGet("admin/{id}")]
+        [HttpGet("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAdminById(long id)
         {
@@ -49,7 +51,7 @@ namespace WebApi.Controllers
             return Ok(adminDto);
         }
 
-        [HttpPost("admin/add")]
+        [HttpPost("admins/add")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddAdmin([FromBody] CreateAdminRequest request)
         {
@@ -67,7 +69,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetAdminById), new { id = adminDto.Id }, adminDto);
         }
 
-        [HttpPut("admin/{id}")]
+        [HttpPut("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateAdmin(long id, [FromBody] UpdateAdminRequest request)
         {
@@ -96,7 +98,7 @@ namespace WebApi.Controllers
             return Ok(adminDto);
         }
 
-        [HttpDelete("admin/{id}")]
+        [HttpDelete("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteAdmin(long id)
         {
@@ -106,10 +108,18 @@ namespace WebApi.Controllers
 
         [HttpGet("employees")]
         [Authorize(Policy = "ManagerOnly")]
-        public async Task<IActionResult> GetAllEmployees()
+        public async Task<IActionResult> GetAllEmployees(
+         [FromQuery] string? name = null,
+         [FromQuery] string? userName = null,
+         [FromQuery] long? roleId = null,
+         [FromQuery] long? branchId = null,
+         [FromQuery] int pageIndex = 0,
+         [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Employee> employees = await _userService.GetAllEmployeesAsync();
-            IEnumerable<EmployeeDto> employeeDtos = employees.Select(e => new EmployeeDto
+            var (employees, total) = await _userService.GetAllEmployeesAsync(
+                name, userName, roleId, branchId, pageIndex, pageSize);
+
+            var dtos = employees.Select(e => new EmployeeDto
             {
                 Id = e.Id,
                 Name = e.Name,
@@ -117,10 +127,13 @@ namespace WebApi.Controllers
                 RoleId = e.RoleId,
                 BranchId = e.BranchId
             });
-            return Ok(employeeDtos);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            return Ok(dtos);
         }
 
-        [HttpGet("employee/{id}")]
+        [HttpGet("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetEmployeeById(long id)
         {
@@ -140,7 +153,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("employee")]
+        [HttpPost("employees")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddEmployee([FromBody] CreateEmployeeRequest request)
         {
@@ -160,7 +173,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetEmployeeById), new { id = dto.Id }, dto);
         }
 
-        [HttpPut("employee/{id}")]
+        [HttpPut("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateEmployee(long id, [FromBody] UpdateEmployeeRequest request)
         {
@@ -195,7 +208,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpDelete("employee/{id}")]
+        [HttpDelete("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteEmployee(long id)
         {

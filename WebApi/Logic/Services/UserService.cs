@@ -2,8 +2,10 @@
 using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -41,9 +43,28 @@ namespace WebApi.Logic.Services
             return admin;
         }
 
-        public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
+        public async Task<(IEnumerable<Admin> Admins, int TotalCount)> GetAllAdminsAsync(
+            string? userNameFilter = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Admins.GetManyAsync();
+            Expression<Func<Admin, bool>>? filter = null;
+            if (!string.IsNullOrWhiteSpace(userNameFilter))
+            {
+                filter = a => a.UserName.Contains(userNameFilter);
+            }
+
+            var totalCount = await _unitOfWork.Admins.CountAsync(filter);
+
+            var admins = await _unitOfWork.Admins.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(a => a.UserName),
+                includes: null,
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (admins, totalCount);
         }
 
         public async Task<Admin?> GetAdminByIdAsync(long id)
@@ -79,9 +100,39 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        public async Task<(IEnumerable<Employee> Employees, int TotalCount)> GetAllEmployeesAsync(
+            string? nameFilter = null,
+            string? userNameFilter = null,
+            long? roleId = null,
+            long? branchId = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Employees.GetManyAsync();
+            Expression<Func<Employee, bool>> filter = e => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(e => e.Name.Contains(nameFilter));
+
+            if (!string.IsNullOrWhiteSpace(userNameFilter))
+                filter = filter.AndAlso(e => e.UserName.Contains(userNameFilter));
+
+            if (roleId.HasValue)
+                filter = filter.AndAlso(e => e.RoleId == roleId.Value);
+
+            if (branchId.HasValue)
+                filter = filter.AndAlso(e => e.BranchId == branchId.Value);
+
+            var totalCount = await _unitOfWork.Employees.CountAsync(filter);
+
+            var employees = await _unitOfWork.Employees.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(e => e.Name),
+                includes: new List<Expression<Func<Employee, object>>> { e => e.Role, e => e.Branch },
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (employees, totalCount);
         }
 
         public async Task<Employee?> GetEmployeeByIdAsync(long id)
