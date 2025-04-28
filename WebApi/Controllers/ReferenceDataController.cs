@@ -9,7 +9,7 @@ using WebApi.Logic.Services.Interfaces;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/reference")]
+    [Route("api/references")]
     public class ReferenceDataController : ControllerBase
     {
         private readonly IReferenceDataService _referenceDataService;
@@ -20,16 +20,16 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("ratings")]
-        public async Task<IActionResult> GetAllRatings()
+        public async Task<IActionResult> GetAllRatings(
+            [FromQuery] string? name = null,
+            [FromQuery] long? value = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Rating> ratings = await _referenceDataService.GetAllRatingsAsync();
-            IEnumerable<RatingDto> ratingDtos = ratings.Select(r => new RatingDto
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Value = r.Value
-            });
-            return Ok(ratingDtos);
+            var (items, total) = await _referenceDataService.GetAllRatingsAsync(name, value, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = items.Select(r => new RatingDto { Id = r.Id, Name = r.Name, Value = r.Value });
+            return Ok(dtos);
         }
 
         [HttpGet("ratings/{id}")]
@@ -102,19 +102,19 @@ namespace WebApi.Controllers
             return NoContent();
         }
 
-        [HttpGet("employeeRoles")]
-        public async Task<IActionResult> GetAllEmployeeRoles()
+        [HttpGet("employee-roles")]
+        public async Task<IActionResult> GetAllEmployeeRoles(
+            [FromQuery] string? name = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<EmployeeRole> roles = await _referenceDataService.GetAllEmployeeRolesAsync();
-            IEnumerable<EmployeeRoleDto> roleDtos = roles.Select(r => new EmployeeRoleDto
-            {
-                Id = r.Id,
-                Name = r.Name
-            });
-            return Ok(roleDtos);
+            var (items, total) = await _referenceDataService.GetAllEmployeeRolesAsync(name, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = items.Select(r => new EmployeeRoleDto { Id = r.Id, Name = r.Name });
+            return Ok(dtos);
         }
 
-        [HttpGet("employeeRoles/{id}")]
+        [HttpGet("employee-roles/{id}")]
         public async Task<IActionResult> GetEmployeeRoleById(long id)
         {
             EmployeeRole? role = await _referenceDataService.GetEmployeeRoleByIdAsync(id);
@@ -128,7 +128,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("employeeRoles")]
+        [HttpPost("employee-roles")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateEmployeeRole([FromBody] CreateEmployeeRoleRequest request)
         {
@@ -149,7 +149,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetEmployeeRoleById), new { id = dto.Id }, dto);
         }
 
-        [HttpPut("employeeRoles/{id}")]
+        [HttpPut("employee-roles/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateEmployeeRole(long id, [FromBody] UpdateEmployeeRoleRequest request)
         {
@@ -171,7 +171,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpDelete("employeeRoles/{id}")]
+        [HttpDelete("employee-roles/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteEmployeeRole(long id)
         {
@@ -179,19 +179,19 @@ namespace WebApi.Controllers
             return NoContent();
         }
 
-        [HttpGet("balanceHistoryStatuses")]
-        public async Task<IActionResult> GetAllBalanceHistoryStatuses()
+        [HttpGet("balance-history-statuses")]
+        public async Task<IActionResult> GetAllBalanceHistoryStatuses(
+        [FromQuery] string? name = null,
+        [FromQuery] int pageIndex = 0,
+        [FromQuery] int pageSize = 50)
         {
-            IEnumerable<BalanceHistoryStatus> statuses = await _referenceDataService.GetAllBalanceHistoryStatusesAsync();
-            IEnumerable<BalanceHistoryStatusDto> statusDtos = statuses.Select(s => new BalanceHistoryStatusDto
-            {
-                Id = s.Id,
-                Name = s.Name
-            });
-            return Ok(statusDtos);
+            var (items, total) = await _referenceDataService.GetAllBalanceHistoryStatusesAsync(name, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+            var dtos = items.Select(s => new BalanceHistoryStatusDto { Id = s.Id, Name = s.Name });
+            return Ok(dtos);
         }
 
-        [HttpGet("balanceHistoryStatuses/{id}")]
+        [HttpGet("balance-history-statuses/{id}")]
         public async Task<IActionResult> GetBalanceHistoryStatusById(long id)
         {
             BalanceHistoryStatus? status = await _referenceDataService.GetBalanceHistoryStatusByIdAsync(id);
@@ -205,7 +205,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("balanceHistoryStatuses")]
+        [HttpPost("balance-history-statuses")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> CreateBalanceHistoryStatus([FromBody] CreateBalanceHistoryStatusRequest request)
         {
@@ -226,7 +226,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetBalanceHistoryStatusById), new { id = dto.Id }, dto);
         }
 
-        [HttpPut("balanceHistoryStatuses/{id}")]
+        [HttpPut("balance-history-statuses/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> UpdateBalanceHistoryStatus(long id, [FromBody] UpdateBalanceHistoryStatusRequest request)
         {
@@ -248,7 +248,7 @@ namespace WebApi.Controllers
             return Ok(dto);
         }
 
-        [HttpDelete("balanceHistoryStatuses/{id}")]
+        [HttpDelete("balance-history-statuses/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteBalanceHistoryStatus(long id)
         {

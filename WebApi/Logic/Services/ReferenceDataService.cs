@@ -1,4 +1,6 @@
-﻿using CoffeeSharp.Domain.Entities;
+﻿using System.Linq.Expressions;
+using CoffeeSharp.Domain.Entities;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -13,9 +15,31 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Rating>> GetAllRatingsAsync()
+        public async Task<(IEnumerable<Rating> Items, int TotalCount)> GetAllRatingsAsync(
+            string? name = null,
+            long? value = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Ratings.GetManyAsync();
+            Expression<Func<Rating, bool>> filter = r => true;
+
+            if (!string.IsNullOrWhiteSpace(name))
+                filter = filter.AndAlso(r => r.Name.Contains(name));
+
+            if (value.HasValue)
+                filter = filter.AndAlso(r => r.Value == value.Value);
+
+            var total = await _unitOfWork.Ratings.CountAsync(filter);
+
+            var items = await _unitOfWork.Ratings.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(r => r.Value).ThenBy(r => r.Name),
+                includes: null,
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<Rating?> GetRatingByIdAsync(long id)
@@ -62,9 +86,27 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<EmployeeRole>> GetAllEmployeeRolesAsync()
+        public async Task<(IEnumerable<EmployeeRole> Items, int TotalCount)> GetAllEmployeeRolesAsync(
+            string? nameFilter = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.EmployeeRoles.GetManyAsync();
+            Expression<Func<EmployeeRole, bool>> filter = r => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(r => r.Name.Contains(nameFilter));
+
+            var total = await _unitOfWork.EmployeeRoles.CountAsync(filter);
+
+            var items = await _unitOfWork.EmployeeRoles.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(r => r.Name),
+                includes: null,
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<EmployeeRole?> GetEmployeeRoleByIdAsync(long id)
@@ -110,9 +152,27 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BalanceHistoryStatus>> GetAllBalanceHistoryStatusesAsync()
+        public async Task<(IEnumerable<BalanceHistoryStatus> Items, int TotalCount)> GetAllBalanceHistoryStatusesAsync(
+            string? nameFilter = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.BalanceHistoryStatuses.GetManyAsync();
+            Expression<Func<BalanceHistoryStatus, bool>> filter = s => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(s => s.Name.Contains(nameFilter));
+
+            var total = await _unitOfWork.BalanceHistoryStatuses.CountAsync(filter);
+
+            var items = await _unitOfWork.BalanceHistoryStatuses.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(s => s.Name),
+                includes: null,
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<BalanceHistoryStatus?> GetBalanceHistoryStatusByIdAsync(long id)
