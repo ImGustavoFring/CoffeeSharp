@@ -69,7 +69,10 @@ namespace WebApi.Controllers
             var preset = new MenuPreset
             {
                 Name = request.Name,
-                Description = request.Description
+                Description = request.Description,
+                MenuPresetItems = request.Items
+                    .Select(i => new MenuPresetItem { ProductId = i.ProductId })
+                    .ToList()
             };
 
             MenuPreset created = await _menuService.AddPresetAsync(preset);

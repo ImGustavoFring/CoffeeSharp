@@ -48,11 +48,28 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.MenuPresets.GetByIdAsync(id);
         }
 
-        public async Task<MenuPreset> AddPresetAsync(MenuPreset preset) // add menu preset items
+        public async Task<MenuPreset> AddPresetAsync(MenuPreset preset)
         {
+            var nameExists = await _unitOfWork.MenuPresets
+                .CountAsync(p => p.Name == preset.Name) > 0;
+            if (nameExists)
+                throw new ArgumentException($"MenuPreset with name '{preset.Name}' already exists.");
+
+            if (preset.MenuPresetItems != null && preset.MenuPresetItems.Any())
+            {
+                var productIds = preset.MenuPresetItems
+                    .Select(item => item.ProductId)
+                    .Distinct();
+                foreach (var id in productIds)
+                {
+                    var product = await _unitOfWork.Products.GetByIdAsync(id);
+                    if (product == null)
+                        throw new ArgumentException($"Product with id {id} not found.");
+                }
+            }
+
             var result = await _unitOfWork.MenuPresets.AddOneAsync(preset);
             await _unitOfWork.SaveChangesAsync();
-
             return result;
         }
 
