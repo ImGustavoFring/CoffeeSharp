@@ -22,6 +22,6 @@ namespace Domain.DTOs.Order.Requests
 
         [Required(ErrorMessage = "At least one order item is required.")]
         [MinLength(1, ErrorMessage = "At least one order item must be provided.")]
-        public List<CreateOrderItemRequest> Items { get; set; } = new List<CreateOrderItemRequest>();
+        public List<NewOrderItemDto> Items { get; set; } = new List<NewOrderItemDto>();
     }
 }
