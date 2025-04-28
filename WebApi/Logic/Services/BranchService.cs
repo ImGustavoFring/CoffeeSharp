@@ -15,15 +15,14 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Branch>> GetBranchesAsync(
+        public async Task<(IEnumerable<Branch> Items, int TotalCount)> GetBranchesAsync(
             string? name,
             string? address,
-            int pageIndex,
-            int pageSize)
+            int pageIndex = 0,
+            int pageSize = 50)
         {
             Expression<Func<Branch, bool>>? filter = null;
 
-            // the method is case sensitive to input data - a hard match of input substrings is required
             if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(address))
             {
                 filter = branch =>
@@ -31,11 +30,15 @@ namespace WebApi.Logic.Services
                     (string.IsNullOrWhiteSpace(address) || branch.Address.Contains(address));
             }
 
-            return await _unitOfWork.Branches.GetManyAsync(
+            var total = await _unitOfWork.Branches.CountAsync(filter);
+
+            var items = await _unitOfWork.Branches.GetManyAsync(
                 filter: filter,
+                orderBy: q => q.OrderBy(b => b.Name),
                 pageIndex: pageIndex,
-                pageSize: pageSize
-            );
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
 

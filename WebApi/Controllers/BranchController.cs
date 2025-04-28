@@ -21,18 +21,16 @@ namespace WebApi.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAllBranches(
-         [FromQuery] string? name,
-         [FromQuery] string? address,
-         [FromQuery] int page = 0,
-         [FromQuery] int pageSize = 50)
+            [FromQuery] string? name,
+            [FromQuery] string? address,
+            [FromQuery] int page = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Branch> branches = await _branchService.GetBranchesAsync(
-                name,
-                address,
-                page,
-                pageSize);
+            var (branches, total) = await _branchService.GetBranchesAsync(name, address, page, pageSize);
 
-            IEnumerable<BranchDto> branchDtos = branches.Select(branch => new BranchDto
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var branchDtos = branches.Select(branch => new BranchDto
             {
                 Id = branch.Id,
                 Name = branch.Name,

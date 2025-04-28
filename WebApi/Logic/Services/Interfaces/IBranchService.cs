@@ -4,9 +4,11 @@ namespace WebApi.Logic.Services.Interfaces
 {
     public interface IBranchService
     {
-        Task<IEnumerable<Branch>> GetBranchesAsync(string? name,
-            string? address, int pageIndex,
-            int pageSize);
+        Task<(IEnumerable<Branch> Items, int TotalCount)> GetBranchesAsync(
+            string? name,
+            string? address,
+            int pageIndex = 0,
+            int pageSize = 50);
         Task<Branch?> GetBranchByIdAsync(long id);
         Task<Branch> AddBranchAsync(Branch branch);
         Task<Branch> UpdateBranchAsync(Branch branch);

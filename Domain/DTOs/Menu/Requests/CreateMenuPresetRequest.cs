@@ -15,5 +15,6 @@ namespace Domain.DTOs.Menu.Requests
 
         [StringLength(500, ErrorMessage = "Description must not exceed 500 characters.")]
         public string? Description { get; set; }
+        public IEnumerable<CreateMenuPresetItemRequest> Items { get; set; } = new List<CreateMenuPresetItemRequest>();
     }
 }
