@@ -9,7 +9,7 @@ using WebApi.Logic.Services.Interfaces;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/menu")]
+    [Route("api/menus")]
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
@@ -20,16 +20,24 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("presets")]
-        public async Task<IActionResult> GetAllPresets()
+        public async Task<IActionResult> GetAllPresets(
+            [FromQuery] string? name = null,
+            [FromQuery] string? description = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<MenuPreset> presets = await _menuService.GetAllPresetsAsync();
-            IEnumerable<MenuPresetDto> presetDtos = presets.Select(p => new MenuPresetDto
+            var (items, total) = await _menuService.GetAllPresetsAsync(name, description, pageIndex, pageSize);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = items.Select(p => new MenuPresetDto
             {
                 Id = p.Id,
                 Name = p.Name,
                 Description = p.Description
             });
-            return Ok(presetDtos);
+
+            return Ok(dtos);
         }
 
         [HttpGet("presets/{id}")]
@@ -113,24 +121,24 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("items")]
-        public async Task<IActionResult> GetPresetItems([FromQuery] long? menuPresetId)
+        public async Task<IActionResult> GetAllPresetItems(
+            [FromQuery] long? menuPresetId = null,
+            [FromQuery] long? productId = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<MenuPresetItem> items;
-            if (menuPresetId.HasValue)
-            {
-                items = await _menuService.GetPresetItemsByPresetIdAsync(menuPresetId.Value);
-            }
-            else
-            {
-                items = await _menuService.GetAllPresetItemsAsync();
-            }
-            IEnumerable<MenuPresetItemDto> itemDtos = items.Select(i => new MenuPresetItemDto
+            var (items, total) = await _menuService.GetAllPresetItemsAsync(menuPresetId, productId, pageIndex, pageSize);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = items.Select(i => new MenuPresetItemDto
             {
                 Id = i.Id,
                 ProductId = i.ProductId,
                 MenuPresetId = i.MenuPresetId
             });
-            return Ok(itemDtos);
+
+            return Ok(dtos);
         }
 
         [HttpGet("items/{id}")]
