@@ -8,32 +8,38 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Product> entity)
         {
-            entity.HasKey(e => e.Id).HasName("products_pkey");
+            entity.HasKey(product => product.Id)
+                .HasName("products_pkey");
 
             entity.ToTable("products");
 
-            entity.Property(e => e.Id)
+            entity.Property(product => product.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.CategoryId)
+            entity.Property(product => product.CategoryId)
                 .HasColumnName("category_id");
 
-            entity.Property(e => e.Description)
+            entity.Property(product => product.Description)
                 .HasColumnName("description");
 
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
+            entity.Property(product => product.Name)
+                .HasMaxLength(100)
                 .HasColumnName("name");
-
-            entity.Property(e => e.Price)
+                
+            entity.Property(product => product.Price)
                 .HasColumnName("price");
 
-            entity.HasOne(d => d.Category)
-                .WithMany(p => p.Products)
-                .HasForeignKey(d => d.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(product => product.Category)
+                .WithMany(category => category.Products)
+                .HasForeignKey(product => product.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("products_category_id_fkey");
+
+            entity.HasIndex(product => product.Name)
+                .IsUnique();
+
+            entity.HasIndex(product => product.Price);
         }
     }
 }

@@ -17,7 +17,7 @@ public class BalanceHistory
 
     public long BalanceHistoryStatusId { get; set; }
 
-    public virtual BalanceHistoryStatus BalanceHistoryStatus { get; set; } = null!;
+    public virtual BalanceHistoryStatus? BalanceHistoryStatus { get; set; } = null!;
 
-    public virtual Client Client { get; set; } = null!;
+    public virtual Client? Client { get; set; } = null!;
 }

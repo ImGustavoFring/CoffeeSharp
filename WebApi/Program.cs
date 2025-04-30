@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Microsoft.OpenApi.Models;
-using WebApi.Logic.CrudServices.Interfaces;
-using WebApi.Logic.CrudServices;
 using WebApi.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -27,7 +25,9 @@ namespace WebApi
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<CoffeeSharpDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options
+                    .UseLazyLoadingProxies()
+                    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {

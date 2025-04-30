@@ -8,20 +8,27 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Branch> entity)
         {
-            entity.HasKey(e => e.Id).HasName("branches_pkey");
+            entity.HasKey(branch => branch.Id)
+                .HasName("branches_pkey");
 
             entity.ToTable("branches");
 
-            entity.Property(e => e.Id)
+            entity.Property(branch => branch.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Address)
+            entity.Property(branch => branch.Address)
                 .HasColumnName("address");
 
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
+            entity.Property(branch => branch.Name)
+                .HasMaxLength(100)
                 .HasColumnName("name");
+
+            entity.HasIndex(branch => branch.Name)
+                  .IsUnique();
+
+            entity.HasIndex(branch => branch.Address)
+                  .IsUnique();
         }
     }
 }

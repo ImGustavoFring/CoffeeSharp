@@ -2,14 +2,17 @@
 using System.Threading.Tasks;
 using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.DTOs.Client.Requests;
+using Domain.DTOs.Shared;
 using Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/client")]
+    [Route("api/clients")]
     public class ClientController : ControllerBase
     {
         private readonly IClientService _clientService;
@@ -20,137 +23,68 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllClients()
+        public async Task<IActionResult> GetClients(
+            [FromQuery] string? telegramId,
+            [FromQuery] string? name,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            var clients = await _clientService.GetAllClientsAsync();
-            var clientDtos = clients.Select(c => new ClientDto
+            var (clients, total) = await _clientService.GetClientsAsync(telegramId, name, pageIndex, pageSize);
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = clients.Select(client => new ClientDto
             {
-                Id = c.Id,
-                TelegramId = c.TelegramId,
-                Name = c.Name,
-                Balance = c.Balance
+                Id = client.Id,
+                TelegramId = client.TelegramId,
+                Name = client.Name,
+                Balance = client.Balance
             });
-            return Ok(clientDtos);
+
+            return Ok(dtos);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetClientById(long id)
         {
             var client = await _clientService.GetClientByIdAsync(id);
-            if (client == null)
-            {
-                return NotFound();
-            }
-            var clientDto = new ClientDto
+            if (client == null) return NotFound();
+
+            var dto = new ClientDto
             {
                 Id = client.Id,
                 TelegramId = client.TelegramId,
                 Name = client.Name,
                 Balance = client.Balance
             };
-            return Ok(clientDto);
+
+            return Ok(dto);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateClient([FromBody] CreateClientRequest request)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
-
-            var client = new Client
-            {
-                TelegramId = request.TelegramId,
-                Name = request.Name
-            };
-
-            var created = await _clientService.CreateClientAsync(client);
-            var clientDto = new ClientDto
-            {
-                Id = created.Id,
-                TelegramId = created.TelegramId,
-                Name = created.Name,
-                Balance = created.Balance
-            };
-            return CreatedAtAction(nameof(GetClientById), new { id = clientDto.Id }, clientDto);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateClient(long id, [FromBody] UpdateClientRequest request)
-        {
-            if (id != request.Id)
-            {
-                ModelState.AddModelError("Id", "URL id does not match request body id.");
-            }
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var client = new Client
-            {
-                Id = request.Id,
-                TelegramId = request.TelegramId,
-                Name = request.Name
-            };
-
-            var updated = await _clientService.UpdateClientAsync(client);
-            var clientDto = new ClientDto
-            {
-                Id = updated.Id,
-                TelegramId = updated.TelegramId,
-                Name = updated.Name,
-                Balance = updated.Balance
-            };
-            return Ok(clientDto);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteClient(long id)
-        {
-            await _clientService.DeleteClientAsync(id);
-            return NoContent();
-        }
-
-        [HttpPost("{clientId}/balance/add")]
-        public async Task<IActionResult> AddBalance(long clientId, [FromBody] AddBalanceRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var updated = await _clientService.AddBalanceAsync(clientId, request.Amount);
-            var clientDto = new ClientDto
-            {
-                Id = updated.Id,
-                TelegramId = updated.TelegramId,
-                Name = updated.Name,
-                Balance = updated.Balance
-            };
-            return Ok(clientDto);
-        }
-
-        [HttpPost("{clientId}/balance/deduct")]
-        public async Task<IActionResult> DeductBalance(long clientId, [FromBody] DeductBalanceRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
             try
             {
-                var updated = await _clientService.DeductBalanceAsync(clientId, request.Amount);
-                var clientDto = new ClientDto
+                var client = new Client
                 {
-                    Id = updated.Id,
-                    TelegramId = updated.TelegramId,
-                    Name = updated.Name,
-                    Balance = updated.Balance
+                    TelegramId = request.TelegramId,
+                    Name = request.Name
                 };
-                return Ok(clientDto);
+
+                var created = await _clientService.CreateClientAsync(client);
+
+                var dto = new ClientDto
+                {
+                    Id = created.Id,
+                    TelegramId = created.TelegramId,
+                    Name = created.Name,
+                    Balance = created.Balance
+                };
+
+                return CreatedAtAction(nameof(GetClientById), new { id = dto.Id }, dto);
             }
             catch (ArgumentException ex)
             {
@@ -158,41 +92,198 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("{clientId}/transactions")]
-        public async Task<IActionResult> GetClientTransactions(
-            long clientId,
-            [FromQuery] TransactionType transactionType = TransactionType.All,
-            [FromQuery] bool orderByNewestFirst = true)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateClient(long id, [FromBody] UpdateClientRequest request)
         {
-            var transactions = await _clientService.GetClientTransactionsAsync(clientId, orderByNewestFirst, transactionType);
-            var transactionDtos = transactions.Select(bh => new BalanceHistoryDto
-            {
-                Id = bh.Id,
-                ClientId = bh.ClientId,
-                Sum = bh.Sum,
-                CreatedAt = bh.CreatedAt,
-                FinishedAt = bh.FinishedAt,
-                BalanceHistoryStatusId = bh.BalanceHistoryStatusId
-            });
-            return Ok(transactionDtos);
-        }
+            if (id != request.Id)
+                ModelState.AddModelError("Id", "URL id does not match request body id.");
 
-        [HttpPost("transaction/cancel")]
-        public async Task<IActionResult> CancelTransaction([FromBody] CancelTransactionRequest request)
-        {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
-                var previousBalance = await _clientService.CancelTransactionAsync(request.TransactionId);
-                var response = new CancelTransactionResponse
+                var client = new Client
                 {
-                    PreviousBalance = previousBalance
+                    Id = request.Id,
+                    TelegramId = request.TelegramId,
+                    Name = request.Name
                 };
-                return Ok(response);
+
+                var updated = await _clientService.UpdateClientAsync(client);
+
+                var dto = new ClientDto
+                {
+                    Id = updated.Id,
+                    TelegramId = updated.TelegramId,
+                    Name = updated.Name,
+                    Balance = updated.Balance
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteClient(long id)
+        {
+            try
+            {
+                await _clientService.DeleteClientAsync(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{clientId}/balance/add")]
+        [Authorize]
+        public async Task<IActionResult> AddBalance(long clientId, [FromBody] AddBalanceRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var createdHistory = await _clientService.AddBalanceAsync(clientId, request.Amount);
+
+                var dto = new BalanceHistoryDto
+                {
+                    Id = createdHistory.Id,
+                    ClientId = createdHistory.ClientId,
+                    Sum = createdHistory.Sum,
+                    CreatedAt = createdHistory.CreatedAt,
+                    FinishedAt = createdHistory.FinishedAt,
+                    BalanceHistoryStatusId = createdHistory.BalanceHistoryStatusId
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{clientId}/balance/deduct")]
+        [Authorize]
+        public async Task<IActionResult> DeductBalance(long clientId, [FromBody] DeductBalanceRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var createdHistory = await _clientService.DeductBalanceAsync(clientId, request.Amount);
+
+                var dto = new BalanceHistoryDto
+                {
+                    Id = createdHistory.Id,
+                    ClientId = createdHistory.ClientId,
+                    Sum = createdHistory.Sum,
+                    CreatedAt = createdHistory.CreatedAt,
+                    FinishedAt = createdHistory.FinishedAt,
+                    BalanceHistoryStatusId = createdHistory.BalanceHistoryStatusId
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("transactions")]
+        [Authorize]
+        public async Task<IActionResult> GetClientTransactions(
+            [FromQuery] long? clientId,
+            [FromQuery] TransactionType transactionType = TransactionType.All,
+            [FromQuery] TransactionStatus? transactionStatus = null,
+            [FromQuery] DateTime? createdFrom = null,
+            [FromQuery] DateTime? createdTo = null,
+            [FromQuery] DateTime? finishedFrom = null,
+            [FromQuery] DateTime? finishedTo = null,
+            [FromQuery] bool orderByNewestFirst = true,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
+        {
+            var (transactions, total) = await _clientService.GetClientTransactionsAsync(
+                clientId,
+                transactionType,
+                transactionStatus,
+                createdFrom,
+                createdTo,
+                finishedFrom,
+                finishedTo,
+                orderByNewestFirst,
+                pageIndex,
+                pageSize);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = transactions.Select(history => new BalanceHistoryDto
+            {
+                Id = history.Id,
+                ClientId = history.ClientId,
+                Sum = history.Sum,
+                CreatedAt = history.CreatedAt,
+                FinishedAt = history.FinishedAt,
+                BalanceHistoryStatusId = history.BalanceHistoryStatusId
+            });
+
+            return Ok(dtos);
+        }
+
+        [HttpPatch("transactions/{transactionId}/complete")]
+        public async Task<IActionResult> CompleteBalanceTransaction(long transactionId)
+        {
+            try
+            {
+                var updated = await _clientService.CompletePendingBalanceTransactionAsync(transactionId);
+
+                var dto = new ClientDto
+                {
+                    Id = updated.Id,
+                    TelegramId = updated.TelegramId,
+                    Name = updated.Name,
+                    Balance = updated.Balance
+                };
+
+                return Ok(dto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPatch("transactions/{transactionId}/cancel")]
+        public async Task<IActionResult> CancelTransaction(long transactionId)
+        {
+            try
+            {
+                var updated = await _clientService.CancelTransactionAsync(transactionId);
+
+                var dto = new ClientDto
+                {
+                    Id = updated.Id,
+                    TelegramId = updated.TelegramId,
+                    Name = updated.Name,
+                    Balance = updated.Balance
+                };
+
+                return Ok(dto);
             }
             catch (ArgumentException ex)
             {
@@ -201,5 +292,3 @@ namespace WebApi.Controllers
         }
     }
 }
-
-

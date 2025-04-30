@@ -1,5 +1,8 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs;
+using Domain.DTOs.Branch.Requests;
+using Domain.DTOs.ProductCatalog.Requests;
+using Domain.DTOs.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +11,7 @@ using WebApi.Logic.Services.Interfaces;
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/product-catalog")]
     public class ProductCatalogController : ControllerBase
     {
         private readonly IProductCatalogService _productCatalogService;
@@ -19,10 +22,20 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("products")]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetAllProducts(
+            [FromQuery] string? name = null,
+            [FromQuery] long? categoryId = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Product> products = await _productCatalogService.GetAllProductsAsync();
-            IEnumerable<ProductDto> productDtos = products.Select(p => new ProductDto
+            var (items, total) = await _productCatalogService.GetAllProductsAsync(
+                name, categoryId, minPrice, maxPrice, pageIndex, pageSize);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = items.Select(p => new ProductDto
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -30,7 +43,8 @@ namespace WebApi.Controllers
                 Price = p.Price,
                 CategoryId = p.CategoryId
             });
-            return Ok(productDtos);
+
+            return Ok(dtos);
         }
 
         [HttpGet("products/{id}")]
@@ -66,10 +80,10 @@ namespace WebApi.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
-                CategoryId = request.CategoryId
             };
 
-            Product createdProduct = await _productCatalogService.AddProductAsync(product);
+            Product createdProduct = await _productCatalogService.AddProductAsync(request.CategoryId, product);
+
             var productDto = new ProductDto
             {
                 Id = createdProduct.Id,
@@ -105,6 +119,7 @@ namespace WebApi.Controllers
             };
 
             Product updatedProduct = await _productCatalogService.UpdateProductAsync(product);
+
             var productDto = new ProductDto
             {
                 Id = updatedProduct.Id,
@@ -126,16 +141,24 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("categories")]
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories(
+            [FromQuery] string? name = null,
+            [FromQuery] long? parentId = null,
+            [FromQuery] int pageIndex = 0,
+            [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Category> categories = await _productCatalogService.GetAllCategoriesAsync();
-            IEnumerable<CategoryDto> categoryDtos = categories.Select(c => new CategoryDto
+            var (items, total) = await _productCatalogService.GetAllCategoriesAsync(name, parentId, pageIndex, pageSize);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            var dtos = items.Select(c => new CategoryDto
             {
                 Id = c.Id,
                 Name = c.Name,
-                ParentId = c.ParentId
+                ParentId = c.ParentCategoryId
             });
-            return Ok(categoryDtos);
+
+            return Ok(dtos);
         }
 
         [HttpGet("categories/{id}")]
@@ -150,7 +173,7 @@ namespace WebApi.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
-                ParentId = category.ParentId
+                ParentId = category.ParentCategoryId
             };
             return Ok(categoryDto);
         }
@@ -167,7 +190,7 @@ namespace WebApi.Controllers
             var category = new Category
             {
                 Name = request.Name,
-                ParentId = request.ParentId
+                ParentCategoryId = request.ParentId
             };
 
             Category createdCategory = await _productCatalogService.AddCategoryAsync(category);
@@ -175,7 +198,7 @@ namespace WebApi.Controllers
             {
                 Id = createdCategory.Id,
                 Name = createdCategory.Name,
-                ParentId = createdCategory.ParentId
+                ParentId = createdCategory.ParentCategoryId
             };
 
             return CreatedAtAction(nameof(GetCategoryById), new { id = categoryDto.Id }, categoryDto);
@@ -198,7 +221,7 @@ namespace WebApi.Controllers
             {
                 Id = request.Id,
                 Name = request.Name,
-                ParentId = request.ParentId
+                ParentCategoryId = request.ParentId
             };
 
             Category updatedCategory = await _productCatalogService.UpdateCategoryAsync(category);
@@ -206,7 +229,7 @@ namespace WebApi.Controllers
             {
                 Id = updatedCategory.Id,
                 Name = updatedCategory.Name,
-                ParentId = updatedCategory.ParentId
+                ParentId = updatedCategory.ParentCategoryId
             };
 
             return Ok(categoryDto);

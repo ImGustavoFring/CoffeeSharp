@@ -8,42 +8,49 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Employee> entity)
         {
-            entity.HasKey(e => e.Id).HasName("employees_pkey");
+            entity.HasKey(employee => employee.Id)
+                .HasName("employees_pkey");
 
             entity.ToTable("employees");
 
-            entity.Property(e => e.Id)
+            entity.Property(employee => employee.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.BranchId)
+            entity.Property(employee => employee.BranchId)
                 .HasColumnName("branch_id");
 
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
+            entity.Property(employee => employee.Name)
+                .HasMaxLength(100)
                 .HasColumnName("name");
 
-            entity.Property(e => e.UserName)
-                .HasMaxLength(255)
+            entity.Property(employee => employee.UserName)
+                .HasMaxLength(30)
                 .HasColumnName("user_name");
 
-            entity.Property(e => e.PasswordHash)
+            entity.Property(employee => employee.PasswordHash)
                 .HasColumnName("password_hash");
 
-            entity.Property(e => e.RoleId)
+            entity.Property(employee => employee.RoleId)
                 .HasColumnName("role_id");
 
-            entity.HasOne(d => d.Branch)
-                .WithMany(p => p.Employees)
-                .HasForeignKey(d => d.BranchId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(employee => employee.Branch)
+                .WithMany(branch => branch.Employees)
+                .HasForeignKey(employee => employee.BranchId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("employees_branch_id_fkey");
 
-            entity.HasOne(d => d.Role)
-                .WithMany(p => p.Employees)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(employee => employee.Role)
+                .WithMany(role => role.Employees)
+                .HasForeignKey(employee => employee.RoleId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("employees_role_id_fkey");
+
+            entity.HasIndex(employee => employee.Name);
+
+            entity.HasIndex(employee => employee.UserName)
+                 .IsUnique();
+
         }
     }
 }

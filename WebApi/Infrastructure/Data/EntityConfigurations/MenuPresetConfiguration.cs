@@ -8,20 +8,24 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<MenuPreset> entity)
         {
-            entity.HasKey(e => e.Id).HasName("menu_presets_pkey");
+            entity.HasKey(menuPreset => menuPreset.Id)
+                .HasName("menu_presets_pkey");
 
             entity.ToTable("menu_presets");
 
-            entity.Property(e => e.Id)
+            entity.Property(menuPreset => menuPreset.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
+            entity.Property(menuPreset => menuPreset.Name)
+                .HasMaxLength(30)
                 .HasColumnName("name");
 
-            entity.Property(e => e.Description)
+            entity.Property(menuPreset => menuPreset.Description)
                .HasColumnName("description");
+
+            entity.HasIndex(menuPreset => menuPreset.Name)
+                .IsUnique();
         }
     }
 }

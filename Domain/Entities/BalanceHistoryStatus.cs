@@ -10,5 +10,5 @@ public class BalanceHistoryStatus
 
     public string Name { get; set; } = null!;
 
-    public virtual ICollection<BalanceHistory> BalanceHistories { get; set; } = new List<BalanceHistory>();
+    public virtual ICollection<BalanceHistory>? BalanceHistories { get; set; } = new List<BalanceHistory>();
 }

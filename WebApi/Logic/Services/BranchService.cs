@@ -1,4 +1,6 @@
-﻿using CoffeeSharp.Domain.Entities;
+﻿using System.Linq.Expressions;
+using CoffeeSharp.Domain.Entities;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -13,10 +15,32 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<Branch>> GetAllBranchesAsync()
+        public async Task<(IEnumerable<Branch> Items, int TotalCount)> GetBranchesAsync(
+            string? name,
+            string? address,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.Branches.GetAllAsync();
+            Expression<Func<Branch, bool>>? filter = null;
+
+            if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(address))
+            {
+                filter = branch =>
+                    (string.IsNullOrWhiteSpace(name) || branch.Name.Contains(name)) &&
+                    (string.IsNullOrWhiteSpace(address) || branch.Address.Contains(address));
+            }
+
+            var total = await _unitOfWork.Branches.CountAsync(filter);
+
+            var items = await _unitOfWork.Branches.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(b => b.Name),
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
+
 
         public async Task<Branch?> GetBranchByIdAsync(long id)
         {
@@ -25,34 +49,73 @@ namespace WebApi.Logic.Services
 
         public async Task<Branch> AddBranchAsync(Branch branch)
         {
-            return await _unitOfWork.Branches.AddAsync(branch);
+            var result = await _unitOfWork.Branches.AddOneAsync(branch);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<Branch> UpdateBranchAsync(Branch branch)
         {
-            var existing = await _unitOfWork.Branches.GetByIdAsync(branch.Id);
-            if (existing == null)
-            {
-                throw new ArgumentException("Branch not found.");
-            }
+            var existing = await _unitOfWork.Branches.GetByIdAsync(branch.Id) 
+                ?? throw new ArgumentException("Branch not found.");
+
             existing.Name = branch.Name;
             existing.Address = branch.Address;
-            return await _unitOfWork.Branches.UpdateAsync(existing);
+
+            _unitOfWork.Branches.Update(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
 
         public async Task DeleteBranchAsync(long id)
         {
             await _unitOfWork.Branches.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync()
+        public async Task<IEnumerable<BranchMenu>> GetAllBranchMenusAsync(
+            long? branchId,
+            long? menuPresetItemId,
+            long? menuPresetId,
+            bool? availability,
+            int pageIndex,
+            int pageSize)
         {
-            return await _unitOfWork.BranchMenus.GetAllAsync();
-        }
+            Expression<Func<BranchMenu, bool>>? filter = null;
 
-        public async Task<IEnumerable<BranchMenu>> GetBranchMenusByBranchIdAsync(long branchId)
-        {
-            return await _unitOfWork.BranchMenus.GetAllAsync(filter: bm => bm.BranchId == branchId);
+            if (branchId.HasValue)
+                filter = filter == null
+                    ? branchMenu => branchMenu.BranchId == branchId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.BranchId == branchId.Value);
+
+            if (menuPresetItemId.HasValue)
+                filter = filter == null
+                    ? branchMenu => branchMenu.MenuPresetItemsId == menuPresetItemId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.MenuPresetItemsId == menuPresetItemId.Value);
+
+            if (menuPresetId.HasValue)
+                filter = filter == null
+                    ? branchMenu => branchMenu.MenuPresetItems != null &&
+                                    branchMenu.MenuPresetItems.MenuPresetId == menuPresetId.Value
+                    : filter.AndAlso(branchMenu => branchMenu.MenuPresetItems != null &&
+                                                   branchMenu.MenuPresetItems.MenuPresetId == menuPresetId.Value);
+
+            if (availability.HasValue)
+                filter = filter == null
+                    ? branchMenu => branchMenu.Availability == availability.Value
+                    : filter.AndAlso(branchMenu => branchMenu.Availability == availability.Value);
+
+            return await _unitOfWork.BranchMenus.GetManyAsync(
+                filter: filter,
+                includes: new List<Expression<Func<BranchMenu, object>>>
+                {
+                    branchMenu => branchMenu.MenuPresetItems
+                },
+                disableTracking: false,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
         }
 
         public async Task<BranchMenu?> GetBranchMenuByIdAsync(long id)
@@ -62,43 +125,50 @@ namespace WebApi.Logic.Services
 
         public async Task AssignMenuPresetToBranchAsync(long branchId, long menuPresetId)
         {
-            var branch = await _unitOfWork.Branches.GetByIdAsync(branchId);
-            if (branch == null)
+            var branch = await _unitOfWork.Branches.GetByIdAsync(branchId) 
+                ?? throw new ArgumentException("Branch not found.");
+
+
+            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(menuPresetId) 
+                ?? throw new ArgumentException("MenuPreset not found."); ;
+
+            var existingMenus = await _unitOfWork.BranchMenus.GetManyAsync(
+                filter: branchMenus => branchMenus.BranchId == branchId);
+
+            foreach (var branchMenu in existingMenus) 
             {
-                throw new ArgumentException("Branch not found.");
+                await _unitOfWork.BranchMenus.DeleteAsync(branchMenu.Id);
             }
-            var preset = await _unitOfWork.MenuPresets.GetByIdAsync(menuPresetId);
-            if (preset == null)
-            {
-                throw new ArgumentException("MenuPreset not found.");
-            }
-            var existingMenus = await _unitOfWork.BranchMenus.GetAllAsync(filter: bm => bm.BranchId == branchId);
-            foreach (var bm in existingMenus)
-            {
-                await _unitOfWork.BranchMenus.DeleteAsync(bm.Id);
-            }
-            var presetItems = await _unitOfWork.MenuPresetItems.GetAllAsync(filter: mpi => mpi.MenuPresetId == menuPresetId);
+
+            var presetItems = await _unitOfWork.MenuPresetItems.GetManyAsync(
+                filter: menuPresetItems => menuPresetItems.MenuPresetId == menuPresetId);
+
             foreach (var item in presetItems)
             {
                 var branchMenu = new BranchMenu
                 {
-                    BranchId = branchId,
-                    MenuPresetItemId = item.Id,
+                    BranchId = branch.Id,
+                    MenuPresetItemsId = item.Id,
                     Availability = true
                 };
-                await _unitOfWork.BranchMenus.AddAsync(branchMenu);
+
+                await _unitOfWork.BranchMenus.AddOneAsync(branchMenu);
             }
+
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<BranchMenu> UpdateBranchMenuAvailabilityAsync(long branchMenuId, bool availability)
         {
-            var existing = await _unitOfWork.BranchMenus.GetByIdAsync(branchMenuId);
-            if (existing == null)
-            {
-                throw new ArgumentException("BranchMenu not found.");
-            }
+            var existing = await _unitOfWork.BranchMenus.GetByIdAsync(branchMenuId) 
+                ?? throw new ArgumentException("BranchMenu not found."); ;
+
             existing.Availability = availability;
-            return await _unitOfWork.BranchMenus.UpdateAsync(existing);
+
+            _unitOfWork.BranchMenus.Update(existing);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existing;
         }
     }
 }

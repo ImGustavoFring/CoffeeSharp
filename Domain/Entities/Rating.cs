@@ -12,5 +12,5 @@ public class Rating
 
     public long Value { get; set; }
 
-    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+    public virtual ICollection<Feedback>? Feedbacks { get; set; } = new List<Feedback>();
 }

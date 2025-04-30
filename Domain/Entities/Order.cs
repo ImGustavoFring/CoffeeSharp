@@ -20,11 +20,11 @@ public class Order
 
     public long BranchId { get; set; }
 
-    public virtual Branch Branch { get; set; } = null!;
+    public virtual Branch? Branch { get; set; } = null!;
 
-    public virtual Client Client { get; set; } = null!;
+    public virtual Client? Client { get; set; } = null!;
 
     public virtual Feedback? Feedback { get; set; } = null;
 
-    public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
 }

@@ -1,6 +1,8 @@
 ﻿using CoffeeSharp.Domain.Entities;
-using Domain.DTOs;
+using Domain.DTOs.Order.Requests;
+using Domain.Enums;
 using System.Linq.Expressions;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -9,45 +11,42 @@ namespace WebApi.Logic.Services
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _config;
 
-        public OrderService(IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, IConfiguration config)
         {
             _unitOfWork = unitOfWork;
+            _config = config;
         }
 
-        public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
+        public async Task<(IEnumerable<Order>, int)> GetOrdersAsync(
+            long? clientId,
+            long? branchId,
+            DateTime? createdFrom,
+            DateTime? createdTo,
+            OrderStatus? status,
+            int pageIndex,
+            int pageSize)
         {
-            if (request.Items == null || !request.Items.Any())
-                throw new ArgumentException("Order must contain at least one order item.");
-
-            var order = new Order
+            Expression<Func<Order, bool>> filter = order => true;
+            if (clientId.HasValue) filter = filter.AndAlso(order => order.ClientId == clientId.Value);
+            if (branchId.HasValue) filter = filter.AndAlso(order => order.BranchId == branchId.Value);
+            if (createdFrom.HasValue) filter = filter.AndAlso(order => order.CreatedAt >= createdFrom.Value);
+            if (createdTo.HasValue) filter = filter.AndAlso(order => order.CreatedAt <= createdTo.Value);
+            if (status.HasValue)
             {
-                ClientId = request.ClientId,
-                ClientNote = request.ClientNote,
-                BranchId = request.BranchId,
-                CreatedAt = DateTime.UtcNow,
-                ExpectedIn = request.ExpectedIn
-            };
-
-            order = await _unitOfWork.Orders.AddAsync(order);
-
-            foreach (var itemRequest in request.Items)
-            {
-                var product = await _unitOfWork.Products.GetByIdAsync(itemRequest.ProductId);
-                if (product == null)
-                    throw new ArgumentException("Product not found.");
-
-                var orderItem = new OrderItem
+                Expression<Func<Order, bool>> statusFilter = status.Value switch
                 {
-                    OrderId = order.Id,
-                    ProductId = itemRequest.ProductId,
-                    Count = itemRequest.Count,
-                    Price = product.Price
+                    OrderStatus.InProgress => order => order.DoneAt == null && order.FinishedAt == null,
+                    OrderStatus.ReadyForPickup => order => order.DoneAt != null && order.FinishedAt == null,
+                    OrderStatus.Completed => order => order.DoneAt != null && order.FinishedAt != null,
+                    _ => throw new ArgumentOutOfRangeException(nameof(status))
                 };
-                await _unitOfWork.OrderItems.AddAsync(orderItem);
+                filter = filter.AndAlso(statusFilter);
             }
-            await _unitOfWork.SaveChangesAsync();
-            return order;
+            var total = await _unitOfWork.Orders.CountAsync(filter);
+            var list = await _unitOfWork.Orders.GetManyAsync(filter: filter, pageIndex: pageIndex, pageSize: pageSize);
+            return (list, total);
         }
 
         public async Task<Order?> GetOrderByIdAsync(long id)
@@ -55,168 +54,260 @@ namespace WebApi.Logic.Services
             return await _unitOfWork.Orders.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
+        public async Task<Order> CreateOrderAsync(Order order)
         {
-            return await _unitOfWork.Orders.GetAllAsync();
-        }
+            var branch = await _unitOfWork.Branches.GetByIdAsync(order.BranchId)
+             ?? throw new ArgumentException($"Branch {order.BranchId} not found.");
 
-        public async Task<IEnumerable<Order>> GetOrdersByClientAsync(long clientId)
-        {
-            return await _unitOfWork.Orders.GetAllAsync(filter: o => o.ClientId == clientId);
-        }
+            var client = await _unitOfWork.Clients.GetByIdAsync(order.ClientId)
+                         ?? throw new ArgumentException("Client not found.");
 
-        public async Task<Order> MarkOrderAsPickedUpAsync(long orderId)
-        {
-            var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
-            if (order == null)
-                throw new ArgumentException("Order not found.");
+            var productIds = order.OrderItems.Select(item => item.ProductId).Distinct().ToList();
 
-            var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderId);
+            var products = (await _unitOfWork.Products
+                    .GetManyAsync(product => productIds.Contains(product.Id)))
+                .ToDictionary(product => product.Id);
 
-            if (!orderItems.Any() || orderItems.Any(oi => oi.DoneAt == null))
-                throw new InvalidOperationException("Order is not ready for pickup.");
+            decimal totalCost = 0;
+            foreach (var item in order.OrderItems)
+            {
+                if (!products.TryGetValue(item.ProductId, out var product))
+                    throw new ArgumentException($"Product {item.ProductId} not found.");
 
-            order.FinishedAt = DateTime.UtcNow;
-            await _unitOfWork.Orders.UpdateAsync(order);
+                var available = await _unitOfWork.BranchMenus.GetManyAsync(
+                    branchMenu => branchMenu.BranchId == order.BranchId
+                                  && branchMenu.Availability
+                                  && branchMenu.MenuPresetItems.ProductId == item.ProductId,
+                    includes: new List<Expression<Func<BranchMenu, object>>>
+                    {
+                branchMenu => branchMenu.MenuPresetItems
+                    },
+                    disableTracking: true);
+
+                if (!available.Any())
+                    throw new ArgumentException($"Product {item.ProductId} not available in branch {order.BranchId}.");
+
+                item.Price = product.Price;
+                totalCost += item.Count * product.Price;
+            }
+                        
+            if (client.Balance < totalCost)
+                throw new ArgumentException("Insufficient balance.");
+
+            client.Balance -= totalCost;
+
+            var statusId = long.Parse(_config["Transaction:CompletedStatus"] ?? "0");
+            var historyStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(statusId)
+                                 ?? throw new ArgumentException("Balance history status not found.");
+
+            client.BalanceHistories.Add(new BalanceHistory
+            {
+                Sum = -totalCost,
+                CreatedAt = DateTime.UtcNow,
+                FinishedAt = DateTime.UtcNow,
+                BalanceHistoryStatus = historyStatus
+            });
+
+
+            order.CreatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Orders.AddOneAsync(order);
             await _unitOfWork.SaveChangesAsync();
+
             return order;
         }
 
-        public async Task<IEnumerable<Feedback>> GetAllFeedbacksAsync()
+        public async Task<(IEnumerable<OrderItem>, int)> GetOrderItemsAsync(
+            long? orderId,
+            long? employeeId,
+            OrderItemStatus? status,
+            long? branchId,
+            int pageIndex,
+            int pageSize)
         {
-            return await _unitOfWork.Feedbacks.GetAllAsync();
-        }
-
-        public async Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request)
-        {
-            var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId);
-            if (order == null || order.FinishedAt == null)
-                throw new ArgumentException("Order not found or not completed. Feedback is allowed only for completed orders.");
-
-            var feedback = new Feedback
+            Expression<Func<OrderItem, bool>> filter = orderItem => true;
+            if (orderId.HasValue) filter = filter.AndAlso(orderItem => orderItem.OrderId == orderId.Value);
+            if (employeeId.HasValue) filter = filter.AndAlso(orderItem => orderItem.EmployeeId == employeeId.Value);
+            if (branchId.HasValue) filter = filter.AndAlso(orderItem => orderItem.Order.BranchId == branchId.Value);
+            if (status.HasValue)
             {
-                Content = request.Content,
-                RatingId = request.RatingId,
-                OrderId = request.OrderId
-            };
-            return await _unitOfWork.Feedbacks.AddAsync(feedback);
+                Expression<Func<OrderItem, bool>> statusFilter = status.Value switch
+                {
+                    OrderItemStatus.Pending => orderItem => orderItem.StartedAt == null && orderItem.DoneAt == null,
+                    OrderItemStatus.InProgress => orderItem => orderItem.StartedAt != null && orderItem.DoneAt == null,
+                    OrderItemStatus.Completed => orderItem => orderItem.DoneAt != null,
+                    _ => throw new ArgumentOutOfRangeException(nameof(status))
+                };
+                filter = filter.AndAlso(statusFilter);
+            }
+
+            var total = await _unitOfWork.OrderItems.CountAsync(filter);
+            var list = await _unitOfWork.OrderItems.GetManyAsync(
+                filter: filter,
+                includes: new List<Expression<Func<OrderItem, object>>> { orderItem => orderItem.Order },
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+            return (list, total);
         }
 
-        public async Task<Feedback> UpdateFeedbackAsync(Feedback feedback)
+        public async Task<OrderItem> CreateOrderItemAsync(OrderItem orderItem)
         {
-            var existing = await _unitOfWork.Feedbacks.GetByIdAsync(feedback.Id);
-            if (existing == null)
-                throw new ArgumentException("Feedback not found.");
-            existing.Content = feedback.Content;
-            existing.RatingId = feedback.RatingId;
-            return await _unitOfWork.Feedbacks.UpdateAsync(existing);
-        }
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderItem.OrderId)
+                      ?? throw new ArgumentException("Order not found.");
 
-        public async Task DeleteFeedbackAsync(long feedbackId)
-        {
-            await _unitOfWork.Feedbacks.DeleteAsync(feedbackId);
-        }
+            var product = await _unitOfWork.Products.GetByIdAsync(orderItem.ProductId)
+                       ?? throw new ArgumentException("Product not found.");
 
-        public async Task<IEnumerable<OrderItem>> GetOrderItemsAsync(long? orderId = null, long? employeeId = null)
-        {
-            Expression<Func<OrderItem, bool>>? filter = null;
-            if (orderId.HasValue && employeeId.HasValue)
-                filter = oi => oi.OrderId == orderId.Value && oi.EmployeeId == employeeId.Value;
-            else if (orderId.HasValue)
-                filter = oi => oi.OrderId == orderId.Value;
-            else if (employeeId.HasValue)
-                filter = oi => oi.EmployeeId == employeeId.Value;
-            return await _unitOfWork.OrderItems.GetAllAsync(filter: filter);
-        }
+            orderItem.Price = product.Price;
 
-        public async Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request)
-        {
-            var product = await _unitOfWork.Products.GetByIdAsync(request.ProductId);
-            if (product == null)
-                throw new ArgumentException("Product not found.");
-
-            var orderItem = new OrderItem
-            {
-                OrderId = orderId,
-                ProductId = request.ProductId,
-                Count = request.Count,
-                Price = product.Price
-            };
-            await _unitOfWork.OrderItems.AddAsync(orderItem);
+            var result = await _unitOfWork.OrderItems.AddOneAsync(orderItem);
             await _unitOfWork.SaveChangesAsync();
-            return orderItem;
+
+            return result;
         }
 
         public async Task<OrderItem> UpdateOrderItemAsync(OrderItem orderItem)
         {
-            var existing = await _unitOfWork.OrderItems.GetByIdAsync(orderItem.Id);
-            if (existing == null)
-                throw new ArgumentException("OrderItem not found.");
+            var existing = await _unitOfWork.OrderItems.GetByIdAsync(orderItem.Id)
+                           ?? throw new ArgumentException("OrderItem not found.");
             existing.Count = orderItem.Count;
-            await _unitOfWork.OrderItems.UpdateAsync(existing);
+            
+            _unitOfWork.OrderItems.Update(existing);
             await _unitOfWork.SaveChangesAsync();
             return existing;
         }
 
-        public async Task DeleteOrderItemAsync(long orderItemId)
+        public async Task DeleteOrderItemAsync(long id)
         {
-            await _unitOfWork.OrderItems.DeleteAsync(orderItemId);
+            await _unitOfWork.OrderItems.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<OrderItem> AssignOrderItemToCookAsync(long orderItemId, long employeeId)
+        public async Task<OrderItem> AssignOrderItemAsync(long id, long employeeId)
         {
-            var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
-            if (orderItem == null)
-                throw new ArgumentException("OrderItem not found.");
-            if (orderItem.EmployeeId.HasValue)
-                throw new InvalidOperationException("OrderItem is already assigned.");
-
-            orderItem.EmployeeId = employeeId;
-            orderItem.StartedAt = DateTime.UtcNow;
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
-
+            var item = await _unitOfWork.OrderItems.GetByIdAsync(id)
+                       ?? throw new ArgumentException("OrderItem not found.");
+            if (item.EmployeeId.HasValue)
+                throw new InvalidOperationException("OrderItem already assigned.");
+            var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId)
+                      ?? throw new ArgumentException("Employee not found.");
+            var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId)
+                      ?? throw new ArgumentException("Order not found.");
+            if (employee.BranchId != order.BranchId)
+                throw new UnauthorizedAccessException("Employee from different branch.");
+            item.EmployeeId = employeeId;
+            item.StartedAt = DateTime.UtcNow;
+            _unitOfWork.OrderItems.Update(item);
             await _unitOfWork.SaveChangesAsync();
-            return orderItem;
+            return item;
         }
 
-        public async Task<OrderItem> MarkOrderItemCompletedAsync(long orderItemId, long employeeId)
+        public async Task<OrderItem> CompleteOrderItemAsync(long id, long employeeId)
         {
-            var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
-            if (orderItem == null)
-                throw new ArgumentException("OrderItem not found.");
-            if (orderItem.EmployeeId != employeeId)
-                throw new UnauthorizedAccessException("You are not assigned to this OrderItem.");
+            var item = await _unitOfWork.OrderItems.GetByIdAsync(id)
+                       ?? throw new ArgumentException("OrderItem not found.");
+            if (item.EmployeeId != employeeId)
+                throw new UnauthorizedAccessException("Not assigned to this item.");
+            item.DoneAt = DateTime.UtcNow;
+            _unitOfWork.OrderItems.Update(item);
 
-            orderItem.DoneAt = DateTime.UtcNow;
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
-
-            var orderItems = await _unitOfWork.OrderItems.GetAllAsync(filter: oi => oi.OrderId == orderItem.OrderId);
-
-            if (orderItems.All(oi => oi.DoneAt != null))
+            var all = await _unitOfWork.OrderItems.GetManyAsync(orderItem => orderItem.OrderId == item.OrderId);
+            if (all.All(orderItem => orderItem.DoneAt != null))
             {
-                var order = await _unitOfWork.Orders.GetByIdAsync(orderItem.OrderId);
-                if (order != null)
-                {
-                    order.DoneAt = DateTime.UtcNow;
-                    await _unitOfWork.Orders.UpdateAsync(order);
-                }
+                var order = await _unitOfWork.Orders.GetByIdAsync(item.OrderId)
+                          ?? throw new ArgumentException("Order not found.");
+                order.DoneAt = DateTime.UtcNow;
+                _unitOfWork.Orders.Update(order);
             }
+
             await _unitOfWork.SaveChangesAsync();
-            return orderItem;
+            return item;
         }
 
-        public async Task<OrderItem> ReassignOrderItemAsync(long orderItemId, long newEmployeeId)
+        public async Task<OrderItem> ReassignOrderItemAsync(long id, long newEmployeeId)
         {
-            var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId);
-            if (orderItem == null)
-                throw new ArgumentException("OrderItem not found.");
-
-            orderItem.EmployeeId = newEmployeeId;
-            orderItem.StartedAt = DateTime.UtcNow;
-            await _unitOfWork.OrderItems.UpdateAsync(orderItem);
+            var item = await _unitOfWork.OrderItems.GetByIdAsync(id)
+                       ?? throw new ArgumentException("OrderItem not found.");
+            var employee = await _unitOfWork.Employees.GetByIdAsync(newEmployeeId)
+                      ?? throw new ArgumentException("Employee not found.");
+            item.EmployeeId = newEmployeeId;
+            item.StartedAt = DateTime.UtcNow;
+            _unitOfWork.OrderItems.Update(item);
             await _unitOfWork.SaveChangesAsync();
-            return orderItem;
+            return item;
+        }
+
+        public async Task<Order> PickupOrderAsync(long orderId)
+        {
+            var order = await _unitOfWork.Orders.GetByIdAsync(orderId)
+                      ?? throw new ArgumentException("Order not found.");
+            var items = await _unitOfWork.OrderItems.GetManyAsync(orderItem => orderItem.OrderId == orderId);
+            if (items.Any(orderItem => orderItem.DoneAt == null))
+                throw new InvalidOperationException("Order not ready for pickup.");
+            order.FinishedAt = DateTime.UtcNow;
+            _unitOfWork.Orders.Update(order);
+            await _unitOfWork.SaveChangesAsync();
+            return order;
+        }
+
+        public async Task<(IEnumerable<Feedback>, int)> GetFeedbacksAsync(
+            long? orderId,
+            int? ratingId,
+            int pageIndex,
+            int pageSize)
+        {
+            Expression<Func<Feedback, bool>> filter = feedback => true;
+            if (orderId.HasValue) filter = filter.AndAlso(feedback => feedback.OrderId == orderId.Value);
+            if (ratingId.HasValue) filter = filter.AndAlso(feedback => feedback.RatingId == ratingId.Value);
+            var total = await _unitOfWork.Feedbacks.CountAsync(filter);
+            var list = await _unitOfWork.Feedbacks.GetManyAsync(filter: filter, pageIndex: pageIndex, pageSize: pageSize);
+            return (list, total);
+        }
+
+        public async Task<Feedback> CreateFeedbackAsync(Feedback feedback)
+        {
+            var order = await _unitOfWork.Orders.GetByIdAsync(feedback.OrderId)
+                      ?? throw new ArgumentException("Order not found.");
+
+            if (order.FinishedAt == null)
+                throw new ArgumentException("Order not completed yet.");
+
+            var rating = await _unitOfWork.Ratings.GetByIdAsync(feedback.RatingId)
+                         ?? throw new ArgumentException("Rating not found.");
+
+            var existingFeedback = await _unitOfWork.Feedbacks.GetOneAsync(f => f.OrderId == feedback.OrderId);
+
+            if (existingFeedback != null)
+                throw new ArgumentException("Feedback for this order already exists.");
+
+            var result = await _unitOfWork.Feedbacks.AddOneAsync(feedback);
+            await _unitOfWork.SaveChangesAsync();
+
+            return result;
+        }
+
+        public async Task<Feedback> UpdateFeedbackAsync(Feedback feedback)
+        {
+            var existing = await _unitOfWork.Feedbacks.GetByIdAsync(feedback.Id)
+                           ?? throw new ArgumentException("Feedback not found.");
+
+            var rating = await _unitOfWork.Ratings.GetByIdAsync(feedback.RatingId)
+                         ?? throw new ArgumentException("Rating not found.");
+
+            existing.Content = feedback.Content;
+            existing.RatingId = rating.Id;
+            _unitOfWork.Feedbacks.Update(existing);
+            await _unitOfWork.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task DeleteFeedbackAsync(long id)
+        {
+            var existing = await _unitOfWork.Feedbacks.GetByIdAsync(id)
+                           ?? throw new ArgumentException("Feedback not found.");
+
+            await _unitOfWork.Feedbacks.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
