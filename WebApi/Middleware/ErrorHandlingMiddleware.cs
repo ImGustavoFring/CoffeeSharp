@@ -9,7 +9,10 @@ namespace WebApi.Middleware
         private readonly ILogger<ErrorHandlingMiddleware> _logger;
         private readonly IHostEnvironment _env;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger, IHostEnvironment env)
+        public ErrorHandlingMiddleware(
+            RequestDelegate next,
+            ILogger<ErrorHandlingMiddleware> logger,
+            IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
@@ -54,7 +57,11 @@ namespace WebApi.Middleware
                 Status = statusCode,
                 Title = errorTitle,
                 Detail = _env.IsDevelopment() ? exception.ToString() : exception.Message,
-                TraceId = context.TraceIdentifier
+                TraceId = context.TraceIdentifier,
+                Instance = context.Request.Path,
+                Method = context.Request.Method,
+                Query = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : null,
+                Timestamp = DateTime.UtcNow
             };
 
             context.Response.ContentType = "application/json";
