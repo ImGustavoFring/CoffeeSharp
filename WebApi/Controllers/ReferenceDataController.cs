@@ -26,9 +26,15 @@ namespace WebApi.Controllers
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _referenceDataService.GetAllRatingsAsync(name, value, pageIndex, pageSize);
+            var (items, total) = await _referenceDataService.GetAllRatingsAsync(
+                name, value,
+                pageIndex, pageSize);
+
             Response.Headers.Add("X-Total-Count", total.ToString());
-            var dtos = items.Select(r => new RatingDto { Id = r.Id, Name = r.Name, Value = r.Value });
+
+            var dtos = items.Select(r => new RatingDto { 
+                Id = r.Id, Name = r.Name, Value = r.Value });
+
             return Ok(dtos);
         }
 
@@ -36,14 +42,17 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetRatingById(long id)
         {
             Rating? rating = await _referenceDataService.GetRatingByIdAsync(id);
+
             if (rating == null)
                 return NotFound();
+
             var dto = new RatingDto
             {
                 Id = rating.Id,
                 Name = rating.Name,
                 Value = rating.Value
             };
+
             return Ok(dto);
         }
 
@@ -61,18 +70,21 @@ namespace WebApi.Controllers
             };
 
             Rating created = await _referenceDataService.AddRatingAsync(rating);
+
             var dto = new RatingDto
             {
                 Id = created.Id,
                 Name = created.Name,
                 Value = created.Value
             };
+
             return CreatedAtAction(nameof(GetRatingById), new { id = dto.Id }, dto);
         }
 
         [HttpPut("ratings/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateRating(long id, [FromBody] UpdateRatingRequest request)
+        public async Task<IActionResult> UpdateRating(long id,
+            [FromBody] UpdateRatingRequest request)
         {
             if (id != request.Id)
                 return BadRequest("ID mismatch.");
@@ -85,12 +97,14 @@ namespace WebApi.Controllers
             };
 
             Rating updated = await _referenceDataService.UpdateRatingAsync(rating);
+
             var dto = new RatingDto
             {
                 Id = updated.Id,
                 Name = updated.Name,
                 Value = updated.Value
             };
+
             return Ok(dto);
         }
 
@@ -99,6 +113,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteRating(long id)
         {
             await _referenceDataService.DeleteRatingAsync(id);
+
             return NoContent();
         }
 
@@ -108,9 +123,14 @@ namespace WebApi.Controllers
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _referenceDataService.GetAllEmployeeRolesAsync(name, pageIndex, pageSize);
+            var (items, total) = await _referenceDataService.GetAllEmployeeRolesAsync(
+                name, pageIndex, pageSize);
+
             Response.Headers.Add("X-Total-Count", total.ToString());
-            var dtos = items.Select(r => new EmployeeRoleDto { Id = r.Id, Name = r.Name });
+
+            var dtos = items.Select(r => new EmployeeRoleDto { 
+                Id = r.Id, Name = r.Name });
+
             return Ok(dtos);
         }
 
@@ -118,13 +138,16 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetEmployeeRoleById(long id)
         {
             EmployeeRole? role = await _referenceDataService.GetEmployeeRoleByIdAsync(id);
+
             if (role == null)
                 return NotFound();
+
             var dto = new EmployeeRoleDto
             {
                 Id = role.Id,
                 Name = role.Name
             };
+
             return Ok(dto);
         }
 
@@ -141,17 +164,20 @@ namespace WebApi.Controllers
             };
 
             EmployeeRole created = await _referenceDataService.AddEmployeeRoleAsync(role);
+
             var dto = new EmployeeRoleDto
             {
                 Id = created.Id,
                 Name = created.Name
             };
+
             return CreatedAtAction(nameof(GetEmployeeRoleById), new { id = dto.Id }, dto);
         }
 
         [HttpPut("employee-roles/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateEmployeeRole(long id, [FromBody] UpdateEmployeeRoleRequest request)
+        public async Task<IActionResult> UpdateEmployeeRole(long id,
+            [FromBody] UpdateEmployeeRoleRequest request)
         {
             if (id != request.Id)
                 return BadRequest("ID mismatch.");
@@ -163,11 +189,13 @@ namespace WebApi.Controllers
             };
 
             EmployeeRole updated = await _referenceDataService.UpdateEmployeeRoleAsync(role);
+
             var dto = new EmployeeRoleDto
             {
                 Id = updated.Id,
                 Name = updated.Name
             };
+
             return Ok(dto);
         }
 
@@ -176,6 +204,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteEmployeeRole(long id)
         {
             await _referenceDataService.DeleteEmployeeRoleAsync(id);
+
             return NoContent();
         }
 
@@ -185,9 +214,14 @@ namespace WebApi.Controllers
         [FromQuery] int pageIndex = 0,
         [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _referenceDataService.GetAllBalanceHistoryStatusesAsync(name, pageIndex, pageSize);
+            var (items, total) = await _referenceDataService.GetAllBalanceHistoryStatusesAsync(
+                name, pageIndex, pageSize);
+
             Response.Headers.Add("X-Total-Count", total.ToString());
-            var dtos = items.Select(s => new BalanceHistoryStatusDto { Id = s.Id, Name = s.Name });
+
+            var dtos = items.Select(s => new BalanceHistoryStatusDto { 
+                Id = s.Id, Name = s.Name });
+
             return Ok(dtos);
         }
 
@@ -195,19 +229,23 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetBalanceHistoryStatusById(long id)
         {
             BalanceHistoryStatus? status = await _referenceDataService.GetBalanceHistoryStatusByIdAsync(id);
+
             if (status == null)
                 return NotFound();
+
             var dto = new BalanceHistoryStatusDto
             {
                 Id = status.Id,
                 Name = status.Name
             };
+
             return Ok(dto);
         }
 
         [HttpPost("balance-history-statuses")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> CreateBalanceHistoryStatus([FromBody] CreateBalanceHistoryStatusRequest request)
+        public async Task<IActionResult> CreateBalanceHistoryStatus(
+            [FromBody] CreateBalanceHistoryStatusRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -218,17 +256,20 @@ namespace WebApi.Controllers
             };
 
             BalanceHistoryStatus created = await _referenceDataService.AddBalanceHistoryStatusAsync(status);
+
             var dto = new BalanceHistoryStatusDto
             {
                 Id = created.Id,
                 Name = created.Name
             };
+
             return CreatedAtAction(nameof(GetBalanceHistoryStatusById), new { id = dto.Id }, dto);
         }
 
         [HttpPut("balance-history-statuses/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateBalanceHistoryStatus(long id, [FromBody] UpdateBalanceHistoryStatusRequest request)
+        public async Task<IActionResult> UpdateBalanceHistoryStatus(long id, 
+            [FromBody] UpdateBalanceHistoryStatusRequest request)
         {
             if (id != request.Id)
                 return BadRequest("ID mismatch.");
@@ -240,11 +281,13 @@ namespace WebApi.Controllers
             };
 
             BalanceHistoryStatus updated = await _referenceDataService.UpdateBalanceHistoryStatusAsync(status);
+
             var dto = new BalanceHistoryStatusDto
             {
                 Id = updated.Id,
                 Name = updated.Name
             };
+
             return Ok(dto);
         }
 
@@ -253,6 +296,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteBalanceHistoryStatus(long id)
         {
             await _referenceDataService.DeleteBalanceHistoryStatusAsync(id);
+
             return NoContent();
         }
     }

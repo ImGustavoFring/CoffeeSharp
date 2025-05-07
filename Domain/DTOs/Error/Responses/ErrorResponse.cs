@@ -1,5 +1,5 @@
-﻿namespace WebApi.Middleware
-{
+﻿namespace Domain.DTOs.Error.Responses
+{ 
     public class ErrorResponse
     {
         public int Status { get; set; }

@@ -26,7 +26,9 @@ namespace WebApi.Controllers
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _menuService.GetAllPresetsAsync(name, description, pageIndex, pageSize);
+            var (items, total) = await _menuService.GetAllPresetsAsync(
+                name, description,
+                pageIndex, pageSize);
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -44,16 +46,19 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetPresetById(long id)
         {
             MenuPreset? preset = await _menuService.GetPresetByIdAsync(id);
+
             if (preset == null)
             {
                 return NotFound();
             }
+
             var presetDto = new MenuPresetDto
             {
                 Id = preset.Id,
                 Name = preset.Name,
                 Description = preset.Description
             };
+
             return Ok(presetDto);
         }
 
@@ -76,23 +81,27 @@ namespace WebApi.Controllers
             };
 
             MenuPreset created = await _menuService.AddPresetAsync(preset);
+
             var presetDto = new MenuPresetDto
             {
                 Id = created.Id,
                 Name = created.Name,
                 Description = created.Description
             };
+
             return CreatedAtAction(nameof(GetPresetById), new { id = presetDto.Id }, presetDto);
         }
 
         [HttpPut("presets/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdatePreset(long id, [FromBody] UpdateMenuPresetRequest request)
+        public async Task<IActionResult> UpdatePreset(long id,
+            [FromBody] UpdateMenuPresetRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -106,12 +115,14 @@ namespace WebApi.Controllers
             };
 
             MenuPreset updated = await _menuService.UpdatePresetAsync(preset);
+
             var presetDto = new MenuPresetDto
             {
                 Id = updated.Id,
                 Name = updated.Name,
                 Description = updated.Description
             };
+
             return Ok(presetDto);
         }
 
@@ -120,6 +131,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeletePreset(long id)
         {
             await _menuService.DeletePresetAsync(id);
+
             return NoContent();
         }
 
@@ -130,7 +142,9 @@ namespace WebApi.Controllers
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _menuService.GetAllPresetItemsAsync(menuPresetId, productId, pageIndex, pageSize);
+            var (items, total) = await _menuService.GetAllPresetItemsAsync(
+                menuPresetId, productId,
+                pageIndex, pageSize);
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -148,16 +162,19 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetPresetItemById(long id)
         {
             MenuPresetItem? item = await _menuService.GetPresetItemByIdAsync(id);
+
             if (item == null)
             {
                 return NotFound();
             }
+
             var itemDto = new MenuPresetItemDto
             {
                 Id = item.Id,
                 ProductId = item.ProductId,
                 MenuPresetId = item.MenuPresetId
             };
+
             return Ok(itemDto);
         }
 
@@ -177,23 +194,27 @@ namespace WebApi.Controllers
             };
 
             MenuPresetItem created = await _menuService.AddPresetItemAsync(item);
+
             var itemDto = new MenuPresetItemDto
             {
                 Id = created.Id,
                 ProductId = created.ProductId,
                 MenuPresetId = created.MenuPresetId
             };
+
             return CreatedAtAction(nameof(GetPresetItemById), new { id = itemDto.Id }, itemDto);
         }
 
         [HttpPut("items/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdatePresetItem(long id, [FromBody] UpdateMenuPresetItemRequest request)
+        public async Task<IActionResult> UpdatePresetItem(long id,
+            [FromBody] UpdateMenuPresetItemRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -207,12 +228,14 @@ namespace WebApi.Controllers
             };
 
             MenuPresetItem updated = await _menuService.UpdatePresetItemAsync(item);
+
             var itemDto = new MenuPresetItemDto
             {
                 Id = updated.Id,
                 ProductId = updated.ProductId,
                 MenuPresetId = updated.MenuPresetId
             };
+
             return Ok(itemDto);
         }
 
@@ -221,6 +244,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeletePresetItem(long id)
         {
             await _menuService.DeletePresetItemAsync(id);
+
             return NoContent();
         }
     }

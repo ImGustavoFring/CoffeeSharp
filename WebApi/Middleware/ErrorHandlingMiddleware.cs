@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Domain.DTOs.Error.Responses;
 
 namespace WebApi.Middleware
 {
@@ -35,6 +36,7 @@ namespace WebApi.Middleware
                 InvalidOperationException => StatusCodes.Status400BadRequest,
                 ArgumentException => StatusCodes.Status400BadRequest,
                 KeyNotFoundException => StatusCodes.Status404NotFound,
+                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
                 _ => StatusCodes.Status500InternalServerError
             };
 
@@ -43,6 +45,7 @@ namespace WebApi.Middleware
                 InvalidOperationException => "Invalid Operation",
                 ArgumentException => "Bad Request",
                 KeyNotFoundException => "Not Found",
+                UnauthorizedAccessException => "Unauthorized",
                 _ => "Internal Server Error"
             };
 
