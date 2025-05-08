@@ -15,6 +15,8 @@ using WebApi.Infrastructure.Repositories.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks;
 using System.Security.Claims;
+using Serilog;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApi
 {
@@ -22,7 +24,19 @@ namespace WebApi
     {
         public static async Task Main(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
+
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Host.UseSerilog();
 
             builder.Services.AddDbContext<CoffeeSharpDbContext>(options =>
                 options
@@ -35,7 +49,6 @@ namespace WebApi
             });
 
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
             builder.Services.AddScoped<ServiceSeeder>(); // Temp
 
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -46,7 +59,6 @@ namespace WebApi
             builder.Services.AddScoped<IReferenceDataService, ReferenceDataService>();
             builder.Services.AddScoped<IClientService, ClientService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
-
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddEndpointsApiExplorer();
@@ -75,7 +87,7 @@ namespace WebApi
                                 Id = "Bearer"
                             }
                         },
-                        new string[] {}
+                        Array.Empty<string>()
                     }
                 });
             });
@@ -91,7 +103,7 @@ namespace WebApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
                     };
                 });
-                        
+
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy =>
@@ -101,11 +113,10 @@ namespace WebApi
                     policy.RequireAssertion(context =>
                         context.User.HasClaim(c => c.Type == "user_type" && c.Value == "admin") ||
                         (context.User.HasClaim(c => c.Type == "user_type" && c.Value == "employee") &&
-                         context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == builder.Configuration["Authorization:ManagerRoleId"])) // We need to implement some kind of cache so that roles can be changed without restarting. (using docker we can't use reloadOnChange)
-                    ));
+                         context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == builder.Configuration["Authorization:ManagerRoleId"]))));
 
                 options.AddPolicy("AllStaff", policy =>
-                    policy.RequireClaim("user_type", new string[] { "admin", "employee" }));
+                    policy.RequireClaim("user_type", new[] { "admin", "employee" }));
             });
 
             var app = builder.Build();
@@ -114,13 +125,12 @@ namespace WebApi
 
             using (var scope = app.Services.CreateScope())
             {
-                var serviceProvider = scope.ServiceProvider;
-                var dbContext = serviceProvider.GetRequiredService<CoffeeSharpDbContext>();
+                var svc = scope.ServiceProvider;
+                var db = svc.GetRequiredService<CoffeeSharpDbContext>();
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
 
-                dbContext.Database.EnsureDeleted();
-                dbContext.Database.EnsureCreated();
-
-                var seeder = serviceProvider.GetRequiredService<ServiceSeeder>(); // Temp
+                var seeder = svc.GetRequiredService<ServiceSeeder>();
                 await seeder.SeedAsync();
             }
 
@@ -131,7 +141,6 @@ namespace WebApi
             });
 
             app.MapGet("/", () => Results.Redirect("/swagger"));
-
             app.MapControllers();
 
             app.UseAuthentication();
