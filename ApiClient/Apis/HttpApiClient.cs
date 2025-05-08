@@ -2,10 +2,23 @@
 
 public partial class HttpApiClient
 {
+    private string? _accessToken;
     private readonly HttpClient _http;
 
-    public HttpApiClient(HttpClient httpClient)
+    public HttpApiClient(string baseUrl)
     {
-        _http = httpClient;
+        var handler = new AuthHttpMessageHandler(() => _accessToken)
+        {
+            InnerHandler = new HttpClientHandler()
+        };
+        _http = new HttpClient(handler)
+        {
+            BaseAddress = new Uri(baseUrl)
+        };
+    }
+
+    public void SetAccessToken(string token)
+    {
+        _accessToken = token;
     }
 }

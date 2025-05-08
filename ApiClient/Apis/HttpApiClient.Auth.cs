@@ -1,14 +1,15 @@
 ﻿using System.Net.Http.Json;
 using ApiClient.Models;
-using Domain.DTOs;
+using Domain.DTOs.Auth.Requests;
 
 namespace ApiClient.Apis;
 
 public partial class HttpApiClient
 {
+    private const string AuthControllerPath = "/api/auth";
     public async Task<string?> AdminLogin(AdminLoginRequest request)
     {
-        var response = await _http.PostAsJsonAsync("/api/auth/admin/login", request);
+        var response = await _http.PostAsJsonAsync($"{AuthControllerPath}/admin/login", request);
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -17,12 +18,14 @@ public partial class HttpApiClient
 
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        return result!.token;
+        var token = result!.token;
+        SetAccessToken(token);
+        return token;
     }
 
     public async Task<string?> EmployeeLogin(EmployeeLoginRequest request)
     {
-        var response = await _http.PostAsJsonAsync("/api/auth/employee/login", request);
+        var response = await _http.PostAsJsonAsync($"{AuthControllerPath}/employee/login", request);
 
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -31,6 +34,8 @@ public partial class HttpApiClient
 
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        return result!.token;
+        var token = result!.token;
+        SetAccessToken(token);
+        return token;
     }
 }

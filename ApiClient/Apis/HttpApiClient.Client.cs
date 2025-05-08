@@ -1,91 +1,112 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Json;
 using Domain.DTOs;
+using Domain.DTOs.Client.Requests;
+using Domain.DTOs.Shared;
 using Domain.Enums;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace ApiClient.Apis;
 
 public partial class HttpApiClient
 {
-    public async Task<IEnumerable<ClientDto>> GetAllClients()
+    private const string ClientControllerPath = "/api/clients";
+
+    public async Task<IEnumerable<ClientDto>> GetClients(string? telegramId = null, string? name = null,
+        int pageIndex = 0, int pageSize = 50)
     {
-        var response = await _http.GetAsync("api/client");
+        var queryParams = new Dictionary<string, string?>();
+        if (!string.IsNullOrEmpty(telegramId)) queryParams["telegramId"] = telegramId;
+        if (!string.IsNullOrEmpty(name)) queryParams["name"] = name;
+        queryParams["pageIndex"] = pageIndex.ToString();
+        queryParams["pageSize"] = pageSize.ToString();
+
+        var url = QueryHelpers.AddQueryString(ClientControllerPath, queryParams);
+        var response = await _http.GetAsync(url);
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<IEnumerable<ClientDto>>(content)!;
+        return (await response.Content.ReadFromJsonAsync<IEnumerable<ClientDto>>())!;
     }
 
     public async Task<ClientDto> GetClientById(long id)
     {
-        var response = await _http.GetAsync($"api/client/{id}");
+        var response = await _http.GetAsync($"{ClientControllerPath}/{id}");
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ClientDto>(content)!;
+        return (await response.Content.ReadFromJsonAsync<ClientDto>())!;
     }
 
     public async Task<ClientDto> CreateClient(CreateClientRequest request)
     {
-        var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8,
-            "application/json");
-        var response = await _http.PostAsync("api/client", content);
+        var response = await _http.PostAsJsonAsync(ClientControllerPath, request);
         response.EnsureSuccessStatusCode();
-        var resultContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ClientDto>(resultContent)!;
+        return (await response.Content.ReadFromJsonAsync<ClientDto>())!;
     }
 
     public async Task<ClientDto> UpdateClient(long id, UpdateClientRequest request)
     {
-        var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8,
-            "application/json");
-        var response = await _http.PutAsync($"api/client/{id}", content);
+        var response = await _http.PutAsJsonAsync($"{ClientControllerPath}/{id}", request);
         response.EnsureSuccessStatusCode();
-        var resultContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ClientDto>(resultContent)!;
+        return (await response.Content.ReadFromJsonAsync<ClientDto>())!;
     }
 
     public async Task DeleteClient(long id)
     {
-        var response = await _http.DeleteAsync($"api/client/{id}");
+        var response = await _http.DeleteAsync($"{ClientControllerPath}/{id}");
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task<ClientDto> AddBalance(long clientId, AddBalanceRequest request)
+    public async Task<BalanceHistoryDto> AddBalance(long clientId, AddBalanceRequest request)
     {
-        var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8,
-            "application/json");
-        var response = await _http.PostAsync($"api/client/{clientId}/balance/add", content);
+        var response = await _http.PostAsJsonAsync($"{ClientControllerPath}/{clientId}/balance/add", request);
         response.EnsureSuccessStatusCode();
-        var resultContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ClientDto>(resultContent)!;
+        return (await response.Content.ReadFromJsonAsync<BalanceHistoryDto>())!;
     }
 
-    public async Task<ClientDto> DeductBalance(long clientId, DeductBalanceRequest request)
+    public async Task<BalanceHistoryDto> DeductBalance(long clientId, DeductBalanceRequest request)
     {
-        var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8,
-            "application/json");
-        var response = await _http.PostAsync($"api/client/{clientId}/balance/deduct", content);
+        var response = await _http.PostAsJsonAsync($"{ClientControllerPath}/{clientId}/balance/deduct", request);
         response.EnsureSuccessStatusCode();
-        var resultContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<ClientDto>(resultContent)!;
+        return (await response.Content.ReadFromJsonAsync<BalanceHistoryDto>())!;
     }
 
-    public async Task<IEnumerable<BalanceHistoryDto>> GetClientTransactions(long clientId,
-        bool orderByNewestFirst = true, TransactionType transactionType = TransactionType.All)
+    public async Task<IEnumerable<BalanceHistoryDto>> GetClientTransactions(long? clientId = null,
+        TransactionType transactionType = TransactionType.All,
+        TransactionStatus? transactionStatus = null,
+        DateTime? createdFrom = null,
+        DateTime? createdTo = null,
+        DateTime? finishedFrom = null,
+        DateTime? finishedTo = null,
+        bool orderByNewestFirst = true,
+        int pageIndex = 0,
+        int pageSize = 50)
     {
-        var response =
-            await _http.GetAsync(
-                $"api/client/{clientId}/transactions?orderByNewestFirst={orderByNewestFirst}&transactionType={transactionType}");
+        var queryParams = new Dictionary<string, string?>();
+        if (clientId.HasValue) queryParams["clientId"] = clientId.Value.ToString();
+        queryParams["transactionType"] = transactionType.ToString();
+        if (transactionStatus.HasValue) queryParams["transactionStatus"] = transactionStatus.Value.ToString();
+        if (createdFrom.HasValue) queryParams["createdFrom"] = createdFrom.Value.ToString("O");
+        if (createdTo.HasValue) queryParams["createdTo"] = createdTo.Value.ToString("O");
+        if (finishedFrom.HasValue) queryParams["finishedFrom"] = finishedFrom.Value.ToString("O");
+        if (finishedTo.HasValue) queryParams["finishedTo"] = finishedTo.Value.ToString("O");
+        queryParams["orderByNewestFirst"] = orderByNewestFirst.ToString();
+        queryParams["pageIndex"] = pageIndex.ToString();
+        queryParams["pageSize"] = pageSize.ToString();
+
+        var url = QueryHelpers.AddQueryString($"{ClientControllerPath}/transactions", queryParams);
+        var response = await _http.GetAsync(url);
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<IEnumerable<BalanceHistoryDto>>(content)!;
+        return (await response.Content.ReadFromJsonAsync<IEnumerable<BalanceHistoryDto>>())!;
     }
 
-    public async Task<CancelTransactionResponse> CancelTransaction(CancelTransactionRequest request)
+    public async Task<ClientDto> CompleteBalanceTransaction(long transactionId)
     {
-        var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8,
-            "application/json");
-        var response = await _http.PostAsync("api/client/transaction/cancel", content);
+        var response = await _http.PatchAsync($"{ClientControllerPath}/transactions/{transactionId}/complete", null);
         response.EnsureSuccessStatusCode();
-        var resultContent = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<CancelTransactionResponse>(resultContent)!;
+        return (await response.Content.ReadFromJsonAsync<ClientDto>())!;
+    }
+
+    public async Task<ClientDto> CancelTransaction(long transactionId)
+    {
+        var response = await _http.PatchAsync($"{ClientControllerPath}/transactions/{transactionId}/cancel", null);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ClientDto>())!;
     }
 }
