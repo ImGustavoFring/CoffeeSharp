@@ -12,7 +12,7 @@ namespace WebApi.Infrastructure.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly CoffeeSharpDbContext _context;
+        private readonly DbContext _context;
         private readonly DbSet<T> _dbSet;
 
         public Repository(CoffeeSharpDbContext context)
@@ -83,15 +83,18 @@ namespace WebApi.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var query = BuildQuery(filter, includes, disableTracking);
+
             return await query.FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<T?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+        public async Task<T?> GetByIdAsync(object id,
+            CancellationToken cancellationToken = default)
         {
             return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
         }
 
-        public async Task<T> AddOneAsync(T entity, CancellationToken cancellationToken = default)
+        public async Task<T> AddOneAsync(T entity,
+            CancellationToken cancellationToken = default)
         {
             if (entity == null)
             {
@@ -103,7 +106,8 @@ namespace WebApi.Infrastructure.Repositories
             return entity;
         }
 
-        public async Task<IEnumerable<T>> AddManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> AddManyAsync(IEnumerable<T> entities,
+            CancellationToken cancellationToken = default)
         {
             if (entities == null)
             {
@@ -134,9 +138,10 @@ namespace WebApi.Infrastructure.Repositories
             return entity;
         }
 
-        public async Task DeleteAsync(object id)
+        public async Task DeleteAsync(object id,
+            CancellationToken cancellationToken = default)
         {
-            var entity = await _dbSet.FindAsync(id);
+            var entity = await _dbSet.FindAsync(new object[] { id }, cancellationToken);
 
             if (entity == null)
             {

@@ -24,6 +24,7 @@ namespace WebApi.Infrastructure.Repositories.Interfaces
         Task<T?> GetByIdAsync(object id,
             CancellationToken cancellationToken = default);
         T Update(T entity);
-        Task DeleteAsync(object id);
+        Task DeleteAsync(object id,
+            CancellationToken cancellationToken = default);
     }
 }
