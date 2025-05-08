@@ -55,8 +55,6 @@ public sealed class AuthService
 
     public static AuthService Instance { get; } = new AuthService();
 
-    private static readonly HttpApiClient HttpApiClient = new HttpApiClient("http://localhost:5000/");
-
     private AuthService()
     {
     }
@@ -66,11 +64,11 @@ public sealed class AuthService
         string? token;
         if (loggingAsAdmin)
         {
-            token = await HttpApiClient.AdminLogin(new AdminLoginRequest(username, password));
+            token = await HttpClient.Instance.AdminLogin(new AdminLoginRequest(username, password));
         }
         else
         {
-            token = await HttpApiClient.EmployeeLogin(new EmployeeLoginRequest(username, password));
+            token = await HttpClient.Instance.EmployeeLogin(new EmployeeLoginRequest(username, password));
         }
 
         if (token == null)

@@ -28,7 +28,7 @@ public partial class LoginViewModel: ViewModelBase
     //     .Append(Password.Length).ToString();
 
     [RelayCommand]
-    public async Task Login()
+    private async Task Login()
     {
         InLogging = true;
         ErrorMessage = string.Empty;

@@ -18,6 +18,7 @@ public class AuthSettings
         {
             _accessToken = value;
             _claims = JwtHelper.ParseClaimsFromToken(_accessToken);
+            HttpClient.Instance.SetAccessToken(value);
         }
     }
     

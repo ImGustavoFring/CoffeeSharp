@@ -7,7 +7,6 @@ namespace Client.ViewModels;
 public partial class BranchItemViewModel(BranchDto branchDto) : ViewModelBase
 {
     [ObservableProperty] private BranchDto _branchDto = branchDto;
-    [ObservableProperty] private string _address = "г. Курган, ул. Коли Мяготина, д. 123";
 
     public BranchItemViewModel() : this(new BranchDto()
     {
