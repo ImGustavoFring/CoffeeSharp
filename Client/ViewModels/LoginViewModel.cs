@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -24,21 +28,29 @@ public partial class LoginViewModel: ViewModelBase
     //     .Append(Password.Length).ToString();
 
     [RelayCommand]
-    public async void Login()
+    public async Task Login()
     {
         InLogging = true;
-        await Task.Delay(2000);
         ErrorMessage = string.Empty;
         try
         {
             var result = await AuthService.Instance.Login(Username, Password, LoggingAsAdmin);
             InLogging = false;
             if (result == false)
-            { 
+            {
                 ErrorMessage = "Неверный логин/пароль";
                 return;
             }
             // todo Перекинуть на какое-нибудь окно, зависящее от роли пользователя
+            ErrorMessage = "Успех";
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
+        {
+            ErrorMessage = "Неверный логин/пароль";
+        }
+        catch (HttpRequestException ex) when (ex.InnerException is WebException || ex.InnerException is SocketException)
+        {
+            ErrorMessage = "Не удалось подключиться к серверу";
         }
         catch
         {

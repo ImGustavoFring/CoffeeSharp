@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ApiClient.Apis;
 using Domain.DTOs;
+using Domain.DTOs.Auth.Requests;
 
 namespace Client.Services;
 
@@ -13,8 +14,8 @@ public sealed class AuthService
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "CoffeeSharpClient", "auth.json");
-    
-    private static AuthSettings _authSettings;
+
+    private static AuthSettings? _authSettings;
 
     private static AuthSettings Load()
     {
@@ -49,29 +50,15 @@ public sealed class AuthService
             Save();
         }
     }
-    
-    public static string Role
-    {
-        get => Load().Role;
-        set
-        {
-            Load().Role = value;
-            Save();
-        }
-    }
+
+    public string? UserType => Load().UserType;
 
     public static AuthService Instance { get; } = new AuthService();
 
-    private static readonly HttpClient HttpClient = new HttpClient()
-    {
-        BaseAddress = new Uri("http://localhost:5000/")
-    };
-    
-    private static readonly HttpApiClient HttpApiClient = new HttpApiClient(HttpClient);
+    private static readonly HttpApiClient HttpApiClient = new HttpApiClient("http://localhost:5000/");
 
     private AuthService()
     {
-        
     }
 
     public async Task<bool> Login(string username, string password, bool loggingAsAdmin = false)
@@ -90,7 +77,7 @@ public sealed class AuthService
         {
             return false;
         }
-        Role = loggingAsAdmin ? "Admin" : "Employee";
+        
         AccessToken = token;
         return true;
     }

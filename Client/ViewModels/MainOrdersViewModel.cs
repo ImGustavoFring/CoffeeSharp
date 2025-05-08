@@ -36,16 +36,19 @@ public partial class MainOrdersViewModel : ViewModelBase
     
     public void SetDefaultSortingType()
     {
+        Console.WriteLine("SetDefaultSortingType");
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.Default;
     }
     
     public void SetTimeAscendingSortingType()
     {
+        Console.WriteLine("SetTimeAscendingSortingType");
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.TimeAscending;
     }
     
     public void SetTimeDescendingSortingType()
     {
+        Console.WriteLine("SetTimeDescendingSortingType");
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.TimeDescending;
     }
 }

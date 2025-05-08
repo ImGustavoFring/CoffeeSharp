@@ -14,8 +14,9 @@ public partial class App : Application
     public override void Initialize()
     {
         DataTemplates.Add(new StrongViewLocator()
-            .Register<OrderShortItemViewModel, OrderShortItem>()
             .Register<LoginViewModel, LoginView>()
+            .Register<MainOrdersViewModel, MainOrdersView>()
+            .Register<OrderShortItemViewModel, OrderShortItem>()
             // all later are deprecated and will be removed
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());

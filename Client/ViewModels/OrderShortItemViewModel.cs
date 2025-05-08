@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.Swift;
 using Client.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.DTOs;
+using Domain.DTOs.Shared;
 
 namespace Client.ViewModels;
 

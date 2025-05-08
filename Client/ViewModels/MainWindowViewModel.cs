@@ -22,11 +22,16 @@ public partial class MainWindowViewModel : ViewModelBase
         CurrentViewModel = new UserContol1VM();
     }
 
-
     [RelayCommand]
     private void NavigateToLogin()
     {
         CurrentViewModel = new LoginViewModel();
+    }
+
+    [RelayCommand]
+    private void NavigateToOrders()
+    {
+        CurrentViewModel = new MainOrdersViewModel();
     }
 
     // All later are deprecated and will be removed

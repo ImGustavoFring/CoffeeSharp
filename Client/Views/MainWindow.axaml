@@ -19,7 +19,7 @@
 
     <Grid ColumnDefinitions="Auto,1,*" RowDefinitions="*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4">
-            <Button HorizontalAlignment="Stretch">Заказы</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToOrdersCommand}">Заказы</Button>
             <Button HorizontalAlignment="Stretch">Филиалы</Button>
             <Button HorizontalAlignment="Stretch">Меню</Button>
         </StackPanel>
