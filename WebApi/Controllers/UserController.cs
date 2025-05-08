@@ -2,12 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
-using Domain.DTOs;
 using CoffeeSharp.Domain.Entities;
+using Domain.DTOs.Shared;
+using Domain.DTOs.User.Requests;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -20,35 +21,43 @@ namespace WebApi.Controllers
 
         [HttpGet("admins")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> GetAllAdmins()
+        public async Task<IActionResult> GetAllAdmins(
+          [FromQuery] string? userName = null,
+          [FromQuery] int pageIndex = 0,
+          [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Admin> admins = await _userService.GetAllAdminsAsync();
-            IEnumerable<AdminDto> adminDtos = admins.Select(a => new AdminDto
-            {
-                Id = a.Id,
-                UserName = a.UserName
-            });
-            return Ok(adminDtos);
+            var (admins, total) = await _userService.GetAllAdminsAsync(
+                userName,pageIndex, pageSize);
+
+            var dtos = admins.Select(a => new AdminDto { 
+                Id = a.Id, UserName = a.UserName });
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            return Ok(dtos);
         }
 
-        [HttpGet("admin/{id}")]
+        [HttpGet("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetAdminById(long id)
         {
             Admin? admin = await _userService.GetAdminByIdAsync(id);
+
             if (admin == null)
             {
                 return NotFound();
             }
+
             var adminDto = new AdminDto
             {
                 Id = admin.Id,
                 UserName = admin.UserName
             };
+
             return Ok(adminDto);
         }
 
-        [HttpPost("admin/add")]
+        [HttpPost("admins/add")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddAdmin([FromBody] CreateAdminRequest request)
         {
@@ -57,23 +66,28 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            Admin createdAdmin = await _userService.AddAdminAsync(request.UserName, request.Password);
+            Admin createdAdmin = await _userService.AddAdminAsync(
+                request.UserName, request.Password);
+
             var adminDto = new AdminDto
             {
                 Id = createdAdmin.Id,
                 UserName = createdAdmin.UserName
             };
+
             return CreatedAtAction(nameof(GetAdminById), new { id = adminDto.Id }, adminDto);
         }
 
-        [HttpPut("admin/{id}")]
+        [HttpPut("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateAdmin(long id, [FromBody] UpdateAdminRequest request)
+        public async Task<IActionResult> UpdateAdmin(long id,
+            [FromBody] UpdateAdminRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -87,28 +101,41 @@ namespace WebApi.Controllers
             };
 
             Admin updatedAdmin = await _userService.UpdateAdminAsync(adminToUpdate);
+
             var adminDto = new AdminDto
             {
                 Id = updatedAdmin.Id,
                 UserName = updatedAdmin.UserName
             };
+
             return Ok(adminDto);
         }
 
-        [HttpDelete("admin/{id}")]
+        [HttpDelete("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteAdmin(long id)
         {
             await _userService.DeleteAdminAsync(id);
+
             return NoContent();
         }
 
         [HttpGet("employees")]
         [Authorize(Policy = "ManagerOnly")]
-        public async Task<IActionResult> GetAllEmployees()
+        public async Task<IActionResult> GetAllEmployees(
+         [FromQuery] string? name = null,
+         [FromQuery] string? userName = null,
+         [FromQuery] long? roleId = null,
+         [FromQuery] long? branchId = null,
+         [FromQuery] int pageIndex = 0,
+         [FromQuery] int pageSize = 50)
         {
-            IEnumerable<Employee> employees = await _userService.GetAllEmployeesAsync();
-            IEnumerable<EmployeeDto> employeeDtos = employees.Select(e => new EmployeeDto
+            var (employees, total) = await _userService.GetAllEmployeesAsync(
+                name, userName,
+                roleId, branchId,
+                pageIndex, pageSize);
+
+            var dtos = employees.Select(e => new EmployeeDto
             {
                 Id = e.Id,
                 Name = e.Name,
@@ -116,18 +143,23 @@ namespace WebApi.Controllers
                 RoleId = e.RoleId,
                 BranchId = e.BranchId
             });
-            return Ok(employeeDtos);
+
+            Response.Headers.Add("X-Total-Count", total.ToString());
+
+            return Ok(dtos);
         }
 
-        [HttpGet("employee/{id}")]
+        [HttpGet("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetEmployeeById(long id)
         {
             Employee? employee = await _userService.GetEmployeeByIdAsync(id);
+
             if (employee == null)
             {
                 return NotFound();
             }
+
             var dto = new EmployeeDto
             {
                 Id = employee.Id,
@@ -136,10 +168,11 @@ namespace WebApi.Controllers
                 RoleId = employee.RoleId,
                 BranchId = employee.BranchId
             };
+
             return Ok(dto);
         }
 
-        [HttpPost("employee")]
+        [HttpPost("employees")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> AddEmployee([FromBody] CreateEmployeeRequest request)
         {
@@ -147,7 +180,12 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            Employee employee = await _userService.AddEmployeeAsync(request.Name, request.UserName, request.Password, request.RoleId, request.BranchId);
+
+            Employee employee = await _userService.AddEmployeeAsync(
+                request.Name, request.UserName,
+                request.Password, request.RoleId,
+                request.BranchId);
+
             var dto = new EmployeeDto
             {
                 Id = employee.Id,
@@ -156,17 +194,20 @@ namespace WebApi.Controllers
                 RoleId = employee.RoleId,
                 BranchId = employee.BranchId
             };
+
             return CreatedAtAction(nameof(GetEmployeeById), new { id = dto.Id }, dto);
         }
 
-        [HttpPut("employee/{id}")]
+        [HttpPut("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateEmployee(long id, [FromBody] UpdateEmployeeRequest request)
+        public async Task<IActionResult> UpdateEmployee(long id,
+            [FromBody] UpdateEmployeeRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -183,6 +224,7 @@ namespace WebApi.Controllers
             };
 
             Employee updated = await _userService.UpdateEmployeeAsync(employee);
+
             var dto = new EmployeeDto
             {
                 Id = updated.Id,
@@ -191,14 +233,16 @@ namespace WebApi.Controllers
                 RoleId = updated.RoleId,
                 BranchId = updated.BranchId
             };
+
             return Ok(dto);
         }
 
-        [HttpDelete("employee/{id}")]
+        [HttpDelete("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteEmployee(long id)
         {
             await _userService.DeleteEmployeeAsync(id);
+
             return NoContent();
         }
     }

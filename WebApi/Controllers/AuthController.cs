@@ -1,12 +1,11 @@
-﻿using Domain.DTOs;
-using Microsoft.AspNetCore.Http;
+﻿using Domain.DTOs.Auth.Requests;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Logic.Services.Interfaces;
 
 namespace WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -22,15 +21,10 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var token = await _authService.AdminLoginAsync(request.UserName, request.Password);
-                return Ok(new { token });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Unauthorized("Invalid credentials");
-            }
+            var token = await _authService.AdminLoginAsync(
+                request.UserName, request.Password);
+
+            return Ok(new { token });
         }
 
         [HttpPost("employee/login")]
@@ -39,15 +33,10 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var token = await _authService.EmployeeLoginAsync(request.UserName, request.Password);
-                return Ok(new { token });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Unauthorized("Invalid credentials");
-            }
+            var token = await _authService.EmployeeLoginAsync(
+                request.UserName, request.Password);
+
+            return Ok(new { token });
         }
     }
 }

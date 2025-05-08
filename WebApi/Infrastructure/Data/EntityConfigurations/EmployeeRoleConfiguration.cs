@@ -8,19 +8,20 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<EmployeeRole> entity)
         {
-            entity.HasKey(e => e.Id).HasName("employee_roles_pkey");
+            entity.HasKey(employeeRole => employeeRole.Id)
+                .HasName("employee_roles_pkey");
 
             entity.ToTable("employee_roles");
 
-            entity.Property(e => e.Id)
+            entity.Property(employeeRole => employeeRole.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Name)
+            entity.Property(employeeRole => employeeRole.Name)
                 .HasMaxLength(20)
                 .HasColumnName("name");
 
-            entity.HasIndex(e => e.Name)
+            entity.HasIndex(employeeRole => employeeRole.Name)
                 .IsUnique();
         }
     }

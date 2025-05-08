@@ -1,6 +1,7 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.Entities;
 using System.Linq.Expressions;
+using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
 
@@ -15,9 +16,31 @@ namespace WebApi.Logic.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<MenuPreset>> GetAllPresetsAsync()
+        public async Task<(IEnumerable<MenuPreset> Items, int TotalCount)> GetAllPresetsAsync(
+            string? nameFilter = null,
+            string? descriptionFilter = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.MenuPresets.GetManyAsync();
+            Expression<Func<MenuPreset, bool>> filter = p => true;
+
+            if (!string.IsNullOrWhiteSpace(nameFilter))
+                filter = filter.AndAlso(p => p.Name.Contains(nameFilter));
+
+            if (!string.IsNullOrWhiteSpace(descriptionFilter))
+                filter = filter.AndAlso(p => p.Description!.Contains(descriptionFilter));
+
+            var total = await _unitOfWork.MenuPresets.CountAsync(filter);
+
+            var items = await _unitOfWork.MenuPresets.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(p => p.Name),
+                includes: null,
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<MenuPreset?> GetPresetByIdAsync(long id)
@@ -27,9 +50,26 @@ namespace WebApi.Logic.Services
 
         public async Task<MenuPreset> AddPresetAsync(MenuPreset preset)
         {
+            var nameExists = await _unitOfWork.MenuPresets
+                .CountAsync(p => p.Name == preset.Name) > 0;
+            if (nameExists)
+                throw new ArgumentException($"MenuPreset with name '{preset.Name}' already exists.");
+
+            if (preset.MenuPresetItems != null && preset.MenuPresetItems.Any())
+            {
+                var productIds = preset.MenuPresetItems
+                    .Select(item => item.ProductId)
+                    .Distinct();
+                foreach (var id in productIds)
+                {
+                    var product = await _unitOfWork.Products.GetByIdAsync(id);
+                    if (product == null)
+                        throw new ArgumentException($"Product with id {id} not found.");
+                }
+            }
+
             var result = await _unitOfWork.MenuPresets.AddOneAsync(preset);
             await _unitOfWork.SaveChangesAsync();
-
             return result;
         }
 
@@ -57,9 +97,35 @@ namespace WebApi.Logic.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<MenuPresetItem>> GetAllPresetItemsAsync()
+        public async Task<(IEnumerable<MenuPresetItem> Items, int TotalCount)> GetAllPresetItemsAsync(
+            long? menuPresetId = null,
+            long? productId = null,
+            int pageIndex = 0,
+            int pageSize = 50)
         {
-            return await _unitOfWork.MenuPresetItems.GetManyAsync();
+            Expression<Func<MenuPresetItem, bool>> filter = i => true;
+
+            if (menuPresetId.HasValue)
+                filter = filter.AndAlso(i => i.MenuPresetId == menuPresetId.Value);
+
+            if (productId.HasValue)
+                filter = filter.AndAlso(i => i.ProductId == productId.Value);
+
+            var total = await _unitOfWork.MenuPresetItems.CountAsync(filter);
+
+            var items = await _unitOfWork.MenuPresetItems.GetManyAsync(
+                filter: filter,
+                orderBy: q => q.OrderBy(i => i.Id),
+                includes: new List<Expression<Func<MenuPresetItem, object>>>
+                {
+                    i => i.Product,
+                    i => i.MenuPreset
+                },
+                disableTracking: true,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            return (items, total);
         }
 
         public async Task<MenuPresetItem?> GetPresetItemByIdAsync(long id)
@@ -132,12 +198,6 @@ namespace WebApi.Logic.Services
             await _unitOfWork.MenuPresetItems.DeleteAsync(id);
 
             await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<MenuPresetItem>> GetPresetItemsByPresetIdAsync(long presetId)
-        {
-            return await _unitOfWork.MenuPresetItems.GetManyAsync(
-                filter: item => item.MenuPresetId == presetId);
         }
     }
 }

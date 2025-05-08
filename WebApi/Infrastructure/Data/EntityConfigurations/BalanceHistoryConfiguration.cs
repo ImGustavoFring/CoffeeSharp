@@ -8,41 +8,42 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<BalanceHistory> entity)
         {
-            entity.HasKey(e => e.Id).HasName("balance_histories_pkey");
+            entity.HasKey(balanceHistory => balanceHistory.Id)
+                .HasName("balance_histories_pkey");
 
             entity.ToTable("balance_histories");
 
-            entity.Property(e => e.Id)
+            entity.Property(balanceHistory => balanceHistory.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.CreatedAt)
+            entity.Property(balanceHistory => balanceHistory.CreatedAt)
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at");
 
-            entity.Property(e => e.FinishedAt)
+            entity.Property(balanceHistory => balanceHistory.FinishedAt)
                 .HasColumnType("timestamp with time zone")
                 .HasColumnName("finished_at");
 
-            entity.Property(e => e.BalanceHistoryStatusId)
-                .HasColumnName("status_id");
+            entity.Property(balanceHistory => balanceHistory.BalanceHistoryStatusId)
+                .HasColumnName("balance_history_status_id");
 
-            entity.Property(e => e.Sum)
+            entity.Property(balanceHistory => balanceHistory.Sum)
                 .HasColumnName("sum");
 
-            entity.Property(e => e.ClientId)
+            entity.Property(balanceHistory => balanceHistory.ClientId)
                 .HasColumnName("client_id");
 
-            entity.HasOne(d => d.BalanceHistoryStatus)
-                .WithMany(p => p.BalanceHistories)
-                .HasForeignKey(d => d.BalanceHistoryStatusId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(balanceHistory => balanceHistory.BalanceHistoryStatus)
+                .WithMany(balanceHistoryStatus => balanceHistoryStatus.BalanceHistories)
+                .HasForeignKey(balanceHistory => balanceHistory.BalanceHistoryStatusId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("balance_histories_status_id_fkey");
 
-            entity.HasOne(d => d.Client)
-                .WithMany(p => p.BalanceHistories)
-                .HasForeignKey(d => d.ClientId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(balanceHistory => balanceHistory.Client)
+                .WithMany(client => client.BalanceHistories)
+                .HasForeignKey(balanceHistory => balanceHistory.ClientId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("balance_histories_client_id_fkey");
         }
     }

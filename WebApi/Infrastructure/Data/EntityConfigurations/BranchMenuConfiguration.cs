@@ -8,36 +8,37 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<BranchMenu> entity)
         {
-            entity.HasKey(e => e.Id).HasName("branch_menus_pkey");
+            entity.HasKey(branchMenu => branchMenu.Id)
+                .HasName("branch_menus_pkey");
 
             entity.ToTable("branch_menus");
 
-            entity.Property(e => e.Id)
+            entity.Property(branchMenu => branchMenu.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.Availability)
+            entity.Property(branchMenu => branchMenu.Availability)
                 .HasColumnName("availability");
 
-            entity.Property(e => e.BranchId)
+            entity.Property(branchMenu => branchMenu.BranchId)
                 .HasColumnName("branch_id");
 
-            entity.Property(e => e.MenuPresetItemsId)
+            entity.Property(branchMenu => branchMenu.MenuPresetItemsId)
                 .HasColumnName("menu_preset_item_Id");
 
-            entity.HasOne(d => d.Branch)
-                .WithMany(p => p.BranchMenus)
-                .HasForeignKey(d => d.BranchId)
-                .OnDelete(DeleteBehavior.Cascade)
+            entity.HasOne(branchMenu => branchMenu.Branch)
+                .WithMany(branch => branch.BranchMenus)
+                .HasForeignKey(branchMenu => branchMenu.BranchId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("branch_menus_branch_id_fkey");
 
-            entity.HasOne(d => d.MenuPresetItems)
-                .WithMany(p => p.BranchMenus)
-                .HasForeignKey(d => d.MenuPresetItemsId)
-                .OnDelete(DeleteBehavior.Cascade)
+            entity.HasOne(branchMenu => branchMenu.MenuPresetItems)
+                .WithMany(menuPresetItems => menuPresetItems.BranchMenus)
+                .HasForeignKey(branchMenu => branchMenu.MenuPresetItemsId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("branch_menus_menu_preset_item_id_fkey");
 
-            entity.HasIndex(e => e.Availability);
+            entity.HasIndex(branchMenu => branchMenu.Availability);
         }
     }
 }

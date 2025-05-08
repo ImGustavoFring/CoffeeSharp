@@ -10,8 +10,10 @@ services:
       - "5000:8080"
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=CoffeeSharpDb;Username=postgres;Password=yourpassword
+      - ConnectionStrings__LogDbConnection=Host=logdb;Port=5432;Database=CoffeeSharpLogs;Username=postgres;Password=yourpassword
     depends_on:
       - db
+      - logdb
 
   db:
     image: postgres:latest
@@ -24,5 +26,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  logdb:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: CoffeeSharpLogs
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_logs_data:/var/lib/postgresql/data
+
 volumes:
   postgres_data:
+  postgres_logs_data:

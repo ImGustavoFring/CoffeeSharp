@@ -8,9 +8,9 @@ public class OrderItem
 {
     public long Id { get; set; }
 
-    public long? OrderId { get; set; } = null!;
+    public long OrderId { get; set; }
 
-    public long? ProductId { get; set; } = null!;
+    public long ProductId { get; set; }
 
     public long? EmployeeId { get; set; } = null;
 

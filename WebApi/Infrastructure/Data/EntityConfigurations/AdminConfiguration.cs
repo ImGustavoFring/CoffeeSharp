@@ -8,22 +8,23 @@ namespace WebApi.Infrastructure.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<Admin> entity)
         {
-            entity.HasKey(e => e.Id).HasName("admins_pkey");
+            entity.HasKey(admin => admin.Id)
+                .HasName("admins_pkey");
 
             entity.ToTable("admins");
 
-            entity.Property(e => e.Id)
+            entity.Property(admin => admin.Id)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            entity.Property(e => e.UserName)
+            entity.Property(admin => admin.UserName)
                 .HasMaxLength(30)
                 .HasColumnName("user_name");
 
-            entity.Property(e => e.PasswordHash)
+            entity.Property(admin => admin.PasswordHash)
                 .HasColumnName("password_hash");
 
-            entity.HasIndex(e => e.UserName)
+            entity.HasIndex(admin => admin.UserName)
                   .IsUnique();
         }
     }

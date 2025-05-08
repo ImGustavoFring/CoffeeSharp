@@ -1,30 +1,25 @@
 ﻿using CoffeeSharp.Domain.Entities;
-using Domain.DTOs;
+using Domain.DTOs.Order.Requests;
 using Domain.Enums;
 
 namespace WebApi.Logic.Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<Order> CreateOrderAsync(CreateOrderRequest request);
+        Task<OrderItem> AssignOrderItemAsync(long id, long employeeId);
+        Task<OrderItem> CompleteOrderItemAsync(long id, long employeeId);
+        Task<Feedback> CreateFeedbackAsync(Feedback feedback);
+        Task<Order> CreateOrderAsync(Order order);
+        Task<OrderItem> CreateOrderItemAsync(OrderItem orderItem);
+        Task DeleteFeedbackAsync(long id);
+        Task DeleteOrderItemAsync(long id);
+        Task<(IEnumerable<Feedback>, int)> GetFeedbacksAsync(long? orderId, int? ratingId, int pageIndex, int pageSize);
         Task<Order?> GetOrderByIdAsync(long id);
-        Task<IEnumerable<Order>> GetAllOrdersAsync();
-        Task<IEnumerable<Order>> GetOrdersByClientAsync(long clientId);
-        Task<Order> MarkOrderAsPickedUpAsync(long orderId);
-        Task<IEnumerable<Feedback>> GetAllFeedbacksAsync();
-        Task<Feedback> CreateFeedbackAsync(CreateFeedbackRequest request);
+        Task<(IEnumerable<OrderItem>, int)> GetOrderItemsAsync(long? orderId, long? employeeId, OrderItemStatus? status, long? branchId, int pageIndex, int pageSize);
+        Task<(IEnumerable<Order>, int)> GetOrdersAsync(long? clientId, long? branchId, DateTime? createdFrom, DateTime? createdTo, OrderStatus? status, int pageIndex, int pageSize);
+        Task<Order> PickupOrderAsync(long orderId);
+        Task<OrderItem> ReassignOrderItemAsync(long id, long newEmployeeId);
         Task<Feedback> UpdateFeedbackAsync(Feedback feedback);
-        Task DeleteFeedbackAsync(long feedbackId);
-        Task<IEnumerable<OrderItem>> GetOrderItemsAsync(
-            long? orderId = null,
-            long? employeeId = null,
-            OrderItemStatus? status = null,
-            long? branchId = null);
-        Task<OrderItem> CreateOrderItemAsync(long orderId, CreateOrderItemRequest request);
         Task<OrderItem> UpdateOrderItemAsync(OrderItem orderItem);
-        Task DeleteOrderItemAsync(long orderItemId);
-        Task<OrderItem> AssignOrderItemToCookAsync(long orderItemId, long employeeId);
-        Task<OrderItem> MarkOrderItemCompletedAsync(long orderItemId, long employeeId);
-        Task<OrderItem> ReassignOrderItemAsync(long orderItemId, long newEmployeeId);
     }
 }
