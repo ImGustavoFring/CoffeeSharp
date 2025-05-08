@@ -17,6 +17,8 @@ public partial class App : Application
             .Register<LoginViewModel, LoginView>()
             .Register<MainOrdersViewModel, MainOrdersView>()
             .Register<OrderShortItemViewModel, OrderShortItem>()
+            .Register<BranchesViewModel, BranchesView>()
+            .Register<BranchItemViewModel, BranchItem>()
             // all later are deprecated and will be removed
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());

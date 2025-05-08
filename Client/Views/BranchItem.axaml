@@ -1,0 +1,31 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.BranchItem"
+             x:DataType="viewModels:BranchItemViewModel">
+    <Border Background="LightGray" Padding="10">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+            <!-- Левая часть: информация о филиале -->
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="{Binding BranchDto}" />
+                <TextBlock Text="{Binding BranchDto.Name}" FontWeight="Bold"/>
+                <TextBlock Text="{Binding Address}"/>
+                <!-- <TextBlock Text="{Binding WorkingHours}" /> -->
+            </StackPanel>
+
+            <!-- Правая часть: кнопки -->
+            <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
+                <Button Content="Меню" Width="150"/>
+                <Button Content="Сотрудники" Width="150"/>
+                <Button Content="Информация" Width="150"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+    
+    <UserControl.DataContext>
+        <viewModels:BranchItemViewModel />
+    </UserControl.DataContext>
+</UserControl>

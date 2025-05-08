@@ -34,6 +34,12 @@ public partial class MainWindowViewModel : ViewModelBase
         CurrentViewModel = new MainOrdersViewModel();
     }
 
+    [RelayCommand]
+    private void NavigateToBranches()
+    {
+        CurrentViewModel = new BranchesViewModel();
+    }
+
     // All later are deprecated and will be removed
     [RelayCommand]
     private void NavigateFirst()
