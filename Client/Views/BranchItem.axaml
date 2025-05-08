@@ -10,9 +10,8 @@
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
             <!-- Левая часть: информация о филиале -->
             <StackPanel Orientation="Vertical" Spacing="4">
-                <TextBlock Text="{Binding BranchDto}" />
                 <TextBlock Text="{Binding BranchDto.Name}" FontWeight="Bold"/>
-                <TextBlock Text="{Binding Address}"/>
+                <TextBlock Text="{Binding BranchDto.Address}"/>
                 <!-- <TextBlock Text="{Binding WorkingHours}" /> -->
             </StackPanel>
 
@@ -20,7 +19,7 @@
             <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
                 <Button Content="Меню" Width="150"/>
                 <Button Content="Сотрудники" Width="150"/>
-                <Button Content="Информация" Width="150"/>
+                <Button Content="Информация" Width="150" Click="OpenInformationWindow"/>
             </StackPanel>
         </Grid>
     </Border>

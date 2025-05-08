@@ -1,14 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Domain.DTOs.Shared;
-using Tmds.DBus.Protocol;
+﻿using Client.ObservableDTO;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Client.ViewModels;
 
-public partial class BranchItemViewModel(BranchDto branchDto) : ViewModelBase
+public partial class BranchItemViewModel(BranchDtoObservable branchDto) : ViewModelBase
 {
-    [ObservableProperty] private BranchDto _branchDto = branchDto;
+    [ObservableProperty] private BranchDtoObservable _branchDto = branchDto;
 
-    public BranchItemViewModel() : this(new BranchDto()
+    public BranchItemViewModel() : this(new BranchDtoObservable()
     {
         Id = 1,
         Name = "Великий филиал №1",
