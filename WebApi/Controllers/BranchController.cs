@@ -26,7 +26,9 @@ namespace WebApi.Controllers
             [FromQuery] int page = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (branches, total) = await _branchService.GetBranchesAsync(name, address, page, pageSize);
+            var (branches, total) = await _branchService.GetBranchesAsync(
+                name, address,
+                page, pageSize);
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -44,16 +46,19 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetBranchById(long id)
         {
             Branch? branch = await _branchService.GetBranchByIdAsync(id);
+
             if (branch == null)
             {
                 return NotFound();
             }
+
             var branchDto = new BranchDto
             {
                 Id = branch.Id,
                 Name = branch.Name,
                 Address = branch.Address
             };
+
             return Ok(branchDto);
         }
 
@@ -73,23 +78,27 @@ namespace WebApi.Controllers
             };
 
             Branch created = await _branchService.AddBranchAsync(branch);
+
             var branchDto = new BranchDto
             {
                 Id = created.Id,
                 Name = created.Name,
                 Address = created.Address
             };
+
             return CreatedAtAction(nameof(GetBranchById), new { id = branchDto.Id }, branchDto);
         }
 
         [HttpPut("{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateBranch(long id, [FromBody] UpdateBranchRequest request)
+        public async Task<IActionResult> UpdateBranch(long id,
+            [FromBody] UpdateBranchRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -103,12 +112,14 @@ namespace WebApi.Controllers
             };
 
             Branch updated = await _branchService.UpdateBranchAsync(branch);
+
             var branchDto = new BranchDto
             {
                 Id = updated.Id,
                 Name = updated.Name,
                 Address = updated.Address
             };
+
             return Ok(branchDto);
         }
 
@@ -117,19 +128,23 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteBranch(long id)
         {
             await _branchService.DeleteBranchAsync(id);
+
             return NoContent();
         }
 
         [HttpPost("{branchId}/menupreset")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> AssignMenuPresetToBranch(long branchId, [FromBody] AssignMenuPresetRequest request)
+        public async Task<IActionResult> AssignMenuPresetToBranch(long branchId,
+            [FromBody] AssignMenuPresetRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            await _branchService.AssignMenuPresetToBranchAsync(branchId, request.MenuPresetId);
+            await _branchService.AssignMenuPresetToBranchAsync(
+                branchId, request.MenuPresetId);
+
             return NoContent();
         }
 
@@ -165,9 +180,12 @@ namespace WebApi.Controllers
 
         [HttpPatch("menus/{id}/availability")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateBranchMenuAvailability(long id, [FromQuery] bool availability)
+        public async Task<IActionResult> UpdateBranchMenuAvailability(long id, 
+            [FromQuery] bool availability)
         {
-            BranchMenu updated = await _branchService.UpdateBranchMenuAvailabilityAsync(id, availability);
+            BranchMenu updated = await _branchService.UpdateBranchMenuAvailabilityAsync(
+                id, availability);
+
             var menuDto = new BranchMenuDto
             {
                 Id = updated.Id,
@@ -175,6 +193,7 @@ namespace WebApi.Controllers
                 BranchId = updated.BranchId,
                 Availability = updated.Availability
             };
+
             return Ok(menuDto);
         }
     }

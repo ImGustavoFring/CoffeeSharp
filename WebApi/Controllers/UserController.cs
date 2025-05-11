@@ -26,8 +26,11 @@ namespace WebApi.Controllers
           [FromQuery] int pageIndex = 0,
           [FromQuery] int pageSize = 50)
         {
-            var (admins, total) = await _userService.GetAllAdminsAsync(userName, pageIndex, pageSize);
-            var dtos = admins.Select(a => new AdminDto { Id = a.Id, UserName = a.UserName });
+            var (admins, total) = await _userService.GetAllAdminsAsync(
+                userName,pageIndex, pageSize);
+
+            var dtos = admins.Select(a => new AdminDto { 
+                Id = a.Id, UserName = a.UserName });
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -39,15 +42,18 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetAdminById(long id)
         {
             Admin? admin = await _userService.GetAdminByIdAsync(id);
+
             if (admin == null)
             {
                 return NotFound();
             }
+
             var adminDto = new AdminDto
             {
                 Id = admin.Id,
                 UserName = admin.UserName
             };
+
             return Ok(adminDto);
         }
 
@@ -60,23 +66,28 @@ namespace WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            Admin createdAdmin = await _userService.AddAdminAsync(request.UserName, request.Password);
+            Admin createdAdmin = await _userService.AddAdminAsync(
+                request.UserName, request.Password);
+
             var adminDto = new AdminDto
             {
                 Id = createdAdmin.Id,
                 UserName = createdAdmin.UserName
             };
+
             return CreatedAtAction(nameof(GetAdminById), new { id = adminDto.Id }, adminDto);
         }
 
         [HttpPut("admins/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateAdmin(long id, [FromBody] UpdateAdminRequest request)
+        public async Task<IActionResult> UpdateAdmin(long id,
+            [FromBody] UpdateAdminRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -90,11 +101,13 @@ namespace WebApi.Controllers
             };
 
             Admin updatedAdmin = await _userService.UpdateAdminAsync(adminToUpdate);
+
             var adminDto = new AdminDto
             {
                 Id = updatedAdmin.Id,
                 UserName = updatedAdmin.UserName
             };
+
             return Ok(adminDto);
         }
 
@@ -103,6 +116,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteAdmin(long id)
         {
             await _userService.DeleteAdminAsync(id);
+
             return NoContent();
         }
 
@@ -117,7 +131,9 @@ namespace WebApi.Controllers
          [FromQuery] int pageSize = 50)
         {
             var (employees, total) = await _userService.GetAllEmployeesAsync(
-                name, userName, roleId, branchId, pageIndex, pageSize);
+                name, userName,
+                roleId, branchId,
+                pageIndex, pageSize);
 
             var dtos = employees.Select(e => new EmployeeDto
             {
@@ -138,10 +154,12 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetEmployeeById(long id)
         {
             Employee? employee = await _userService.GetEmployeeByIdAsync(id);
+
             if (employee == null)
             {
                 return NotFound();
             }
+
             var dto = new EmployeeDto
             {
                 Id = employee.Id,
@@ -150,6 +168,7 @@ namespace WebApi.Controllers
                 RoleId = employee.RoleId,
                 BranchId = employee.BranchId
             };
+
             return Ok(dto);
         }
 
@@ -161,7 +180,12 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
-            Employee employee = await _userService.AddEmployeeAsync(request.Name, request.UserName, request.Password, request.RoleId, request.BranchId);
+
+            Employee employee = await _userService.AddEmployeeAsync(
+                request.Name, request.UserName,
+                request.Password, request.RoleId,
+                request.BranchId);
+
             var dto = new EmployeeDto
             {
                 Id = employee.Id,
@@ -170,17 +194,20 @@ namespace WebApi.Controllers
                 RoleId = employee.RoleId,
                 BranchId = employee.BranchId
             };
+
             return CreatedAtAction(nameof(GetEmployeeById), new { id = dto.Id }, dto);
         }
 
         [HttpPut("employees/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateEmployee(long id, [FromBody] UpdateEmployeeRequest request)
+        public async Task<IActionResult> UpdateEmployee(long id,
+            [FromBody] UpdateEmployeeRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -197,6 +224,7 @@ namespace WebApi.Controllers
             };
 
             Employee updated = await _userService.UpdateEmployeeAsync(employee);
+
             var dto = new EmployeeDto
             {
                 Id = updated.Id,
@@ -205,6 +233,7 @@ namespace WebApi.Controllers
                 RoleId = updated.RoleId,
                 BranchId = updated.BranchId
             };
+
             return Ok(dto);
         }
 
@@ -213,6 +242,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteEmployee(long id)
         {
             await _userService.DeleteEmployeeAsync(id);
+
             return NoContent();
         }
     }

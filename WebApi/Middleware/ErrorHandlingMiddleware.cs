@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Domain.DTOs.Error.Responses;
 
 namespace WebApi.Middleware
 {
@@ -8,7 +9,10 @@ namespace WebApi.Middleware
         private readonly ILogger<ErrorHandlingMiddleware> _logger;
         private readonly IHostEnvironment _env;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger, IHostEnvironment env)
+        public ErrorHandlingMiddleware(
+            RequestDelegate next,
+            ILogger<ErrorHandlingMiddleware> logger,
+            IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
@@ -35,6 +39,7 @@ namespace WebApi.Middleware
                 InvalidOperationException => StatusCodes.Status400BadRequest,
                 ArgumentException => StatusCodes.Status400BadRequest,
                 KeyNotFoundException => StatusCodes.Status404NotFound,
+                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
                 _ => StatusCodes.Status500InternalServerError
             };
 
@@ -43,6 +48,7 @@ namespace WebApi.Middleware
                 InvalidOperationException => "Invalid Operation",
                 ArgumentException => "Bad Request",
                 KeyNotFoundException => "Not Found",
+                UnauthorizedAccessException => "Unauthorized",
                 _ => "Internal Server Error"
             };
 
@@ -51,7 +57,11 @@ namespace WebApi.Middleware
                 Status = statusCode,
                 Title = errorTitle,
                 Detail = _env.IsDevelopment() ? exception.ToString() : exception.Message,
-                TraceId = context.TraceIdentifier
+                TraceId = context.TraceIdentifier,
+                Instance = context.Request.Path,
+                Method = context.Request.Method,
+                Query = context.Request.QueryString.HasValue ? context.Request.QueryString.Value : null,
+                Timestamp = DateTime.UtcNow
             };
 
             context.Response.ContentType = "application/json";

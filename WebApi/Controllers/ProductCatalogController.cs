@@ -31,7 +31,9 @@ namespace WebApi.Controllers
             [FromQuery] int pageSize = 50)
         {
             var (items, total) = await _productCatalogService.GetAllProductsAsync(
-                name, categoryId, minPrice, maxPrice, pageIndex, pageSize);
+                name, categoryId,
+                minPrice, maxPrice,
+                pageIndex, pageSize);
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -51,10 +53,12 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetProductById(long id)
         {
             Product? product = await _productCatalogService.GetProductByIdAsync(id);
+
             if (product == null)
             {
                 return NotFound();
             }
+
             var productDto = new ProductDto
             {
                 Id = product.Id,
@@ -63,6 +67,7 @@ namespace WebApi.Controllers
                 Price = product.Price,
                 CategoryId = product.CategoryId
             };
+
             return Ok(productDto);
         }
 
@@ -82,7 +87,8 @@ namespace WebApi.Controllers
                 Price = request.Price,
             };
 
-            Product createdProduct = await _productCatalogService.AddProductAsync(request.CategoryId, product);
+            Product createdProduct = await _productCatalogService.AddProductAsync(
+                request.CategoryId, product);
 
             var productDto = new ProductDto
             {
@@ -98,12 +104,14 @@ namespace WebApi.Controllers
 
         [HttpPut("products/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateProduct(long id, [FromBody] UpdateProductRequest request)
+        public async Task<IActionResult> UpdateProduct(long id,
+            [FromBody] UpdateProductRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -137,6 +145,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteProduct(long id)
         {
             await _productCatalogService.DeleteProductAsync(id);
+
             return NoContent();
         }
 
@@ -147,7 +156,9 @@ namespace WebApi.Controllers
             [FromQuery] int pageIndex = 0,
             [FromQuery] int pageSize = 50)
         {
-            var (items, total) = await _productCatalogService.GetAllCategoriesAsync(name, parentId, pageIndex, pageSize);
+            var (items, total) = await _productCatalogService.GetAllCategoriesAsync(
+                name, parentId,
+                pageIndex, pageSize);
 
             Response.Headers.Add("X-Total-Count", total.ToString());
 
@@ -165,16 +176,19 @@ namespace WebApi.Controllers
         public async Task<IActionResult> GetCategoryById(long id)
         {
             Category? category = await _productCatalogService.GetCategoryByIdAsync(id);
+
             if (category == null)
             {
                 return NotFound();
             }
+
             var categoryDto = new CategoryDto
             {
                 Id = category.Id,
                 Name = category.Name,
                 ParentId = category.ParentCategoryId
             };
+
             return Ok(categoryDto);
         }
 
@@ -206,12 +220,14 @@ namespace WebApi.Controllers
 
         [HttpPut("categories/{id}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> UpdateCategory(long id, [FromBody] UpdateCategoryRequest request)
+        public async Task<IActionResult> UpdateCategory(long id,
+            [FromBody] UpdateCategoryRequest request)
         {
             if (id != request.Id)
             {
                 ModelState.AddModelError("Id", "URL id does not match request body id.");
             }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -225,6 +241,7 @@ namespace WebApi.Controllers
             };
 
             Category updatedCategory = await _productCatalogService.UpdateCategoryAsync(category);
+
             var categoryDto = new CategoryDto
             {
                 Id = updatedCategory.Id,
@@ -240,6 +257,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteCategory(long id)
         {
             await _productCatalogService.DeleteCategoryAsync(id);
+
             return NoContent();
         }
     }

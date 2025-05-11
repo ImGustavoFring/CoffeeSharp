@@ -6,14 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\Branch\Responses\" />
-    <Folder Include="DTOs\Client\Responses\" />
-    <Folder Include="DTOs\User\Responses\" />
-    <Folder Include="DTOs\ReferenceData\Responses\" />
-    <Folder Include="DTOs\ProductCatalog\Responses\" />
-    <Folder Include="DTOs\Menu\Responses\" />
-    <Folder Include="DTOs\Order\Responses\" />
-  </ItemGroup>
-
 </Project>
