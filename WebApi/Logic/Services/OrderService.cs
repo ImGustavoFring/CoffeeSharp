@@ -1,7 +1,9 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.DTOs.Order.Requests;
 using Domain.Enums;
+using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
+using WebApi.Configurations;
 using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
@@ -11,12 +13,12 @@ namespace WebApi.Logic.Services
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _config;
+        private readonly TransactionSettings _txSettings;
 
-        public OrderService(IUnitOfWork unitOfWork, IConfiguration config)
+        public OrderService(IUnitOfWork unitOfWork, IOptions<TransactionSettings> txOptions)
         {
             _unitOfWork = unitOfWork;
-            _config = config;
+            _txSettings = txOptions.Value;
         }
 
         public async Task<(IEnumerable<Order>, int)> GetOrdersAsync(
@@ -96,8 +98,7 @@ namespace WebApi.Logic.Services
 
             client.Balance -= totalCost;
 
-            var statusId = long.Parse(_config["Transaction:CompletedStatus"] ?? "0");
-            var historyStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(statusId)
+            var historyStatus = await _unitOfWork.BalanceHistoryStatuses.GetByIdAsync(_txSettings.CompletedStatus)
                                  ?? throw new ArgumentException("Balance history status not found.");
 
             client.BalanceHistories.Add(new BalanceHistory

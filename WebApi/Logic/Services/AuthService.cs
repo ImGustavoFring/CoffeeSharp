@@ -6,18 +6,20 @@ using System.Text;
 using WebApi.Logic.Services.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using CoffeeSharp.Domain.Entities;
+using Microsoft.Extensions.Options;
+using WebApi.Configurations;
 
 namespace WebApi.Logic.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
+        private readonly JwtSettings _jwtSettings;
 
-        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public AuthService(IUnitOfWork unitOfWork, IOptions<JwtSettings> jwtOptions)
         {
             _unitOfWork = unitOfWork;
-            _configuration = configuration;
+            _jwtSettings = jwtOptions.Value;
         }
 
         public async Task<string> AdminLoginAsync(string userName, string password)
@@ -52,7 +54,7 @@ namespace WebApi.Logic.Services
         private string GenerateJwtToken(Admin admin)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]);
+            var key = Encoding.UTF8.GetBytes(_jwtSettings.Secret);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -62,22 +64,19 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Name, admin.UserName),
                     new Claim("user_type", "admin")
                 }),
-
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiryHours),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature)
+                    SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
+            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
         }
 
         private string GenerateJwtToken(Employee employee)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]); 
-            
+            var key = Encoding.UTF8.GetBytes(_jwtSettings.Secret);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -86,17 +85,13 @@ namespace WebApi.Logic.Services
                     new Claim(ClaimTypes.Name, employee.UserName),
                     new Claim("user_type", "employee"),
                     new Claim(ClaimTypes.Role, employee.RoleId.ToString())
-
                 }),
-
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiryHours),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature)
+                    SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
+            return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
         }
     }
 }

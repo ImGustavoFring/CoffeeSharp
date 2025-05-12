@@ -21,6 +21,7 @@ using WebApi.Middleware;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Npgsql;
 using System.Data;
+using WebApi.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,13 +32,16 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.FromLogContext();
 });
 
-builder.Services.AddDbContext<CoffeeSharpDbContext>(options =>
-    options
-        .UseLazyLoadingProxies()
-        .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+var dbSettings = builder.Configuration
+    .GetSection("ConnectionStrings")
+    .Get<DatabaseSettings>();
+
+builder.Services.AddDbContext<CoffeeSharpDbContext>(opt =>
+    opt.UseNpgsql(dbSettings.DefaultConnection)
+        .UseLazyLoadingProxies());
 
 builder.Services.AddTransient<IDbConnection>(sp =>
-    new NpgsqlConnection(builder.Configuration.GetConnectionString("LogDbConnection")));
+    new NpgsqlConnection(dbSettings.LogDbConnection));
 
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
@@ -47,6 +51,18 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ServiceSeeder>();
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt"));
+
+builder.Services.Configure<TransactionSettings>(
+    builder.Configuration.GetSection("Transaction"));
+
+builder.Services.Configure<AuthorizationSettings>(
+    builder.Configuration.GetSection("Authorization"));
+
+builder.Services.Configure<DatabaseSettings>(
+    builder.Configuration.GetSection("ConnectionStrings"));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -89,6 +105,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -98,9 +116,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+                Encoding.UTF8.GetBytes(jwtSettings.Secret))
         };
     });
+
+var authzSettings = builder.Configuration
+    .GetSection("Authorization")
+    .Get<AuthorizationSettings>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -111,7 +133,7 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c => c.Type == "user_type" && c.Value == "admin") ||
             (context.User.HasClaim(c => c.Type == "user_type" && c.Value == "employee") &&
-             context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == builder.Configuration["Authorization:ManagerRoleId"]))));
+             context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == authzSettings.ManagerRoleId))));
 
     options.AddPolicy("AllStaff", policy =>
         policy.RequireClaim("user_type", new[] { "admin", "employee" }));

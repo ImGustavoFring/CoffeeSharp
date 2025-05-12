@@ -8,6 +8,8 @@ using CoffeeSharp.Domain.Entities;
 using CoffeeSharp.WebApi.Infrastructure.Data;
 using Domain.Enums;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using WebApi.Configurations;
 using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using WebApi.Logic.Services.Interfaces;
@@ -17,12 +19,12 @@ namespace WebApi.Logic.Services
     public class ClientService : IClientService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
+        private readonly TransactionSettings _transactionSettings;
 
-        public ClientService(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public ClientService(IUnitOfWork unitOfWork, IOptions<TransactionSettings> transactionOptions)
         {
             _unitOfWork = unitOfWork;
-            _configuration = configuration;
+            _transactionSettings = transactionOptions.Value;
         }
 
         public async Task<(IEnumerable<Client> Clients, int TotalCount)> GetClientsAsync(
@@ -82,7 +84,8 @@ namespace WebApi.Logic.Services
             Client client = await _unitOfWork.Clients.GetByIdAsync(clientId)
                 ?? throw new ArgumentException("Client not found.");
 
-            long pendingStatusKey = long.Parse(_configuration["Transaction:PendingStatus"] ?? "0");
+            long pendingStatusKey = _transactionSettings.PendingStatus;
+
             BalanceHistoryStatus pendingStatus = await _unitOfWork.BalanceHistoryStatuses
                 .GetByIdAsync(pendingStatusKey)
                 ?? throw new ArgumentException("Balance history status not found.");
@@ -112,83 +115,82 @@ namespace WebApi.Logic.Services
             int pageIndex,
             int pageSize)
         {
-            Expression<Func<BalanceHistory, bool>> filter = history => true;
+            Expression<Func<BalanceHistory, bool>> f = h => true;
 
             if (clientId.HasValue)
-                filter = filter.AndAlso(history => history.ClientId == clientId.Value);
+                f = f.AndAlso(h => h.ClientId == clientId.Value);
 
             if (transactionType == TransactionType.TopUp)
-                filter = filter.AndAlso(history => history.Sum > 0);
+                f = f.AndAlso(h => h.Sum > 0);
             else if (transactionType == TransactionType.Deduction)
-                filter = filter.AndAlso(history => history.Sum < 0);
+                f = f.AndAlso(h => h.Sum < 0);
 
             if (transactionStatus.HasValue)
             {
-                string configKey = transactionStatus.Value switch
+                long statusId = transactionStatus.Value switch
                 {
-                    TransactionStatus.Pending => "PendingStatus",
-                    TransactionStatus.Completed => "CompletedStatus",
-                    TransactionStatus.Cancelled => "CancelledStatus",
+                    TransactionStatus.Pending => _transactionSettings.PendingStatus,
+                    TransactionStatus.Completed => _transactionSettings.CompletedStatus,
+                    TransactionStatus.Cancelled => _transactionSettings.CancelledStatus,
                     _ => throw new ArgumentOutOfRangeException(nameof(transactionStatus))
                 };
-                long statusId = long.Parse(_configuration[$"Transaction:{configKey}"] ?? "0");
-                filter = filter.AndAlso(history => history.BalanceHistoryStatusId == statusId);
+                f = f.AndAlso(h => h.BalanceHistoryStatusId == statusId);
             }
 
             if (createdFrom.HasValue)
-                filter = filter.AndAlso(history => history.CreatedAt >= createdFrom.Value);
+                f = f.AndAlso(h => h.CreatedAt >= createdFrom.Value);
             if (createdTo.HasValue)
-                filter = filter.AndAlso(history => history.CreatedAt <= createdTo.Value);
+                f = f.AndAlso(h => h.CreatedAt <= createdTo.Value);
 
             if (finishedFrom.HasValue)
-                filter = filter.AndAlso(history => history.FinishedAt.HasValue && history.FinishedAt.Value >= finishedFrom.Value);
+                f = f.AndAlso(h => h.FinishedAt.HasValue && h.FinishedAt.Value >= finishedFrom.Value);
             if (finishedTo.HasValue)
-                filter = filter.AndAlso(history => history.FinishedAt.HasValue && history.FinishedAt.Value <= finishedTo.Value);
+                f = f.AndAlso(h => h.FinishedAt.HasValue && h.FinishedAt.Value <= finishedTo.Value);
 
-            Func<IQueryable<BalanceHistory>, IOrderedQueryable<BalanceHistory>> orderBy = orderByNewestFirst
-                ? query => query.OrderByDescending(history => history.CreatedAt)
-                : query => query.OrderBy(history => history.CreatedAt);
+            Func<IQueryable<BalanceHistory>, IOrderedQueryable<BalanceHistory>> orderBy =
+                orderByNewestFirst
+                    ? q => q.OrderByDescending(h => h.CreatedAt)
+                    : q => q.OrderBy(h => h.CreatedAt);
 
-            int totalCount = await _unitOfWork.BalanceHistories.CountAsync(filter);
-            IEnumerable<BalanceHistory> transactions = await _unitOfWork.BalanceHistories.GetManyAsync(
-                filter: filter,
+            int totalCount = await _unitOfWork.BalanceHistories.CountAsync(f);
+            var txs = await _unitOfWork.BalanceHistories.GetManyAsync(
+                filter: f,
                 orderBy: orderBy,
                 pageIndex: pageIndex,
                 pageSize: pageSize);
 
-            return (transactions, totalCount);
+            return (txs, totalCount);
         }
 
-        public async Task<Client> CompletePendingBalanceTransactionAsync(long transactionId)
+        public async Task<Client> CompletePendingBalanceTransactionAsync(long txId)
         {
-            BalanceHistory transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId)
+            var tx = await _unitOfWork.BalanceHistories.GetByIdAsync(txId)
                 ?? throw new ArgumentException("Transaction not found.");
 
-            long pendingStatusKey = long.Parse(_configuration["Transaction:PendingStatus"] ?? "0");
-            if (transaction.BalanceHistoryStatusId != pendingStatusKey)
+            if (tx.BalanceHistoryStatusId != _transactionSettings.PendingStatus)
                 throw new InvalidOperationException("Only pending transactions can be completed.");
 
-            Client client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId)
+            var client = await _unitOfWork.Clients.GetByIdAsync(tx.ClientId)
                 ?? throw new ArgumentException("Client not found.");
 
-            client.Balance += transaction.Sum;
+            client.Balance += tx.Sum;
             _unitOfWork.Clients.Update(client);
 
-            long completedStatusKey = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1");
-            BalanceHistoryStatus completedStatus = await _unitOfWork.BalanceHistoryStatuses
-                .GetByIdAsync(completedStatusKey)
+            var completedStatus = await _unitOfWork.BalanceHistoryStatuses
+                .GetByIdAsync(_transactionSettings.CompletedStatus)
                 ?? throw new ArgumentException("Balance history status not found.");
 
-            transaction.BalanceHistoryStatusId = completedStatus.Id;
-            transaction.FinishedAt = DateTime.UtcNow;
-            _unitOfWork.BalanceHistories.Update(transaction);
+            tx.BalanceHistoryStatusId = completedStatus.Id;
+            tx.FinishedAt = DateTime.UtcNow;
+            _unitOfWork.BalanceHistories.Update(tx);
+
             await _unitOfWork.SaveChangesAsync();
             return client;
         }
 
         public async Task<BalanceHistory> DeductBalanceAsync(long clientId, decimal amount)
         {
-            Client client = await _unitOfWork.Clients.GetByIdAsync(clientId)
+            var client = await _unitOfWork.Clients.GetByIdAsync(clientId)
                 ?? throw new ArgumentException("Client not found.");
 
             if (client.Balance < amount)
@@ -197,12 +199,11 @@ namespace WebApi.Logic.Services
             client.Balance -= amount;
             _unitOfWork.Clients.Update(client);
 
-            long completedStatusKey = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "0");
-            BalanceHistoryStatus completedStatus = await _unitOfWork.BalanceHistoryStatuses
-                .GetByIdAsync(completedStatusKey)
+            var completedStatus = await _unitOfWork.BalanceHistoryStatuses
+                .GetByIdAsync(_transactionSettings.CompletedStatus)
                 ?? throw new ArgumentException("Balance history status not found.");
 
-            var balanceHistory = new BalanceHistory
+            var history = new BalanceHistory
             {
                 ClientId = client.Id,
                 Sum = -amount,
@@ -211,34 +212,33 @@ namespace WebApi.Logic.Services
                 BalanceHistoryStatusId = completedStatus.Id
             };
 
-            await _unitOfWork.BalanceHistories.AddOneAsync(balanceHistory);
+            await _unitOfWork.BalanceHistories.AddOneAsync(history);
             await _unitOfWork.SaveChangesAsync();
-            return balanceHistory;
+            return history;
         }
 
-        public async Task<Client> CancelTransactionAsync(long transactionId)
+        public async Task<Client> CancelTransactionAsync(long txId)
         {
-            BalanceHistory transaction = await _unitOfWork.BalanceHistories.GetByIdAsync(transactionId)
+            var tx = await _unitOfWork.BalanceHistories.GetByIdAsync(txId)
                 ?? throw new ArgumentException("Transaction not found.");
 
-            Client client = await _unitOfWork.Clients.GetByIdAsync(transaction.ClientId)
+            var client = await _unitOfWork.Clients.GetByIdAsync(tx.ClientId)
                 ?? throw new ArgumentException("Client not found.");
 
-            long completedStatusKey = long.Parse(_configuration["Transaction:CompletedStatus"] ?? "1");
-            if (transaction.BalanceHistoryStatusId == completedStatusKey)
+            if (tx.BalanceHistoryStatusId == _transactionSettings.CompletedStatus)
             {
-                client.Balance -= transaction.Sum;
+                client.Balance -= tx.Sum;
                 _unitOfWork.Clients.Update(client);
             }
 
-            long cancelledStatusKey = long.Parse(_configuration["Transaction:CancelledStatus"] ?? "2");
-            BalanceHistoryStatus cancelledStatus = await _unitOfWork.BalanceHistoryStatuses
-                .GetByIdAsync(cancelledStatusKey)
+            var cancelledStatus = await _unitOfWork.BalanceHistoryStatuses
+                .GetByIdAsync(_transactionSettings.CancelledStatus)
                 ?? throw new ArgumentException("Balance history status not found.");
 
-            transaction.BalanceHistoryStatusId = cancelledStatus.Id;
-            transaction.FinishedAt = DateTime.UtcNow;
-            _unitOfWork.BalanceHistories.Update(transaction);
+            tx.BalanceHistoryStatusId = cancelledStatus.Id;
+            tx.FinishedAt = DateTime.UtcNow;
+            _unitOfWork.BalanceHistories.Update(tx);
+
             await _unitOfWork.SaveChangesAsync();
             return client;
         }
