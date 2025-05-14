@@ -16,6 +16,7 @@ public partial class BranchesView : UserControl
     public BranchesView()
     {
         InitializeComponent();
+        SearchBranches(null, null);
     }
     
     private async void SearchBranches(object? sender, RoutedEventArgs e)
