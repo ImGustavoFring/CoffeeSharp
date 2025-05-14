@@ -24,7 +24,7 @@
         </Grid>
     </Border>
     
-    <UserControl.DataContext>
+    <Design.DataContext>
         <viewModels:BranchItemViewModel />
-    </UserControl.DataContext>
+    </Design.DataContext>
 </UserControl>

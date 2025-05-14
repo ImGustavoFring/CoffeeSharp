@@ -30,6 +30,7 @@ public partial class BranchInformationWindowViewModel(BranchDtoObservable? branc
                     Name = BranchDto.Name,
                     Address = BranchDto.Address
                 });
+                BranchDto.Id = branchDto.Id;
                 BranchDto.Name = branchDto.Name;
                 BranchDto.Address = branchDto.Address;
             }
@@ -45,8 +46,10 @@ public partial class BranchInformationWindowViewModel(BranchDtoObservable? branc
 
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine(IsNew);
+            Console.WriteLine(ex.Message);
             return false;
         }
     }

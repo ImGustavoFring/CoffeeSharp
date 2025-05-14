@@ -32,9 +32,13 @@
             <TextBlock Text="Адрес:"/>
             <TextBox Text="{Binding BranchDto.Address}" />
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0" IsVisible="{Binding !IsNew}">
                 <Button Content="Сохранить" Click="Save" />
                 <Button Content="Отменить" Click="Cancel" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0" IsVisible="{Binding IsNew}">
+                <Button Content="Создать" Click="Save" />
             </StackPanel>
         </StackPanel>
     </Grid>
