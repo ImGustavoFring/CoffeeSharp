@@ -46,10 +46,8 @@ public partial class BranchInformationWindowViewModel(BranchDtoObservable? branc
 
             return true;
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine(IsNew);
-            Console.WriteLine(ex.Message);
             return false;
         }
     }

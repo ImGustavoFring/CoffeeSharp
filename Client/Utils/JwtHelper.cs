@@ -24,4 +24,16 @@ public class JwtHelper
     {
         return claims.FirstOrDefault(c => c.Type == claimType)?.Value;
     }
+    
+    public static bool IsTokenExpired(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+
+        if (!handler.CanReadToken(token))
+            throw new ArgumentException("Invalid JWT token.");
+
+        var jwtToken = handler.ReadJwtToken(token);
+
+        return jwtToken.ValidTo < DateTime.UtcNow;
+    }
 }

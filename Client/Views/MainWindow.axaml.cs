@@ -10,12 +10,4 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-    
-    private void MenuToggle_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.ToggleMenuCommand.Execute(null);
-        }
-    }
 }

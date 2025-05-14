@@ -6,9 +6,6 @@ namespace Client.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private bool _isMenuOpen;
-
-    [ObservableProperty]
     private ObservableObject _currentViewModel;
 
     [ObservableProperty]
@@ -40,24 +37,9 @@ public partial class MainWindowViewModel : ViewModelBase
         CurrentViewModel = new BranchesViewModel();
     }
 
-    // All later are deprecated and will be removed
     [RelayCommand]
-    private void NavigateFirst()
+    public void NavigateToEmployeeRoleCommand()
     {
-        CurrentViewModel = new UserContol1VM();
-        IsMenuOpen = false;
-    }
-
-    [RelayCommand]
-    private void NavigateSecond()
-    {
-        CurrentViewModel = new UserControl2VM();
-        IsMenuOpen = false;
-    }
-
-    [RelayCommand]
-    private void ToggleMenu()
-    {
-        IsMenuOpen = !IsMenuOpen;
+        CurrentViewModel = new EmployeeRoleViewModel();
     }
 }

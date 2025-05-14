@@ -21,6 +21,7 @@
         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4">
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToOrdersCommand}">Заказы</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchesCommand}">Филиалы</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeRoleCommand}">Роли</Button>
             <Button HorizontalAlignment="Stretch">Меню</Button>
         </StackPanel>
         

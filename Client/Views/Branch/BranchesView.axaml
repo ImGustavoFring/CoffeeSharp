@@ -9,15 +9,13 @@
              x:DataType="viewModels:BranchesViewModel">
     <StackPanel Spacing="10">
         
-        <!-- Поисковая строка -->
         <DockPanel Margin="0 0 0 10">
             <TextBox Width="300" Watermark="Название" Text="{Binding SearchNameQuery}" />
             <TextBox Width="300" Watermark="Адрес" Margin="5 0 0 0" Text="{Binding SearchAddressQuery}" />
             <Button Content="🔍" Margin="5 0 0 0" Click="SearchBranches"/>
             <Button Content="+" Margin="5 0 0 0" Click="CreateBranch"/>
         </DockPanel>
-
-        <!-- Список филиалов -->
+        
         <ItemsControl ItemsSource="{Binding Branches}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="viewModels:BranchItemViewModel">

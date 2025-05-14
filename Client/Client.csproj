@@ -30,4 +30,30 @@
   <ItemGroup>
     <ProjectReference Include="..\ApiClient\ApiClient.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Views\Branch\BranchesView.axaml" />
+    <AdditionalFiles Include="Views\Branch\BranchInformationWindow.axaml" />
+    <AdditionalFiles Include="Views\Branch\BranchItem.axaml" />
+    <AdditionalFiles Include="Views\EmployeeRole\EmployeeRoleView.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\Branch\BranchesView.axaml.cs">
+      <DependentUpon>BranchesView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Branch\BranchInformationWindow.axaml.cs">
+      <DependentUpon>BranchInformationWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Branch\BranchItem.axaml.cs">
+      <DependentUpon>BranchItem.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\EmployeeRole\EmployeeRoleView.axaml.cs">
+      <DependentUpon>EmployeeRoleView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -14,9 +14,5 @@ public partial class BranchesViewModel: ViewModelBase
     
     [ObservableProperty]
     private string? _searchAddressQuery = null;
-
-    public BranchesViewModel()
-    {
-        
-    }
+    
 }

@@ -8,14 +8,12 @@
              x:DataType="viewModels:BranchItemViewModel">
     <Border Background="LightGray" Padding="10">
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
-            <!-- Левая часть: информация о филиале -->
             <StackPanel Orientation="Vertical" Spacing="4">
                 <TextBlock Text="{Binding BranchDto.Name}" FontWeight="Bold"/>
                 <TextBlock Text="{Binding BranchDto.Address}"/>
                 <!-- <TextBlock Text="{Binding WorkingHours}" /> -->
             </StackPanel>
-
-            <!-- Правая часть: кнопки -->
+            
             <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
                 <Button Content="Меню" Width="150"/>
                 <Button Content="Сотрудники" Width="150"/>
@@ -24,8 +22,4 @@
             </StackPanel>
         </Grid>
     </Border>
-    
-    <Design.DataContext>
-        <viewModels:BranchItemViewModel />
-    </Design.DataContext>
 </UserControl>
