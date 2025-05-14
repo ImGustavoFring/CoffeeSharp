@@ -1,7 +1,10 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Client.Services;
+using Client.Utils;
 using Client.ViewModels;
 
 namespace Client.Views;
@@ -22,6 +25,22 @@ public partial class BranchItem : UserControl
                 DataContext = new BranchInformationWindowViewModel(vm.BranchDto, false)
             };
             window.ShowDialog(ww);
+        }
+    }
+
+    private async void DeleteBranch(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is BranchItemViewModel vm)
+        {
+            try
+            {
+                await HttpClient.Instance.DeleteBranch(vm.BranchDto.Id);
+                await DialogsHelper.ShowOk();
+            }
+            catch
+            {
+                await DialogsHelper.ShowError();
+            }
         }
     }
 }

@@ -20,6 +20,7 @@
                 <Button Content="Меню" Width="150"/>
                 <Button Content="Сотрудники" Width="150"/>
                 <Button Content="Информация" Width="150" Click="OpenInformationWindow"/>
+                <Button Content="Удалить" Width="150" Click="DeleteBranch"/>
             </StackPanel>
         </Grid>
     </Border>
