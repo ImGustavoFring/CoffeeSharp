@@ -16,6 +16,12 @@ public enum OrderShortItemViewModelsSortingTypeEnum
 
 public partial class MainOrdersViewModel : ViewModelBase
 {
+    private static readonly Lazy<MainOrdersViewModel> _instance = new(() => new MainOrdersViewModel());
+
+    public static MainOrdersViewModel Instance => _instance.Value;
+
+    private MainOrdersViewModel() { }
+    
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(SortedOrderShortItemViewModels))]
     private ObservableCollection<OrderShortItemViewModel> _orderShortItemViewModels = [new OrderShortItemViewModel()];
 

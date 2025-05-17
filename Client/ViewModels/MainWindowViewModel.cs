@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Client.ViewModels;
@@ -28,18 +29,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToOrders()
     {
-        CurrentViewModel = new MainOrdersViewModel();
+        CurrentViewModel = MainOrdersViewModel.Instance;
     }
 
     [RelayCommand]
     private void NavigateToBranches()
     {
-        CurrentViewModel = new BranchesViewModel();
+        CurrentViewModel = BranchesViewModel.Instance;
     }
 
     [RelayCommand]
     public void NavigateToEmployeeRoleCommand()
     {
-        CurrentViewModel = new EmployeeRoleViewModel();
+        CurrentViewModel = EmployeeRoleViewModel.Instance;
     }
 }

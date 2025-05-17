@@ -36,6 +36,7 @@ public partial class BranchItem : UserControl
             {
                 await HttpClient.Instance.DeleteBranch(vm.BranchDto.Id);
                 await DialogsHelper.ShowOk();
+                BranchesViewModel.Instance.Branches.Remove(vm);
             }
             catch
             {

@@ -35,6 +35,7 @@ public partial class EmployeeRoleItem : UserControl
             {
                 await HttpClient.Instance.DeleteEmployeeRole(vm.EmployeeRoleDto.Id);
                 await DialogsHelper.ShowOk();
+                EmployeeRoleViewModel.Instance.EmployeeRoles.Remove(vm);
             }
             catch
             {

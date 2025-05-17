@@ -32,7 +32,7 @@
         </ItemsControl>
     </StackPanel>
 
-    <UserControl.DataContext>
+    <Design.DataContext>
         <viewModels:MainOrdersViewModel />
-    </UserControl.DataContext>
+    </Design.DataContext>
 </UserControl>

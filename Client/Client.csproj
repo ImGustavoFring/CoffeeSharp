@@ -36,6 +36,8 @@
     <AdditionalFiles Include="Views\Branch\BranchInformationWindow.axaml" />
     <AdditionalFiles Include="Views\Branch\BranchItem.axaml" />
     <AdditionalFiles Include="Views\EmployeeRole\EmployeeRoleView.axaml" />
+    <AdditionalFiles Include="Views\MainOrders\MainOrdersView.axaml" />
+    <AdditionalFiles Include="Views\MainOrders\OrderShortItem.axaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +55,14 @@
     </Compile>
     <Compile Update="Views\EmployeeRole\EmployeeRoleView.axaml.cs">
       <DependentUpon>EmployeeRoleView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\MainOrders\OrderShortItem.axaml.cs">
+      <DependentUpon>OrderShortItem.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\MainOrders\MainOrdersView.axaml.cs">
+      <DependentUpon>MainOrdersView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

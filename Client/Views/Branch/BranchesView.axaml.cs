@@ -16,6 +16,7 @@ public partial class BranchesView : UserControl
     public BranchesView()
     {
         InitializeComponent();
+        DataContext = BranchesViewModel.Instance;
         SearchBranches(null, null);
     }
     

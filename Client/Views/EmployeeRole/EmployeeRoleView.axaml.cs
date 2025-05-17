@@ -14,6 +14,7 @@ public partial class EmployeeRoleView : UserControl
     public EmployeeRoleView()
     {
         InitializeComponent();
+        DataContext = EmployeeRoleViewModel.Instance;
         SearchEmployeeRoles(null, null);
     }
     

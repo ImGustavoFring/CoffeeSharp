@@ -26,7 +26,7 @@
 
     </StackPanel>
     
-    <UserControl.DataContext>
+    <Design.DataContext>
         <viewModels:BranchesViewModel />
-    </UserControl.DataContext>
+    </Design.DataContext>
 </UserControl>
