@@ -1,0 +1,24 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.CategoryItem"
+             x:DataType="viewModels:CategoryItemViewModel">
+    <Border Background="LightGray" Padding="10">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock>Категория:</TextBlock>
+                <TextBlock Text="{Binding CategoryDto.Name}" />
+                <TextBlock IsVisible="{Binding HaveParentCategory}">Родительская категория:</TextBlock>
+                <TextBlock IsVisible="{Binding HaveParentCategory}" Text="{Binding ParentCategoryDto.Name}"></TextBlock>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
+                <Button Content="Изменить" Width="150" Click="OpenInformationWindow"/>
+                <Button Content="Удалить" Width="150" Click="DeleteCategory"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

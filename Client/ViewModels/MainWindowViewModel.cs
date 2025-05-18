@@ -39,8 +39,14 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public void NavigateToEmployeeRoleCommand()
+    public void NavigateToEmployeeRole()
     {
         CurrentViewModel = EmployeeRoleViewModel.Instance;
+    }
+
+    [RelayCommand]
+    public void NavigateToCategory()
+    {
+        CurrentViewModel = CategoryViewModel.Instance;
     }
 }
