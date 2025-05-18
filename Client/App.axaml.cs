@@ -23,6 +23,8 @@ public partial class App : Application
             .Register<EmployeeRoleItemViewModel, EmployeeRoleItem>()
             .Register<CategoryViewModel, CategoryView>()
             .Register<CategoryItemViewModel, CategoryItem>()
+            .Register<ProductViewModel, ProductView>()
+            .Register<ProductItemViewModel, ProductItem>()
             // all later are deprecated and will be removed
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());

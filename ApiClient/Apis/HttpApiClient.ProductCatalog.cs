@@ -9,7 +9,7 @@ namespace ApiClient.Apis;
 
 public partial class HttpApiClient
 {
-    private const string ProductCatalogControllerPath = "api/product-catalog";
+    private const string ProductCatalogControllerPath = "/api/product-catalog";
     
     public async Task<(IEnumerable<ProductDto> Items, int TotalCount)> GetAllProducts(
         string? name = null,
