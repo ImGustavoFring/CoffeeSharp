@@ -7,9 +7,9 @@ using System.Security.Claims;
 using System.Text;
 using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
-namespace WebApi.Logic.Services
+namespace WebApi.Logic.BusinessServices
 {
     public class UserService : IUserService
     {

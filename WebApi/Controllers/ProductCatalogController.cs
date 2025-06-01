@@ -6,7 +6,7 @@ using Domain.DTOs.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
 namespace WebApi.Controllers
 {

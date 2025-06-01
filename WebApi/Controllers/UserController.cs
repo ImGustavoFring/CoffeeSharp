@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 using CoffeeSharp.Domain.Entities;
 using Domain.DTOs.Shared;
 using Domain.DTOs.User.Requests;

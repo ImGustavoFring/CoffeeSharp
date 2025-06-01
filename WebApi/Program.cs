@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using WebApi.Infrastructure.Data;
-using WebApi.Logic.Services.Interfaces;
-using WebApi.Logic.Services;
+using WebApi.Logic.BusinessServices.Interfaces;
+using WebApi.Logic.BusinessServices;
 using WebApi.Infrastructure.Repositories.Interfaces;
 using WebApi.Infrastructure.Repositories;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
@@ -22,6 +22,7 @@ using CoffeeSharp.WebApi.Infrastructure.Data;
 using Npgsql;
 using System.Data;
 using WebApi.Configurations;
+using WebApi.Logic.AnalyticalServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,7 @@ builder.Services.Configure<AuthorizationSettings>(
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
 
+builder.Services.AddScoped<ILogsService, LogsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();

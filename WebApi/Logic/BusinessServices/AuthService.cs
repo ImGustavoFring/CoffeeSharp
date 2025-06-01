@@ -3,13 +3,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using CoffeeSharp.Domain.Entities;
 using Microsoft.Extensions.Options;
 using WebApi.Configurations;
 
-namespace WebApi.Logic.Services
+namespace WebApi.Logic.BusinessServices
 {
     public class AuthService : IAuthService
     {

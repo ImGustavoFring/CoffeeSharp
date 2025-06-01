@@ -1,10 +1,10 @@
 ﻿using CoffeeSharp.Domain.Entities;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
 using System.Linq.Expressions;
 using WebApi.Infrastructure.Extensions;
 
-namespace WebApi.Logic.Services
+namespace WebApi.Logic.BusinessServices
 {
     public class ProductCatalogService : IProductCatalogService
     {

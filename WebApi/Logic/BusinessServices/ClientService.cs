@@ -12,9 +12,9 @@ using Microsoft.Extensions.Options;
 using WebApi.Configurations;
 using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
-namespace WebApi.Logic.Services
+namespace WebApi.Logic.BusinessServices
 {
     public class ClientService : IClientService
     {

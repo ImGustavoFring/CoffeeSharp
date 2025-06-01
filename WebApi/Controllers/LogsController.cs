@@ -1,9 +1,8 @@
-﻿using System.Data;
-using Dapper;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Domain.DTOs.Log.Responses;
 using Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using WebApi.Logic.BusinessServices.Interfaces;
 
 namespace WebApi.Controllers
 {
@@ -12,11 +11,11 @@ namespace WebApi.Controllers
     [ApiController]
     public class LogsController : ControllerBase
     {
-        private readonly IDbConnection _db;
+        private readonly ILogsService _logsService;
 
-        public LogsController(IDbConnection dbConnection)
+        public LogsController(ILogsService logsService)
         {
-            _db = dbConnection;
+            _logsService = logsService;
         }
 
         [HttpGet]
@@ -27,54 +26,9 @@ namespace WebApi.Controllers
             [FromQuery] DateTime? to = null,
             [FromQuery] LogLevelEnum? level = null)
         {
-            var whereClauses = new List<string>();
-            var parameters = new DynamicParameters();
-
-            if (from.HasValue)
-            {
-                whereClauses.Add(@"""timestamp"" >= @From");
-                parameters.Add("From", from.Value);
-            }
-
-            if (to.HasValue)
-            {
-                whereClauses.Add(@"""timestamp"" <= @To");
-                parameters.Add("To", to.Value);
-            }
-
-            if (level.HasValue)
-            {
-                parameters.Add("Level", (int)level.Value);
-                whereClauses.Add(@"""level"" = @Level");
-            }
-
-            var whereSql = whereClauses.Count > 0
-                ? "WHERE " + string.Join(" AND ", whereClauses)
-                : "";
-
-            var countSql = $@"SELECT COUNT(*) FROM ""logs"" {whereSql};";
-            var totalCount = await _db.ExecuteScalarAsync<int>(countSql, parameters);
-
-            var dataSql = $@"
-                SELECT
-                    ""level""      AS Level,
-                    ""timestamp""  AS TimeStamp,
-                    ""log_event""  AS LogEvent,
-                    ""message""    AS Message,
-                    ""message_template"" AS MessageTemplate,
-                    ""exception""  AS Exception
-                FROM ""logs""
-                {whereSql}
-                ORDER BY ""timestamp"" DESC
-                LIMIT @Limit OFFSET @Offset;";
-
-            parameters.Add("Limit", pageSize);
-            parameters.Add("Offset", pageIndex * pageSize);
-
-            var logs = await _db.QueryAsync<LogEntryResponse>(dataSql, parameters);
+            var (logs, totalCount) = await _logsService.GetLogsAsync(pageSize, pageIndex, from, to, level);
 
             Response.Headers.Add("X-Total-Count", totalCount.ToString());
-
             return Ok(logs);
         }
     }

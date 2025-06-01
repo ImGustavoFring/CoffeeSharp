@@ -1,7 +1,7 @@
 ﻿using CoffeeSharp.Domain.Entities;
 using Domain.Entities;
 
-namespace WebApi.Logic.Services.Interfaces
+namespace WebApi.Logic.BusinessServices.Interfaces
 {
     public interface IUserService
     {

@@ -1,6 +1,6 @@
 ﻿using Domain.DTOs.Auth.Requests;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
 namespace WebApi.Controllers
 {

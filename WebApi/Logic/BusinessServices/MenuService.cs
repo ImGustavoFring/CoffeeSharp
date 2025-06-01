@@ -3,9 +3,9 @@ using Domain.Entities;
 using System.Linq.Expressions;
 using WebApi.Infrastructure.Extensions;
 using WebApi.Infrastructure.UnitsOfWorks.Interfaces;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
-namespace WebApi.Logic.Services
+namespace WebApi.Logic.BusinessServices
 {
     public class MenuService : IMenuService
     {

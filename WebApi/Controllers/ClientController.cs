@@ -7,7 +7,7 @@ using Domain.DTOs.Shared;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Logic.Services.Interfaces;
+using WebApi.Logic.BusinessServices.Interfaces;
 
 namespace WebApi.Controllers
 {
