@@ -1,5 +1,6 @@
 ﻿// Domain/Services/Interfaces/ILogsService.cs
 using Domain.DTOs.Log.Responses;
+using Domain.Entities.Analytics;
 using Domain.Enums;
 
 namespace WebApi.Logic.BusinessServices.Interfaces

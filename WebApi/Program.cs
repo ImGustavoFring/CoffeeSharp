@@ -23,6 +23,8 @@ using Npgsql;
 using System.Data;
 using WebApi.Configurations;
 using WebApi.Logic.AnalyticalServices;
+using WebApi.Infrastructure;
+using WebApi.Logic.AnalyticalServices.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +66,10 @@ builder.Services.Configure<AuthorizationSettings>(
 
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
+
+// Добавить в DI-контейнер
+builder.Services.AddSingleton<IAnalyticsConnectionFactory, AnalyticsConnectionFactory>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 builder.Services.AddScoped<ILogsService, LogsService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
