@@ -16,9 +16,7 @@ public partial class CategoryItem : UserControl
         InitializeComponent();
         if (DataContext is CategoryItemViewModel vm)
         {
-            Console.WriteLine("Getting ParentCategory");
             vm.GetParentCategory().GetAwaiter().GetResult();
-            Console.WriteLine("Getting ParentCategory2");
         }
     }
 

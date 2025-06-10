@@ -27,4 +27,8 @@ public class AuthSettings
     public string? Name => (_claims != null) ? JwtHelper.GetClaimValue(_claims, ClaimTypes.Name) : null;
 
     public string? UserType => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "user_type") : null;
+    
+    public string? RoleId => (_claims != null) ? JwtHelper.GetClaimValue(_claims, ClaimTypes.Role) : null;
+    
+    public bool IsTokenExpired => JwtHelper.IsTokenExpired(_accessToken);
 }

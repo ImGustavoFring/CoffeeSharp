@@ -6,19 +6,29 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Client.ViewModels;
 
-public partial class CategoryItemViewModel(CategoryDtoObservable categoryDto) : ViewModelBase
+public partial class CategoryItemViewModel : ViewModelBase
 {
-    [ObservableProperty] private CategoryDtoObservable _categoryDto = categoryDto;
-    
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(HaveParentCategory))] private CategoryDtoObservable? _parentCategoryDto = null;
-    
+    [ObservableProperty] private CategoryDtoObservable _categoryDto;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(HaveParentCategory))]
+    private CategoryDtoObservable? _parentCategoryDto = null;
+
     public bool HaveParentCategory => ParentCategoryDto != null;
+
+    public CategoryItemViewModel(CategoryDtoObservable categoryDto)
+    {
+        _categoryDto = categoryDto;
+        GetParentCategory();
+    }
 
     public async Task GetParentCategory()
     {
         try
         {
-            ParentCategoryDto = new CategoryDtoObservable(await HttpClient.Instance.GetCategoryById(CategoryDto.Id));
+            if (CategoryDto.ParentId != null)
+            {
+                ParentCategoryDto = new CategoryDtoObservable(await HttpClient.Instance.GetCategoryById(CategoryDto.ParentId ?? 0));
+            }
         }
         catch
         {

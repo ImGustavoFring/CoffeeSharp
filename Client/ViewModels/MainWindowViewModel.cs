@@ -1,4 +1,5 @@
 ﻿using System;
+using Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,9 +16,23 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isHighCook = false;
 
+    public void RefreshAuthData()
+    {
+        var auth = AuthService.Load();
+        var userType = auth.UserType;
+        if (userType == "admin")
+        {
+            IsAdminAuth = true;
+        }
+        else if (userType == "employee")
+        {
+            IsHighCook = true;
+        }
+    }
+
     public MainWindowViewModel()
     {
-        CurrentViewModel = new UserContol1VM();
+        CurrentViewModel = new LoginViewModel();
     }
 
     [RelayCommand]

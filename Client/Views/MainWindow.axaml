@@ -11,20 +11,17 @@
         Title="Client"
         Padding="12">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <Window.DataContext>
         <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    </Window.DataContext>
 
     <Grid ColumnDefinitions="Auto,1,*" RowDefinitions="*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4">
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToOrdersCommand}">Заказы</Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchesCommand}">Филиалы</Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeRoleCommand}">Роли</Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToCategoryCommand}">Категории</Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToProductsCommand}">Продукты</Button>
-            <Button HorizontalAlignment="Stretch">Меню</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchesCommand}" IsVisible="{Binding IsAdminAuth}">Филиалы</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeRoleCommand}" IsVisible="{Binding IsAdminAuth}">Роли</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToCategoryCommand}" IsVisible="{Binding IsAdminAuth}">Категории</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToProductsCommand}" IsVisible="{Binding IsAdminAuth}">Продукты</Button>
         </StackPanel>
         
         <StackPanel Grid.Column="0" Grid.Row="1">

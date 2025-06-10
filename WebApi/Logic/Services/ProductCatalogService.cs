@@ -164,10 +164,8 @@ namespace WebApi.Logic.Services
                 }
             }
 
-            var existingParentCategory = await _unitOfWork.Categories.GetByIdAsync(category.ParentCategoryId);
-
             existingCategory.Name = category.Name;
-            existingCategory.ParentCategoryId = existingParentCategory.Id;
+            existingCategory.ParentCategoryId = category.ParentCategoryId;
 
             _unitOfWork.Categories.Update(existingCategory);
             await _unitOfWork.SaveChangesAsync();

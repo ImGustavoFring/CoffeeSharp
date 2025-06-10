@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ApiClient.Apis;
+using Client.ViewModels;
 using Domain.DTOs;
 using Domain.DTOs.Auth.Requests;
 
@@ -17,7 +18,7 @@ public sealed class AuthService
 
     private static AuthSettings? _authSettings;
 
-    private static AuthSettings Load()
+    public static AuthSettings Load()
     {
         if (_authSettings != null) return _authSettings;
 
@@ -52,6 +53,15 @@ public sealed class AuthService
     }
 
     public string? UserType => Load().UserType;
+    
+    public bool IsAuthenticated
+    {
+        get
+        {
+            var auth = Load();
+            return !String.IsNullOrEmpty(auth.AccessToken) && !auth.IsTokenExpired;
+        }
+    }
 
     public static AuthService Instance { get; } = new AuthService();
 
@@ -77,6 +87,24 @@ public sealed class AuthService
         }
         
         AccessToken = token;
+        _mainWindowViewModel.RefreshAuthData();
         return true;
+    }
+
+    public bool StartUpLogin()
+    {
+        var auth = Load();
+        if (String.IsNullOrEmpty(auth.AccessToken) || auth.IsTokenExpired) 
+            return false;
+        HttpClient.Instance.SetAccessToken(auth.AccessToken);
+        return true;
+    }
+
+    private MainWindowViewModel _mainWindowViewModel;
+
+    public MainWindowViewModel MainWindowViewModel
+    {
+        get => _mainWindowViewModel;
+        set => _mainWindowViewModel = value;
     }
 }

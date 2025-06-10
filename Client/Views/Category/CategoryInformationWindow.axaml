@@ -28,6 +28,13 @@
             <TextBlock Text="Название:"/>
             <TextBox Text="{Binding CategoryDto.Name}" />
             
+            <TextBlock Text="Родительская категория:"/>
+            <ComboBox ItemsSource="{Binding AvailableCategories}"
+                      SelectedItem="{Binding SelectedParentCategory, Mode=TwoWay}"
+                      DisplayMemberBinding="{Binding CategoryDto.Name}"
+                      HorizontalAlignment="Stretch"
+                      PlaceholderText="Выберите категорию (опционально)" />
+            
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0" IsVisible="{Binding !IsNew}">
                 <Button Content="Сохранить" Click="Save" />
                 <Button Content="Отменить" Click="Cancel" />
