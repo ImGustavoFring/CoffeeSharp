@@ -12,7 +12,7 @@
                 <TextBlock Text="{Binding ProductDto.Name, StringFormat='Название: {0}'}" />
                 <TextBlock Text="{Binding ProductDto.Description, StringFormat='Описание: {0}'}" />
                 <TextBlock Text="{Binding ProductDto.Price, StringFormat='Цена: {0:C}'}" />
-                <!-- <TextBlock Text="{Binding SomeOtherProperty}" /> -->
+                <TextBlock Text="{Binding CategoryName, StringFormat='Категория: {0}', FallbackValue='Категория: Без категории'}" IsVisible="{Binding HasCategory}" />
             </StackPanel>
             
             <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">

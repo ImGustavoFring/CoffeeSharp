@@ -21,6 +21,6 @@ namespace Domain.DTOs
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Category is required")]
-        public long CategoryId { get; set; }
+        public long? CategoryId { get; set; }
     }
 }

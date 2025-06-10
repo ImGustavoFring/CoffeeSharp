@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Client.ObservableDTO;
 using Client.Services;
@@ -11,17 +13,57 @@ using Domain.DTOs.Shared;
 
 namespace Client.ViewModels;
 
-public partial class ProductInformationWindowViewModel(ProductDtoObservable? productDto, bool isNew) : ViewModelBase
+public partial class ProductInformationWindowViewModel : ViewModelBase
 {
-    [ObservableProperty] private ProductDtoObservable _productDto = productDto ?? new ProductDtoObservable();
-    [ObservableProperty] private bool _isNew = isNew;
+    [ObservableProperty]
+    private ProductDtoObservable _productDto;
 
-    private readonly ProductDto _backupProductDto = new ProductDto()
+    [ObservableProperty]
+    private bool _isNew;
+
+    [ObservableProperty]
+    private ObservableCollection<CategoryItemViewModel> _availableCategories;
+
+    [ObservableProperty]
+    private CategoryItemViewModel? _selectedCategory;
+
+    private readonly ProductDto _backupProductDto;
+
+    public ProductInformationWindowViewModel(ProductDtoObservable? productDto, bool isNew)
     {
-        Name = productDto?.Name ?? string.Empty,
-        Description = productDto?.Description,
-        Price = productDto?.Price ?? 0
-    };
+        _productDto = productDto ?? new ProductDtoObservable();
+        _isNew = isNew;
+        _backupProductDto = new ProductDto
+        {
+            Name = _productDto.Name,
+            Description = _productDto.Description,
+            Price = _productDto.Price,
+            CategoryId = _productDto.CategoryId
+        };
+        
+        _availableCategories = new ObservableCollection<CategoryItemViewModel>
+        {
+            new CategoryItemViewModel(new CategoryDtoObservable { Id = 0, Name = "Без категории" })
+        };
+        foreach (var category in CategoryViewModel.Instance.Categories)
+        {
+            _availableCategories.Add(category);
+        }
+        
+        if (_productDto.CategoryId.HasValue)
+        {
+            SelectedCategory = AvailableCategories.FirstOrDefault(c => c.CategoryDto.Id == _productDto.CategoryId);
+        }
+        else
+        {
+            SelectedCategory = AvailableCategories.FirstOrDefault(c => c.CategoryDto.Id == 0); // "Без категории"
+        }
+    }
+
+    partial void OnSelectedCategoryChanged(CategoryItemViewModel? value)
+    {
+        ProductDto.CategoryId = value?.CategoryDto.Id == 0 ? null : value?.CategoryDto.Id;
+    }
 
     public async Task<bool> Save()
     {
@@ -29,27 +71,28 @@ public partial class ProductInformationWindowViewModel(ProductDtoObservable? pro
         {
             if (IsNew)
             {
-                var productDto = await HttpClient.Instance.CreateProduct(new CreateProductRequest()
+                var productDto = await HttpClient.Instance.CreateProduct(new CreateProductRequest
                 {
                     Name = ProductDto.Name,
                     Description = ProductDto.Description,
                     Price = ProductDto.Price,
-                    CategoryId = 1
+                    CategoryId = ProductDto.CategoryId
                 });
                 ProductDto.Id = productDto.Id;
                 ProductDto.Name = productDto.Name;
                 ProductDto.Description = productDto.Description;
                 ProductDto.Price = productDto.Price;
+                ProductDto.CategoryId = productDto.CategoryId;
             }
             else
             {
-                await HttpClient.Instance.UpdateProduct(ProductDto.Id, new UpdateProductRequest()
+                await HttpClient.Instance.UpdateProduct(ProductDto.Id, new UpdateProductRequest
                 {
                     Id = ProductDto.Id,
                     Name = ProductDto.Name,
                     Description = ProductDto.Description,
                     Price = ProductDto.Price,
-                    CategoryId = 1
+                    CategoryId = ProductDto.CategoryId
                 });
             }
 
@@ -66,5 +109,7 @@ public partial class ProductInformationWindowViewModel(ProductDtoObservable? pro
         ProductDto.Name = _backupProductDto.Name;
         ProductDto.Description = _backupProductDto.Description;
         ProductDto.Price = _backupProductDto.Price;
+        ProductDto.CategoryId = _backupProductDto.CategoryId;
+        SelectedCategory = AvailableCategories.FirstOrDefault(c => c.CategoryDto.Id == (_backupProductDto.CategoryId ?? 0));
     }
 }

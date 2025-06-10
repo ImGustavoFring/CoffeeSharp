@@ -33,6 +33,13 @@
 
             <TextBlock Text="Цена:"/>
             <TextBox Text="{Binding ProductDto.Price}" />
+            
+            <TextBlock Text="Категория:"/>
+            <ComboBox ItemsSource="{Binding AvailableCategories}"
+                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                      DisplayMemberBinding="{Binding CategoryDto.Name}"
+                      PlaceholderText="Выберите категорию (опционально)"
+                      HorizontalAlignment="Stretch" />
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,10,0,0" IsVisible="{Binding !IsNew}">
                 <Button Content="Сохранить" Click="Save" />
