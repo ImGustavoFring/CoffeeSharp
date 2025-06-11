@@ -1,0 +1,24 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.EmployeeItem"
+             x:DataType="viewModels:EmployeeItemViewModel">
+    <Border Background="LightGray" Padding="10">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="{Binding EmployeeDto.Name, StringFormat='Имя: {0}'}" />
+                <TextBlock Text="{Binding EmployeeDto.UserName, StringFormat='Логин: {0}'}" />
+                <TextBlock Text="{Binding RoleName, StringFormat='Роль: {0}', FallbackValue='Роль: Не указана'}" />
+                <TextBlock Text="{Binding BranchName, StringFormat='Филиал: {0}', FallbackValue='Филиал: Без филиала'}" IsVisible="{Binding HasBranch}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
+                <Button Content="Изменить" Width="150" Click="OpenInformationWindow"/>
+                <Button Content="Удалить" Width="150" Click="DeleteEmployee"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

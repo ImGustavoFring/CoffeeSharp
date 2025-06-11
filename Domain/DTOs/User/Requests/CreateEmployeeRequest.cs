@@ -23,8 +23,7 @@ namespace Domain.DTOs.User.Requests
 
         [Required(ErrorMessage = "RoleId is required")]
         public long RoleId { get; set; }
-
-        [Required(ErrorMessage = "BranchId is required")]
-        public long BranchId { get; set; }
+        
+        public long? BranchId { get; set; }
     }
 }
