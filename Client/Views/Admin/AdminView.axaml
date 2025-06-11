@@ -1,0 +1,33 @@
+﻿
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             xmlns:views="clr-namespace:Client.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.AdminView"
+             x:DataType="viewModels:AdminViewModel">
+    <StackPanel Spacing="10">
+
+        <!-- Поисковая строка -->
+        <DockPanel Margin="0 0 0 10">
+            <TextBox Width="300" Watermark="Логин" Text="{Binding SearchQuery}" />
+            <Button Content="🔍" Margin="5 0 0 0" Click="SearchAdmins"/>
+            <Button Content="+" Margin="5 0 0 0" Click="CreateAdmin"/>
+        </DockPanel>
+
+        <ItemsControl ItemsSource="{Binding Admins}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="viewModels:AdminItemViewModel">
+                    <views:AdminItem Margin="0, 6" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </StackPanel>
+
+    <Design.DataContext>
+        <viewModels:AdminViewModel />
+    </Design.DataContext>
+</UserControl>

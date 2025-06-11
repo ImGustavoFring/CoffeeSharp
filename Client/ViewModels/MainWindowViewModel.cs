@@ -64,6 +64,12 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentViewModel = EmployeeViewModel.Instance;
     }
+    
+    [RelayCommand]
+    private void NavigateToAdmin()
+    {
+        CurrentViewModel = AdminViewModel.Instance;
+    }
 
     [RelayCommand]
     private void NavigateToCategory()

@@ -21,6 +21,7 @@
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchesCommand}" IsVisible="{Binding IsAdminAuth}">Филиалы</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeRoleCommand}" IsVisible="{Binding IsAdminAuth}">Роли</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeCommand}" IsVisible="{Binding IsAdminAuth}">Сотрудники</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToAdminCommand}" IsVisible="{Binding IsAdminAuth}">Администраторы</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToCategoryCommand}" IsVisible="{Binding IsAdminAuth}">Категории</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToProductsCommand}" IsVisible="{Binding IsAdminAuth}">Продукты</Button>
         </StackPanel>
