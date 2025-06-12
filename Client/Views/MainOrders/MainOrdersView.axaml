@@ -9,14 +9,14 @@
              x:DataType="viewModels:MainOrdersViewModel">
     <StackPanel Margin="12">
         <Grid ColumnDefinitions="Auto,*,Auto">
-            <TextBlock Grid.Column="0" Text="12.04.2025 15:29" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="0" Text="{Binding CurrentDateTime, StringFormat='dd.MM.yyyy HH:mm'}" VerticalAlignment="Center"/>
             <Panel Grid.Column="1" HorizontalAlignment="Stretch" />
-            <Button Grid.Column="2" Background="Transparent" VerticalAlignment="Center">
+            <Button Grid.Column="2" Background="Transparent" VerticalAlignment="Center" Command="{Binding LoadOrdersCommand}">
                 <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <MenuItem Header="По умолчанию" Command="{Binding SetDefaultSortingType}" />
-                        <MenuItem Header="Время ↓" Command="{Binding SetTimeAscendingSortingType}" />
-                        <MenuItem Header="Время ↑" Command="{Binding SetTimeDescendingSortingType}" />
+                        <MenuItem Header="По умолчанию" Command="{Binding SetDefaultSortingTypeCommand}" />
+                        <MenuItem Header="Время ↓" Command="{Binding SetTimeAscendingSortingTypeCommand}" />
+                        <MenuItem Header="Время ↑" Command="{Binding SetTimeDescendingSortingTypeCommand}" />
                     </MenuFlyout>
                 </Button.Flyout>
                 <PathIcon Data="M26.5833 3.625H2.41666L12.0833 15.0558V22.9583L16.9167 25.375V15.0558L26.5833 3.625Z"

@@ -38,7 +38,7 @@
         </StackPanel>
     </Border>
 
-    <UserControl.DataContext>
+    <Design.DataContext>
         <viewModels:OrderShortItemViewModel></viewModels:OrderShortItemViewModel>
-    </UserControl.DataContext>
+    </Design.DataContext>
 </UserControl>

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Domain.DTOs;
 
 namespace Client.ViewModels;
 
@@ -20,37 +22,68 @@ public partial class MainOrdersViewModel : ViewModelBase
 
     public static MainOrdersViewModel Instance => _instance.Value;
 
-    private MainOrdersViewModel() { }
+    private MainOrdersViewModel()
+    {
+        LoadOrdersAsync();
+    }
     
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(SortedOrderShortItemViewModels))]
-    private ObservableCollection<OrderShortItemViewModel> _orderShortItemViewModels = [new OrderShortItemViewModel()];
+    [ObservableProperty]
+    private DateTime _currentDateTime = DateTime.Now;
+    
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortedOrderShortItemViewModels))]
+    private ObservableCollection<OrderShortItemViewModel> _orderShortItemViewModels = new();
 
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(SortedOrderShortItemViewModels))]
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SortedOrderShortItemViewModels))]
     private OrderShortItemViewModelsSortingTypeEnum _currentSortingType;
 
     public ObservableCollection<OrderShortItemViewModel> SortedOrderShortItemViewModels => CurrentSortingType switch
     {
         OrderShortItemViewModelsSortingTypeEnum.Default => OrderShortItemViewModels,
-        OrderShortItemViewModelsSortingTypeEnum.TimeAscending => new
-            ObservableCollection<OrderShortItemViewModel>(
-                OrderShortItemViewModels.OrderBy(x => x.OrderDtoItem.CreatedAt)),
-        OrderShortItemViewModelsSortingTypeEnum.TimeDescending => new
-            ObservableCollection<OrderShortItemViewModel>(
-                OrderShortItemViewModels.OrderByDescending(x => x.OrderDtoItem.CreatedAt)),
+        OrderShortItemViewModelsSortingTypeEnum.TimeAscending => new ObservableCollection<OrderShortItemViewModel>(
+            OrderShortItemViewModels.OrderBy(x => x.OrderDtoItem.CreatedAt)),
+        OrderShortItemViewModelsSortingTypeEnum.TimeDescending => new ObservableCollection<OrderShortItemViewModel>(
+            OrderShortItemViewModels.OrderByDescending(x => x.OrderDtoItem.CreatedAt)),
         _ => OrderShortItemViewModels
     };
-    
-    public void SetDefaultSortingType()
+
+    [RelayCommand]
+    private async Task LoadOrdersAsync()
+    {
+        try
+        {
+            var auth = AuthService.Load();
+            long? branchId = auth.UserType == "admin" ? null : auth.BranchId;
+            var (orders, _) = await HttpClient.Instance.GetOrders(branchId: branchId);
+
+            OrderShortItemViewModels.Clear();
+            foreach (var order in orders)
+            {
+                var viewModel = await OrderShortItemViewModel.CreateAsync(order);
+                OrderShortItemViewModels.Add(viewModel);
+            }
+        }
+        catch
+        {
+
+        }
+    }
+
+    [RelayCommand]
+    private void SetDefaultSortingType()
     {
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.Default;
     }
     
-    public void SetTimeAscendingSortingType()
+    [RelayCommand]
+    private void SetTimeAscendingSortingType()
     {
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.TimeAscending;
     }
     
-    public void SetTimeDescendingSortingType()
+    [RelayCommand]
+    private void SetTimeDescendingSortingType()
     {
         CurrentSortingType = OrderShortItemViewModelsSortingTypeEnum.TimeDescending;
     }

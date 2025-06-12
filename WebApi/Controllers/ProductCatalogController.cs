@@ -88,7 +88,7 @@ namespace WebApi.Controllers
             };
 
             Product createdProduct = await _productCatalogService.AddProductAsync(
-                request.CategoryId, product);
+                request.CategoryId ?? 0, product);
 
             var productDto = new ProductDto
             {
@@ -123,7 +123,7 @@ namespace WebApi.Controllers
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
-                CategoryId = request.CategoryId
+                CategoryId = request.CategoryId ?? 0
             };
 
             Product updatedProduct = await _productCatalogService.UpdateProductAsync(product);

@@ -184,7 +184,7 @@ namespace WebApi.Controllers
             Employee employee = await _userService.AddEmployeeAsync(
                 request.Name, request.UserName,
                 request.Password, request.RoleId,
-                request.BranchId);
+                request.BranchId ?? 0);
 
             var dto = new EmployeeDto
             {
