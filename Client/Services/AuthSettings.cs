@@ -32,5 +32,17 @@ public class AuthSettings
     
     public string? RoleId => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "role") : null;
     
+    public long? BranchId
+    {
+        get
+        {
+            if (_claims == null)
+                return null;
+
+            var value = JwtHelper.GetClaimValue(_claims, "branch_id");
+            return long.TryParse(value, out var result) ? result : null;
+        }
+    }
+    
     public bool IsTokenExpired => JwtHelper.IsTokenExpired(_accessToken);
 }

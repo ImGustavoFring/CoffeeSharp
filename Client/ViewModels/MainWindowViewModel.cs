@@ -43,16 +43,18 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             UserName = auth.Name ?? "Админ";
             UserRole = await GetRoleDisplayName(auth);
+            IsAdminAuth = auth.UserType == "admin";
+            IsHighCook = auth.UserType == "employee" && auth.RoleId == "1";
+            IsCook = auth.UserType == "employee";
         }
         else
         {
             UserName = null;
             UserRole = null;
+            IsAdminAuth = false;
+            IsHighCook = false;
+            IsCook = false;
         }
-
-        IsAdminAuth = auth.UserType == "admin";
-        IsHighCook = auth.UserType == "employee" && auth.RoleId == "1";
-        IsCook = auth.UserType == "employee";
     }
 
     private async Task<string> GetRoleDisplayName(AuthSettings auth)
