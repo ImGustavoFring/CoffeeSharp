@@ -17,6 +17,8 @@ public class AuthSettings
         set
         {
             _accessToken = value;
+            if (String.IsNullOrEmpty(value))
+                return;
             _claims = JwtHelper.ParseClaimsFromToken(_accessToken);
             HttpClient.Instance.SetAccessToken(value);
         }
@@ -24,11 +26,11 @@ public class AuthSettings
     
     public string? Id => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "id") : null;
 
-    public string? Name => (_claims != null) ? JwtHelper.GetClaimValue(_claims, ClaimTypes.Name) : null;
+    public string? Name => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "unique_name") : null;
 
     public string? UserType => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "user_type") : null;
     
-    public string? RoleId => (_claims != null) ? JwtHelper.GetClaimValue(_claims, ClaimTypes.Role) : null;
+    public string? RoleId => (_claims != null) ? JwtHelper.GetClaimValue(_claims, "role") : null;
     
     public bool IsTokenExpired => JwtHelper.IsTokenExpired(_accessToken);
 }

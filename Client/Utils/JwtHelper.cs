@@ -30,7 +30,7 @@ public class JwtHelper
         var handler = new JwtSecurityTokenHandler();
 
         if (!handler.CanReadToken(token))
-            throw new ArgumentException("Invalid JWT token.");
+            return true;
 
         var jwtToken = handler.ReadJwtToken(token);
 

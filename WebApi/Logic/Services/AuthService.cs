@@ -84,7 +84,8 @@ namespace WebApi.Logic.Services
                     new Claim("id", employee.Id.ToString()),
                     new Claim(ClaimTypes.Name, employee.UserName),
                     new Claim("user_type", "employee"),
-                    new Claim(ClaimTypes.Role, employee.RoleId.ToString())
+                    new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
+                    new Claim("branch_id", employee.BranchId?.ToString() ?? string.Empty)
                 }),
                 Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpiryHours),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),

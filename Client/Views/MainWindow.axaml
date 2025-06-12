@@ -17,7 +17,7 @@
 
     <Grid ColumnDefinitions="Auto,1,*" RowDefinitions="*,Auto">
         <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4">
-            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToOrdersCommand}">Заказы</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToOrdersCommand}" IsVisible="{Binding IsCook}">Заказы</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchesCommand}" IsVisible="{Binding IsAdminAuth}">Филиалы</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeRoleCommand}" IsVisible="{Binding IsAdminAuth}">Роли</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToEmployeeCommand}" IsVisible="{Binding IsAdminAuth}">Сотрудники</Button>
@@ -29,8 +29,12 @@
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchMenuCommand}" IsVisible="{Binding IsAdminAuth}">Пресеты филиалов</Button>
         </StackPanel>
         
-        <StackPanel Grid.Column="0" Grid.Row="1">
-            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding NavigateToLoginCommand}">Вход</Button>
+        <StackPanel Grid.Column="0" Grid.Row="1" Spacing="4">
+            <TextBlock Text="{Binding UserName, FallbackValue='Гость'}" HorizontalAlignment="Center" IsVisible="{Binding IsAuthenticated}"/>
+            <TextBlock Text="{Binding UserRole, FallbackValue=''}" HorizontalAlignment="Center" IsVisible="{Binding IsAuthenticated}"/>
+            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" 
+                    Content="{Binding AuthButtonText}"
+                    Command="{Binding AuthCommand}"/>
         </StackPanel>
         
         <Panel Grid.Column="1" Grid.Row="0" Width="1" Background="Black" Grid.RowSpan="2" Margin="12,0"/>

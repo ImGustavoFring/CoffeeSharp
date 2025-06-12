@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,24 +17,84 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isHighCook = false;
+    
+    [ObservableProperty]
+    private bool _isCook = false;
 
-    public void RefreshAuthData()
+    [ObservableProperty]
+    private bool _isAuthenticated = false;
+
+    [ObservableProperty]
+    private string _authButtonText = "Войти";
+
+    [ObservableProperty]
+    private string? _userName;
+
+    [ObservableProperty]
+    private string? _userRole;
+
+    public async Task RefreshAuthData()
     {
         var auth = AuthService.Load();
-        var userType = auth.UserType;
-        if (userType == "admin")
+        IsAuthenticated = AuthService.Instance.IsAuthenticated;
+        AuthButtonText = IsAuthenticated ? "Выйти" : "Войти";
+
+        if (IsAuthenticated)
         {
-            IsAdminAuth = true;
+            UserName = auth.Name ?? "Админ";
+            UserRole = await GetRoleDisplayName(auth);
         }
-        else if (userType == "employee")
+        else
         {
-            IsHighCook = true;
+            UserName = null;
+            UserRole = null;
         }
+
+        IsAdminAuth = auth.UserType == "admin";
+        IsHighCook = auth.UserType == "employee" && auth.RoleId == "1";
+        IsCook = auth.UserType == "employee";
+    }
+
+    private async Task<string> GetRoleDisplayName(AuthSettings auth)
+    {
+        if (auth.UserType == "admin")
+            return "Администратор";
+        Console.WriteLine(auth.UserType);
+        Console.WriteLine(auth.RoleId);
+        if (auth.UserType == "employee" && !string.IsNullOrEmpty(auth.RoleId))
+        {
+            try
+            {
+                var (roles, _) = await HttpClient.Instance.GetAllEmployeeRoles();
+                var role = roles.FirstOrDefault(r => r.Id.ToString() == auth.RoleId);
+                return role?.Name ?? "Сотрудник";
+            }
+            catch
+            {
+                return "Сотрудник";
+            }
+        }
+        return "";
     }
 
     public MainWindowViewModel()
     {
         CurrentViewModel = new LoginViewModel();
+    }
+
+    [RelayCommand]
+    private void Auth()
+    {
+        if (IsAuthenticated)
+        {
+            AuthService.AccessToken = String.Empty;
+            RefreshAuthData();
+            NavigateToLogin();
+        }
+        else
+        {
+            NavigateToLogin();
+        }
     }
 
     [RelayCommand]
