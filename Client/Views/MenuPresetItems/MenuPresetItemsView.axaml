@@ -5,21 +5,22 @@
              xmlns:viewModels="clr-namespace:Client.ViewModels"
              xmlns:views="clr-namespace:Client.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Client.Views.MenuPresetView"
-             x:DataType="viewModels:MenuPresetViewModel">
+             x:Class="Client.Views.MenuPresetItemsView"
+             x:DataType="viewModels:MenuPresetItemsViewModel">
     <StackPanel Spacing="10">
 
         <!-- Поисковая строка -->
         <DockPanel Margin="0 0 0 10">
-            <TextBox Width="300" Watermark="Название" Text="{Binding SearchQuery}" />
-            <Button Content="🔍" Margin="5 0 0 0" Click="SearchPresets"/>
-            <Button Content="+" Margin="5 0 0 0" Click="CreatePreset"/>
+            <TextBox Width="200" Watermark="Имя пресета" Text="{Binding PresetSearchQuery}" Margin="0 0 5 0"/>
+            <TextBox Width="200" Watermark="Имя продукта" Text="{Binding ProductSearchQuery}" Margin="0 0 5 0"/>
+            <Button Content="🔍" Margin="5 0 0 0" Click="SearchItems"/>
+            <Button Content="+" Margin="5 0 0 0" Click="CreatePresetItem"/>
         </DockPanel>
 
-        <ItemsControl ItemsSource="{Binding Presets}">
+        <ItemsControl ItemsSource="{Binding Items}">
             <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="viewModels:MenuPresetItemViewModel">
-                    <views:MenuPresetItem Margin="0, 6" />
+                <DataTemplate DataType="viewModels:MenuPresetItemsItemViewModel">
+                    <views:MenuPresetItemsItem Margin="0, 6" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -27,6 +28,6 @@
     </StackPanel>
 
     <Design.DataContext>
-        <viewModels:MenuPresetViewModel />
+        <viewModels:MenuPresetItemsViewModel />
     </Design.DataContext>
 </UserControl>

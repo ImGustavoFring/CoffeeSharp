@@ -24,7 +24,7 @@ public partial class MenuPresetView : UserControl
         {
             try
             {
-                var presets = await HttpClient.Instance.GetAllPresets(vm.SearchQuery, vm.SearchQuery);
+                var presets = await HttpClient.Instance.GetAllPresets(vm.SearchQuery);
                 vm.Presets.Clear();
                 foreach (var preset in presets)
                 {

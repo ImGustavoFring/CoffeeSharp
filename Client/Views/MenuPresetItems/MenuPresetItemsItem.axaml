@@ -1,0 +1,22 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.MenuPresetItemsItem"
+             x:DataType="viewModels:MenuPresetItemsItemViewModel">
+    <Border Background="LightGray" Padding="10">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="{Binding PresetName, StringFormat='Пресет: {0}', FallbackValue='Пресет: Не указан'}" />
+                <TextBlock Text="{Binding ProductName, StringFormat='Продукт: {0}', FallbackValue='Продукт: Не указан'}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
+                <Button Content="Изменить" Width="150" Click="OpenInformationWindow"/>
+                <Button Content="Удалить" Width="150" Click="DeletePresetItem"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

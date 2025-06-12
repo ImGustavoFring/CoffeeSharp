@@ -31,6 +31,8 @@ public partial class App : Application
             .Register<AdminItemViewModel, AdminItem>()
             .Register<MenuPresetViewModel, MenuPresetView>()
             .Register<MenuPresetItemViewModel, MenuPresetItem>()
+            .Register<MenuPresetItemsViewModel, MenuPresetItemsView>()
+            .Register<MenuPresetItemsItemViewModel, MenuPresetItemsItem>()
             // all later are deprecated and will be removed
             .Register<UserContol1VM, UserControl1>()
             .Register<UserControl2VM, UserControl2>());

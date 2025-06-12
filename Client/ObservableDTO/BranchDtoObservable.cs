@@ -32,4 +32,5 @@ public partial class BranchDtoObservable : ObservableObject
             Address = Address
         };
     }
+    
 }

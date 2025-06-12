@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Threading.Tasks;
+using Client.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.DTOs.Shared;
 
 namespace Client.ObservableDTO;
@@ -36,5 +38,19 @@ public partial class BranchMenuDtoObservable : ObservableObject
             BranchId = BranchId,
             Availability = Availability
         };
+    }
+    
+    public async Task<string> GetBranchNameAsync()
+    {
+        if (BranchId == null) return string.Empty;
+        var branch = await HttpClient.Instance.GetBranchById(BranchId ?? 0);
+        return branch?.Name ?? string.Empty;
+    }
+
+    public async Task<string> GetMenuPresetItemNameAsync()
+    {
+        if (MenuPresetItemId == null) return string.Empty;
+        var item = await HttpClient.Instance.GetPresetItemById(MenuPresetItemId ?? 0);
+        return $"{await new MenuPresetItemDtoObservable(item).GetProductNameAsync()} ({await new MenuPresetItemDtoObservable(item).GetMenuPresetNameAsync()})";
     }
 }

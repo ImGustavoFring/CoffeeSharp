@@ -88,4 +88,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentViewModel = MenuPresetViewModel.Instance;
     }
+    
+    [RelayCommand]
+    private void NavigateToMenuPresetItems()
+    {
+        CurrentViewModel = MenuPresetItemsViewModel.Instance;
+    }
 }
