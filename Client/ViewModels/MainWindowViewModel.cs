@@ -82,4 +82,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentViewModel = ProductViewModel.Instance;
     }
+    
+    [RelayCommand]
+    private void NavigateToMenuPreset()
+    {
+        CurrentViewModel = MenuPresetViewModel.Instance;
+    }
 }

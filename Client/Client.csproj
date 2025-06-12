@@ -66,4 +66,9 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewModels\MenuPresetItem\" />
+    <Folder Include="Views\MenuPresetItem\" />
+  </ItemGroup>
 </Project>
