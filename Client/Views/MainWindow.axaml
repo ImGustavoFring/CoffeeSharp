@@ -26,6 +26,7 @@
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToProductsCommand}" IsVisible="{Binding IsAdminAuth}">Продукты</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToMenuPresetCommand}" IsVisible="{Binding IsAdminAuth}">Пресеты</Button>
             <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToMenuPresetItemsCommand}" IsVisible="{Binding IsAdminAuth}">Продукты пресетов</Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding NavigateToBranchMenuCommand}" IsVisible="{Binding IsAdminAuth}">Пресеты филиалов</Button>
         </StackPanel>
         
         <StackPanel Grid.Column="0" Grid.Row="1">

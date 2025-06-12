@@ -1,0 +1,31 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Client.ViewModels"
+             xmlns:views="clr-namespace:Client.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client.Views.BranchMenuItemsView"
+             x:DataType="viewModels:BranchMenuItemsViewModel">
+    <StackPanel Spacing="10">
+        <!-- Search Bar -->
+        <DockPanel Margin="0 0 0 10">
+            <TextBox Width="200" Watermark="Имя пресета" Text="{Binding PresetSearchQuery}" Margin="0 0 5 0"/>
+            <TextBox Width="200" Watermark="Название филиала" Text="{Binding BranchSearchQuery}" Margin="0 0 5 0"/>
+            <Button Content="🔍" Margin="5 0 0 0" Click="SearchItems"/>
+            <Button Content="+" Margin="5 0 0 0" Click="CreateBranchMenu"/>
+        </DockPanel>
+
+        <ItemsControl ItemsSource="{Binding Items}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="viewModels:BranchMenuItemsItemViewModel">
+                    <views:BranchMenuItemsItem Margin="0, 6" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+
+    <Design.DataContext>
+        <viewModels:BranchMenuItemsViewModel />
+    </Design.DataContext>
+</UserControl>

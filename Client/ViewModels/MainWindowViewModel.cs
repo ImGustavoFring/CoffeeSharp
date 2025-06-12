@@ -94,4 +94,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentViewModel = MenuPresetItemsViewModel.Instance;
     }
+    
+    [RelayCommand]
+    private void NavigateToBranchMenu()
+    {
+        CurrentViewModel = BranchMenuItemsViewModel.Instance;
+    }
 }
