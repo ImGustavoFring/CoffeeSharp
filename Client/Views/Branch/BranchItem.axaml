@@ -15,8 +15,6 @@
             </StackPanel>
             
             <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="4" HorizontalAlignment="Right">
-                <Button Content="Меню" Width="150"/>
-                <Button Content="Сотрудники" Width="150"/>
                 <Button Content="Информация" Width="150" Click="OpenInformationWindow"/>
                 <Button Content="Удалить" Width="150" Click="DeleteBranch"/>
             </StackPanel>

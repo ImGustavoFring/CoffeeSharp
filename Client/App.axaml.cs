@@ -47,7 +47,7 @@ public partial class App : Application
             DisableAvaloniaDataAnnotationValidation();
             desktop.MainWindow = new MainWindow
             {
-                
+                Title = "Coffee# Client"
             };
         }
 
