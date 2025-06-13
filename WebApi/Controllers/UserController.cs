@@ -121,7 +121,6 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("employees")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetAllEmployees(
          [FromQuery] string? name = null,
          [FromQuery] string? userName = null,
@@ -150,7 +149,6 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("employees/{id}")]
-        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> GetEmployeeById(long id)
         {
             Employee? employee = await _userService.GetEmployeeByIdAsync(id);

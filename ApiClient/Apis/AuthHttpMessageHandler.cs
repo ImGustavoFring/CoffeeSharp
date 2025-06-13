@@ -16,7 +16,17 @@ public class AuthHttpMessageHandler: DelegatingHandler
         {
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         }
-
-        return await base.SendAsync(request, cancellationToken);
+        Console.WriteLine($"REQUEST: {request}");
+        if (request.Content != null)
+        {
+            Console.WriteLine(request.Content.ReadAsStringAsync().Result);
+        }
+        var resp = await base.SendAsync(request, cancellationToken);
+        Console.WriteLine($"RESPONSE: {resp}");
+        if (resp.Content != null)
+        {
+            Console.WriteLine(resp.Content.ReadAsStringAsync().Result);
+        }
+        return resp;
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Threading;
+using Client.ObservableDTO;
 using Client.Services;
 using Client.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -69,7 +70,7 @@ public partial class MainOrdersViewModel : ViewModelBase, IDisposable
             OrderShortItemViewModels.Clear();
             foreach (var order in orders)
             {
-                var viewModel = await OrderShortItemViewModel.CreateAsync(order);
+                var viewModel = await OrderShortItemViewModel.CreateAsync(new OrderDtoObservable(order));
                 OrderShortItemViewModels.Add(viewModel);
             }
         }

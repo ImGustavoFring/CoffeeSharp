@@ -8,16 +8,22 @@
              x:DataType="viewModels:OrderShortItemViewModel">
     <Border Background="LightGray">
         <StackPanel Margin="8">
-            <TextBlock FontWeight="Bold">
-                <Run Text="Заказ номер" />
-                <Run Text="{Binding OrderDtoItem.Id}" />
-            </TextBlock>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" FontWeight="Bold">
+                    <Run Text="Заказ номер" />
+                    <Run Text="{Binding OrderDtoItem.Id}" />
+                </TextBlock>
+                <Button Grid.Column="1" 
+                        Content="Редактировать" 
+                        Width="100" 
+                        Click="OpenOrderInformationWindow"/>
+            </Grid>
 
             <Panel Height="1" Background="Black" Margin="0,4,0,0" />
 
             <Grid ColumnDefinitions="150,1,Auto,1,2*" RowDefinitions="Auto">
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Закачик:" FontWeight="Bold" />
+                    <TextBlock Text="Заказчик:" FontWeight="Bold" />
                     <TextBlock Text="{Binding ClientName}" />
                     <TextBlock Text="Исполнители:" FontWeight="Bold" Margin="0,4,0,0" />
                     <ItemsControl ItemsSource="{Binding EmployeeNames}" />
@@ -30,7 +36,7 @@
                     <TextBlock Text="{Binding CreateTime}" HorizontalAlignment="Right" />
                 </StackPanel>
 
-                <Panel Grid.Column="3" Grid.Row="0" Width="1" Background="Black" Margin="0,0,12, 0" />
+                <Panel Grid.Column="3" Grid.Row="0" Width="1" Background="Black" Margin="0,0,12,0" />
 
                 <TextBlock Grid.Column="4" Text="{Binding ProductNamesDisplay}" TextWrapping="Wrap"
                            VerticalAlignment="Top" />
@@ -39,6 +45,6 @@
     </Border>
 
     <Design.DataContext>
-        <viewModels:OrderShortItemViewModel></viewModels:OrderShortItemViewModel>
+        <viewModels:OrderShortItemViewModel />
     </Design.DataContext>
 </UserControl>
