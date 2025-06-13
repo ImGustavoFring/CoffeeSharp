@@ -11,4 +11,13 @@ public partial class MainOrdersView : UserControl
         InitializeComponent();
         DataContext = MainOrdersViewModel.Instance;
     }
+
+    protected void OnUnloaded()
+    {
+        base.OnUnloaded(null);
+        if (DataContext is MainOrdersViewModel vm)
+        {
+            vm.Dispose();
+        }
+    }
 }
