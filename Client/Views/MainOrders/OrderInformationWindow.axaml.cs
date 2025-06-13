@@ -30,6 +30,15 @@ public partial class OrderInformationWindow : Window
         }
     }
 
+    private async void Pickup(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is OrderInformationWindowViewModel vm)
+        {
+            await vm.PickupOrderAsync();
+            Close();
+        }
+    }
+
     private void Cancel(object? sender, RoutedEventArgs e)
     {
         if (DataContext is OrderInformationWindowViewModel vm)

@@ -65,6 +65,7 @@
                         Spacing="10" 
                         Margin="0,20,0,0">
                 <Button Content="Сохранить" Click="Save"/>
+                <Button Content="Выдать заказ" Click="Pickup" IsVisible="{Binding CanPickupOrder}"/>
                 <Button Content="Отменить" Click="Cancel"/>
             </StackPanel>
         </StackPanel>

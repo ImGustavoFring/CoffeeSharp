@@ -10,6 +10,7 @@ using Client.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Domain.DTOs;
+using Domain.Enums;
 
 namespace Client.ViewModels;
 
@@ -59,16 +60,22 @@ public partial class MainOrdersViewModel : ViewModelBase, IDisposable
     };
 
     [RelayCommand]
-    private async Task LoadOrdersAsync()
+    public async Task LoadOrdersAsync()
     {
         try
         {
             var auth = AuthService.Load();
             long? branchId = auth.UserType == "admin" ? null : auth.BranchId;
-            var (orders, _) = await HttpClient.Instance.GetOrders(branchId: branchId);
+            var (orders, _) = await HttpClient.Instance.GetOrders(
+                branchId: branchId,
+                status: null,
+                pageIndex: 0,
+                pageSize: 50);
+            
+            var filteredOrders = orders.Where(o => o.FinishedAt == null).ToList();
 
             OrderShortItemViewModels.Clear();
-            foreach (var order in orders)
+            foreach (var order in filteredOrders)
             {
                 var viewModel = await OrderShortItemViewModel.CreateAsync(new OrderDtoObservable(order));
                 OrderShortItemViewModels.Add(viewModel);

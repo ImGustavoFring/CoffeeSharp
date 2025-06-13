@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Client.ObservableDTO;
 using Client.Services;
 using Client.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Client.ViewModels;
 
@@ -18,6 +20,9 @@ public partial class OrderInformationWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     private ObservableCollection<OrderItemViewModel> _orderItems = new();
+
+    [ObservableProperty]
+    private bool _canPickupOrder;
 
     private readonly ObservableCollection<EmployeeDtoObservable> _employees = new();
     private readonly bool _isManager;
@@ -58,10 +63,38 @@ public partial class OrderInformationWindowViewModel : ViewModelBase
                     _employees.Add(new EmployeeDtoObservable(emp));
                 }
             }
+
+            UpdateCanPickupOrder();
         }
         catch
         {
             await DialogsHelper.ShowError("Ошибка при загрузке данных заказа");
+        }
+    }
+
+    private void UpdateCanPickupOrder()
+    {
+        CanPickupOrder = OrderItems.All(item => item.OrderItemDto.DoneAt.HasValue);
+    }
+
+    partial void OnOrderItemsChanged(ObservableCollection<OrderItemViewModel> value)
+    {
+        UpdateCanPickupOrder();
+    }
+
+    [RelayCommand]
+    public async Task PickupOrderAsync()
+    {
+        try
+        {
+            await HttpClient.Instance.PickupOrder(OrderDto.Id);
+            await DialogsHelper.ShowOk("Заказ успешно выдан");
+            // Обновляем список заказов после выдачи
+            await MainOrdersViewModel.Instance.LoadOrdersAsync();
+        }
+        catch
+        {
+            await DialogsHelper.ShowError("Ошибка при выдаче заказа");
         }
     }
 
@@ -73,15 +106,13 @@ public partial class OrderInformationWindowViewModel : ViewModelBase
             {
                 if (item.IsModified)
                 {
-                    // Переназначение сотрудника для менеджера
                     if (_isManager && item.SelectedEmployee?.Id != item.OrderItemDto.EmployeeId)
                     {
                         await HttpClient.Instance.ReassignOrderItem(
                             item.OrderItemDto.Id,
                             item.SelectedEmployee?.Id ?? throw new InvalidOperationException("Сотрудник не выбран"));
                     }
-
-                    // Обновление статуса готовности
+                    
                     if (item.OrderItemDto.DoneAt.HasValue != item.OriginalDoneAt.HasValue)
                     {
                         if (item.OrderItemDto.DoneAt.HasValue)
@@ -96,6 +127,7 @@ public partial class OrderInformationWindowViewModel : ViewModelBase
                     }
                 }
             }
+            UpdateCanPickupOrder();
             return true;
         }
         catch
